@@ -3,6 +3,7 @@ package com.example.burnchuck.domain.follow.service;
 import com.example.burnchuck.common.entity.Follow;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.follow.model.response.FollowResponse;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
@@ -23,17 +24,15 @@ public class FollowService {
      * 팔로우
      */
     @Transactional
-    public FollowResponse follow(Long followerId, Long userId) {
+    public FollowResponse follow(AuthUser user, Long userId) {
 
         // 팔로우 하는 사람(신청자) = follower
         // 팔로우 당하는 사람(대상) = followee
         // 1. follower 유저 조회 (현재 더미를 넣어 둔 상태이다.)
-        User follower = userRepository.findByIdAndIsDeletedFalse(followerId)
-                .orElseThrow(() -> new CustomException(FOLLOWER_NOT_FOUND));
+        User follower = userRepository.findActivateUserById(user.getId(), FOLLOWER_NOT_FOUND);
 
         // 2. followee 유저 조회
-        User followee = userRepository.findByIdAndIsDeletedFalse(userId)
-                .orElseThrow(() -> new CustomException(FOLLOWEE_NOT_FOUND));
+        User followee = userRepository.findActivateUserById(userId, FOLLOWEE_NOT_FOUND);
 
         // 3. 자기 자신 팔로우 예외처리
         if (follower.getId().equals(followee.getId())) {
@@ -57,10 +56,10 @@ public class FollowService {
      * 언팔로우
      */
     @Transactional
-    public void unfollow(Long followerId, Long userId) {
+    public void unfollow(AuthUser user, Long userId) {
 
         // 1. follower 조회
-        User follower = userRepository.findActivateUserById(followerId, FOLLOWER_NOT_FOUND);
+        User follower = userRepository.findActivateUserById(user.getId(), FOLLOWER_NOT_FOUND);
 
         // 2. followee 조회
         User followee = userRepository.findActivateUserById(userId, FOLLOWEE_NOT_FOUND);

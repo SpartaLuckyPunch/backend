@@ -27,10 +27,8 @@ public class FollowController {
     public ResponseEntity<CommonResponse<FollowResponse>> follow(
             @AuthenticationPrincipal AuthUser user,
             @PathVariable Long userId
-
     ) {
-        Long followerId = user.getId();
-        FollowResponse response = followService.follow(followerId, userId);
+        FollowResponse response = followService.follow(user, userId);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CommonResponse.success(FOLLOW_SUCCESS, response));
@@ -44,8 +42,7 @@ public class FollowController {
             @AuthenticationPrincipal AuthUser user,
             @PathVariable Long userId
     ) {
-        Long followerId = user.getId();
-        followService.unfollow(followerId, userId);
+        followService.unfollow(user, userId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(UNFOLLOW_SUCCESS, null));
