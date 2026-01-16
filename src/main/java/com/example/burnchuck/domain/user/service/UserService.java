@@ -90,4 +90,17 @@ public class UserService {
         user.updatePassword(encodedPassword);
         userRepository.saveAndFlush(user);
     }
+
+    /**
+     * 회원 탈퇴
+     */
+    @Transactional
+    public void deleteUser(AuthUser authUser) {
+
+        // 1. 로그인한 유저 정보로 객체 생성
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        // 2. 회원 논리 삭제
+        user.delete();
+    }
 }
