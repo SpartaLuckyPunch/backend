@@ -13,7 +13,8 @@ public enum SuccessMessage {
     USER_UPDATE_PROFILE_SUCCESS("프로필 수정 성공"),
 
     // 팔로우
-    FOLLOW_SUCCESS("팔로우 성공")
+    FOLLOW_SUCCESS("팔로우 성공"),
+    UNFOLLOW_SUCCESS("언팔로우 성공")
     ;
 
     private final String message;
