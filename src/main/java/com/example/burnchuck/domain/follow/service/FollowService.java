@@ -46,12 +46,12 @@ public class FollowService {
             throw new CustomException(ALREADY_FOLLOWING);
         }
 
-        // 5. Follow 저장
+       // 5. Follow 저장
         Follow follow = new Follow(follower, followee);
-        Follow savedFollow = followRepository.save(follow);
+        followRepository.save(follow);
 
         // 6. Entity → DTO → Response
-        FollowDto dto = FollowDto.from(savedFollow);
+        FollowDto dto = FollowDto.from(follow);
         return FollowResponse.from(dto);
     }
 
