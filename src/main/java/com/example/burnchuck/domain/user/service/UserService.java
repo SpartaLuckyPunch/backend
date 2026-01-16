@@ -5,6 +5,8 @@ import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
+import com.example.burnchuck.domain.follow.repository.FollowRepository;
+import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
 import com.example.burnchuck.domain.user.model.request.*;
 import com.example.burnchuck.domain.user.model.response.*;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
@@ -21,6 +23,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
+    private final FollowRepository followRepository;
+    private final MeetingLikeRepository meetingLikeRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -89,5 +93,25 @@ public class UserService {
         // 5. 비밀번호 변경 및 저장
         user.updatePassword(encodedPassword);
         userRepository.saveAndFlush(user);
+    }
+
+    /**
+     * 회원 탈퇴
+     */
+    @Transactional
+    public void deleteUser(AuthUser authUser) {
+
+        // 1. 로그인한 유저 정보로 객체 생성
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        // 2. 회원 논리 삭제
+        user.delete();
+        userRepository.saveAndFlush(user);
+
+        // 3. 좋아요, 팔로우 삭제
+        meetingLikeRepository.deleteByUserId(user.getId());
+
+        followRepository.deleteByFollowerId(user.getId());
+        followRepository.deleteByFolloweeId(user.getId());
     }
 }
