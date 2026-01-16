@@ -1,0 +1,73 @@
+package com.example.burnchuck.domain.review.service;
+
+import com.example.burnchuck.common.entity.*;
+import com.example.burnchuck.common.enums.ErrorCode;
+import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
+import com.example.burnchuck.domain.reaction.repository.ReactionRepository;
+import com.example.burnchuck.domain.review.model.request.ReviewCreateRequest;
+import com.example.burnchuck.domain.review.repository.ReviewReactionRepository;
+import com.example.burnchuck.domain.review.repository.ReviewRepository;
+import com.example.burnchuck.domain.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import static com.example.burnchuck.common.enums.ErrorCode.SELF_REVIEW_NOT_ALLOWED;
+
+@Service
+@RequiredArgsConstructor
+// 트랙잭션 메서드에 붙이기 각각 클래스 위에 x -> 메서드에 각각
+public class ReviewService {
+
+    private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
+    private final MeetingRepository meetingRepository;
+    private final ReactionRepository reactionRepository;
+    private final ReviewReactionRepository reviewReactionRepository;
+
+    /**
+     * 후기 등록
+     */
+    @Transactional
+    public void createReview(Long userId, ReviewCreateRequest request) {
+
+        // 1. reviewer(리뷰 작성자)가 존재하는지 검증
+        User reviewer = userRepository.findById(request.getReviewerId())
+                .orElseThrow(() -> new CustomException(ErrorCode.REVIEWER_NOT_FOUND));
+
+        // 2. reviewee(리뷰 대상자)가 존재하는 검증
+        User reviewee = userRepository.findById(request.getRevieweeId())
+                .orElseThrow(() -> new CustomException(ErrorCode.REVIEWEE_NOT_FOUND));
+
+        // 3. meeting이 존재하는 검증
+        Meeting meeting = meetingRepository.findById(request.getMeetingId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MEETING_NOT_FOUND));
+
+        // 4. 자기 자신에게 후기 작성 방지
+        if (reviewer.getId().equals(reviewee.getId()))
+            throw new CustomException(SELF_REVIEW_NOT_ALLOWED);
+
+        // 5. Review 저장
+        Review review = new Review(
+                request.getRating().intValue(),
+                request.getDetailedReview(),
+                reviewer,
+                reviewee,
+                meeting
+        );
+        Review savedReview = reviewRepository.save(review);
+
+        // 6. ReviewReaction(반응) 중간 테이블 저장
+        if (request.getReactionList() != null) {
+            for (Long reactionId : request.getReactionList()) {
+                Reaction reaction = reactionRepository.findById(reactionId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.REACTION_NOT_FOUND));
+                reviewReactionRepository.save(new ReviewReaction(savedReview, reaction));
+            }
+
+
+        }
+
+    }
+}
