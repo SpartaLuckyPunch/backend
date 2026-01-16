@@ -51,4 +51,9 @@ public class User extends BaseEntity {
     public void uploadProfileImg(String profileImgUrl) {
         this.profileImgUrl = profileImgUrl;
     }
+
+    public void updateProfile(String nickname, Address address) {
+        this.nickname = nickname;
+        this.address = address;
+    }
 }
