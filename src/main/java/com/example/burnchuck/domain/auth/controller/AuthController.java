@@ -31,6 +31,7 @@ public class AuthController {
     ) {
         AuthSignupResponse response = authService.signup(request);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(AUTH_SIGNUP_SUCCESS, response));
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(CommonResponse.success(AUTH_SIGNUP_SUCCESS, response));
     }
 }
