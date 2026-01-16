@@ -1,6 +1,6 @@
 package com.example.burnchuck.domain.user.controller;
 
-import static com.example.burnchuck.common.enums.SuccessMessage.USER_UPDATE_PROFILE_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,5 +39,19 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(USER_UPDATE_PROFILE_SUCCESS, response));
+    }
+
+    /**
+     * 비밀번호 변경
+     */
+    @PutMapping
+    public ResponseEntity<CommonResponse<Void>> updatePassword(
+        @AuthenticationPrincipal AuthUser authUser,
+        @Valid @RequestBody UserUpdatePasswordRequest request
+    ) {
+        userService.updatePassword(authUser, request);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.successNodata(USER_UPDATE_PASSWORD_SUCCESS));
     }
 }
