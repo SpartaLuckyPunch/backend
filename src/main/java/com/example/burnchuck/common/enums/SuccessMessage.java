@@ -15,7 +15,10 @@ public enum SuccessMessage {
 
     // 팔로우
     FOLLOW_SUCCESS("팔로우 성공"),
-    UNFOLLOW_SUCCESS("언팔로우 성공")
+    UNFOLLOW_SUCCESS("언팔로우 성공"),
+
+    // 리뷰
+    REVIEW_CREATE_SUCCESS("후기 등록 성공"),
     ;
 
     private final String message;
