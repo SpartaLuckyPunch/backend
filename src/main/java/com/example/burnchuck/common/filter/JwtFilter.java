@@ -1,6 +1,6 @@
 package com.example.burnchuck.common.filter;
 
-import com.example.burnchuck.common.utils.JwtAuthenticationToken;
+import com.example.burnchuck.common.jwt.JwtAuthenticationToken;
 import com.example.burnchuck.common.utils.JwtUtil;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import jakarta.servlet.FilterChain;

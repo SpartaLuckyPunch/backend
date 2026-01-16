@@ -1,4 +1,4 @@
-package com.example.burnchuck.common.utils;
+package com.example.burnchuck.common.jwt;
 
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
