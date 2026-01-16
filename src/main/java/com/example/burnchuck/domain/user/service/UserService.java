@@ -30,7 +30,7 @@ public class UserService {
     public UserUpdateProfileResponse updateProfile(AuthUser authUser, UserUpdateProfileRequest request) {
 
         // 1. 로그인한 유저 정보로 객체 생성
-        User user = userRepository.findUserById(authUser.getId());
+        User user = userRepository.findActivateUserById(authUser.getId());
 
         // 2. 닉네임 변경하는 경우, 새 닉네임의 중복 여부 확인
         String currentNickname = user.getNickname();

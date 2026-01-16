@@ -19,13 +19,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
     }
 
-    default User findUserById(Long id) {
-        return findById(id)
+    Optional<User> findByIdAndIsDeletedFalse(Long id);
+
+    default User findActivateUserById(Long id) {
+        return findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
     }
 
-    Optional<User> findByIdAndIsDeletedFalse(Long id);
-
+    // NOT_FOUND_USER 외 다른 예외 사용 시, 해당 메서드 사용
     default User findActivateUserById(Long id, ErrorCode errorCode) {
         return findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new CustomException(errorCode));
