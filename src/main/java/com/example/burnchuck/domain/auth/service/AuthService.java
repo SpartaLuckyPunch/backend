@@ -74,7 +74,7 @@ public class AuthService {
     public AuthLoginResponse login(AuthLoginRequest request) {
 
         // 1. email로 유저 조회
-        User user = userRepository.findUserByEmail(request.getEmail());
+        User user = userRepository.findActivateUserByEmail(request.getEmail());
 
         // 2. 비밀번호 확인
         boolean matches = passwordEncoder.matches(request.getPassword(), user.getPassword());

@@ -12,15 +12,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByNickname(String nickname);
 
-    Optional<User> findByEmail(String email);
-
-    default User findUserByEmail(String email) {
-        return findByEmail(email)
-            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
-    }
+    Optional<User> findByEmailAndIsDeletedFalse(String email);
 
     Optional<User> findByIdAndIsDeletedFalse(Long id);
 
+    default User findActivateUserByEmail(String email) {
+        return findByEmailAndIsDeletedFalse(email)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+    }
+
+    default User findActivateUserById(Long id) {
+        return findByIdAndIsDeletedFalse(id)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+    }
+
+    // NOT_FOUND_USER 외 다른 예외 사용 시, 해당 메서드 사용
     default User findActivateUserById(Long id, ErrorCode errorCode) {
         return findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new CustomException(errorCode));
