@@ -20,19 +20,19 @@ public class FollowService {
     private final FollowRepository followRepository;
 
     /**
-     * 팔로우 로직
+     * 팔로우
      */
     @Transactional
-    public FollowResponse follow(Long userId) {
+    public FollowResponse follow(Long followerId, Long userId) {
 
         // 팔로우 하는 사람(신청자) = follower
         // 팔로우 당하는 사람(대상) = followee
         // 1. follower 유저 조회 (현재 더미를 넣어 둔 상태이다.)
-        User follower = userRepository.findById(1L)
+        User follower = userRepository.findByIdAndIsDeletedFalse(followerId)
                 .orElseThrow(() -> new CustomException(FOLLOWER_NOT_FOUND));
 
         // 2. followee 유저 조회
-        User followee = userRepository.findById(userId)
+        User followee = userRepository.findByIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new CustomException(FOLLOWEE_NOT_FOUND));
 
         // 3. 자기 자신 팔로우 예외처리
@@ -52,4 +52,28 @@ public class FollowService {
         return FollowResponse.from(follow);
     }
 
+
+    /**
+     * 언팔로우
+     */
+    @Transactional
+    public void unfollow(Long followerId, Long userId) {
+
+        // 1. follower 조회
+        User follower = userRepository.findActivateUserById(followerId, FOLLOWER_NOT_FOUND);
+
+        // 2. followee 조회
+        User followee = userRepository.findActivateUserById(userId, FOLLOWEE_NOT_FOUND);
+
+        // 3. 자기 자신 언팔로우 방지
+        if (follower.getId().equals(followee.getId())) {
+            throw new CustomException(SELF_UNFOLLOW_NOT_ALLOWED);
+        }
+
+        // 4. 팔로우 관계 조회
+        Follow follow = followRepository.getByFollowerAndFolloweeOrThrow(follower, followee, FOLLOW_NOT_FOUND);
+
+        // 5. 언팔로우 (삭제)
+        followRepository.delete(follow);
+    }
 }
