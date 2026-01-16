@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.user.service;
+package com.example.burnchuck.domain.notification.service;
 
 public class Service {
 }

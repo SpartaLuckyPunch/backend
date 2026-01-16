@@ -1,0 +1,42 @@
+package com.example.burnchuck.common.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "reviews")
+@Getter
+@NoArgsConstructor
+public class Review {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private int rating;
+
+    @Column(nullable = false)
+    private String detailedReview;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "reviewer_id", nullable = false)
+    private User reviewer;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "reviewee_id", nullable = false)
+    private User reviewee;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "meeting_id", nullable = false)
+    private Meeting meeting;
+
+    public Review(int rating, String detailedReview, User reviewer, User reviewee, Meeting meeting) {
+        this.rating = rating;
+        this.detailedReview = detailedReview;
+        this.reviewer = reviewer;
+        this.reviewee = reviewee;
+        this.meeting = meeting;
+    }
+}

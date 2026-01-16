@@ -1,4 +1,7 @@
 package com.example.burnchuck.domain.user.repository;
 
-public interface Repository {
+import com.example.burnchuck.common.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface Repository extends JpaRepository<User, Long> {
 }

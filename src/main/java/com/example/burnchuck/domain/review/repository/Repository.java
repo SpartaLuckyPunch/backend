@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.rewview.repository;
+package com.example.burnchuck.domain.review.repository;
 
 public interface Repository {
 }

@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.rewview.model.response;
+package com.example.burnchuck.domain.review.model.response;
 
 public class Response {
 }

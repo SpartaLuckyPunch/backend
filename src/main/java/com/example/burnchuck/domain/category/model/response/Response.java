@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.user.model.response;
+package com.example.burnchuck.domain.category.model.response;
 
 public class Response {
 }

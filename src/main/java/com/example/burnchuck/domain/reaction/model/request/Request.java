@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.user.model.request;
+package com.example.burnchuck.domain.reaction.model.request;
 
 public class Request {
 }

@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.rewview.model.dto;
+package com.example.burnchuck.domain.review.model.dto;
 
 public class Dto {
 }

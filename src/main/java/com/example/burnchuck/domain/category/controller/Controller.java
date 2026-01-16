@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.user.controller;
+package com.example.burnchuck.domain.category.controller;
 
 public class Controller {
 }

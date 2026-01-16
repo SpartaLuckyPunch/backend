@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.user.repository;
+package com.example.burnchuck.domain.follow.repository;
 
 public interface Repository {
 }

@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.rewview.controller;
+package com.example.burnchuck.domain.review.controller;
 
 public class Controller {
 }
