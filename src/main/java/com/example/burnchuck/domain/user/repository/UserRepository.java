@@ -3,5 +3,9 @@ package com.example.burnchuck.domain.user.repository;
 import com.example.burnchuck.common.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface Repository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    boolean existsByEmail(String email);
+
+    boolean existsByNickname(String nickname);
 }
