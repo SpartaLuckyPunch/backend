@@ -26,8 +26,9 @@ public class AuthController {
      * 회원가입
      */
     @PostMapping("/signup")
-    public ResponseEntity<CommonResponse<AuthSignupResponse>> signup(@Valid @RequestBody AuthSignupRequest request) {
-
+    public ResponseEntity<CommonResponse<AuthSignupResponse>> signup(
+        @Valid @RequestBody AuthSignupRequest request
+    ) {
         AuthSignupResponse response = authService.signup(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(AUTH_SIGNUP_SUCCESS, response));
