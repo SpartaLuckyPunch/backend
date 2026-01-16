@@ -14,7 +14,10 @@ public enum SuccessMessage {
 
     // 팔로우
     FOLLOW_SUCCESS("팔로우 성공"),
-    UNFOLLOW_SUCCESS("언팔로우 성공")
+    UNFOLLOW_SUCCESS("언팔로우 성공"),
+
+    // 모임
+    MEETING_CREATE_SUCCESS("모임 생성 성공")
     ;
 
     private final String message;
