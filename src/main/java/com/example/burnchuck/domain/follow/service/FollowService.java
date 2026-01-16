@@ -3,7 +3,6 @@ package com.example.burnchuck.domain.follow.service;
 import com.example.burnchuck.common.entity.Follow;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.exception.CustomException;
-import com.example.burnchuck.domain.follow.model.dto.FollowDto;
 import com.example.burnchuck.domain.follow.model.response.FollowResponse;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
@@ -46,13 +45,11 @@ public class FollowService {
             throw new CustomException(ALREADY_FOLLOWING);
         }
 
-       // 5. Follow 저장
+        // 5. Follow 저장
         Follow follow = new Follow(follower, followee);
         followRepository.save(follow);
 
-        // 6. Entity → DTO → Response
-        FollowDto dto = FollowDto.from(follow);
-        return FollowResponse.from(dto);
+        return FollowResponse.from(follow);
     }
 
 }

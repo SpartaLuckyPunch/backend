@@ -1,6 +1,6 @@
 package com.example.burnchuck.domain.follow.model.response;
 
-import com.example.burnchuck.domain.follow.model.dto.FollowDto;
+import com.example.burnchuck.common.entity.Follow;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -11,10 +11,10 @@ public class FollowResponse {
     private final Long followerId;
     private final Long followeeId;
 
-    public static FollowResponse from(FollowDto dto) {
+    public static FollowResponse from(Follow follow) {
         return new FollowResponse(
-                dto.getFollower().getId(),
-                dto.getFollowee().getId()
+                follow.getFollower().getId(),
+                follow.getFollowee().getId()
         );
     }
 }
