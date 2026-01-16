@@ -45,6 +45,6 @@ public class FollowController {
         followService.unfollow(user, userId);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(UNFOLLOW_SUCCESS, null));
+                .body(CommonResponse.successNodata(UNFOLLOW_SUCCESS));
     }
 }

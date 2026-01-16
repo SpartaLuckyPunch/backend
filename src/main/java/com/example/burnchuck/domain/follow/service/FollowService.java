@@ -28,7 +28,7 @@ public class FollowService {
 
         // 팔로우 하는 사람(신청자) = follower
         // 팔로우 당하는 사람(대상) = followee
-        // 1. follower 유저 조회 (현재 더미를 넣어 둔 상태이다.)
+        // 1. follower 유저 조회
         User follower = userRepository.findActivateUserById(user.getId(), FOLLOWER_NOT_FOUND);
 
         // 2. followee 유저 조회
