@@ -87,7 +87,7 @@ public class FollowService {
     public FollowCountResponse followCount(Long userId) {
 
         // 1. 유저 조회
-        User targetUser = userRepository.findActivateUserById(userId, NOT_FOUND_USER);
+        User targetUser = userRepository.findActivateUserById(userId);
 
         // 2. 팔로잉 수 (내가 팔로우한 사람 수)
         long followings = followRepository.countByFollower(targetUser);
@@ -106,7 +106,7 @@ public class FollowService {
     public FollowListResponse followingList(Long userId) {
 
         // 1. 기준 유저 조회 (탈퇴 안 한 유저)
-        User user = userRepository.findActivateUserById(userId, NOT_FOUND_USER);
+        User user = userRepository.findActivateUserById(userId);
 
         // 2. 팔로잉 관계 조회
         List<Follow> follows = followRepository.findAllByFollower(user);
@@ -133,7 +133,7 @@ public class FollowService {
     public FollowListResponse followerList(Long userId) {
 
         // 1. 기준 유저 조회
-        User user = userRepository.findActivateUserById(userId, NOT_FOUND_USER);
+        User user = userRepository.findActivateUserById(userId);
 
         // 2. 팔로워 관계 조회
         List<Follow> follows = followRepository.findAllByFollowee(user);
