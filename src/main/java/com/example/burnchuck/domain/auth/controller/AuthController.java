@@ -34,4 +34,17 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(CommonResponse.success(AUTH_SIGNUP_SUCCESS, response));
     }
+
+    /**
+     * 로그인
+     */
+    @PostMapping("/login")
+    public ResponseEntity<CommonResponse<AuthLoginResponse>> login(
+        @Valid @RequestBody AuthLoginRequest request
+    ) {
+        AuthLoginResponse response = authService.login(request);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.success(AUTH_SIGNUP_SUCCESS, response));
+    }
 }
