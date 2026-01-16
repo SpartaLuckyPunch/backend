@@ -5,12 +5,15 @@ import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.follow.model.response.FollowCountResponse;
+import com.example.burnchuck.domain.follow.model.response.FollowListResponse;
 import com.example.burnchuck.domain.follow.model.response.FollowResponse;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static com.example.burnchuck.common.enums.ErrorCode.*;
 
@@ -94,5 +97,59 @@ public class FollowService {
 
         // 4. 응답 DTO 생성
         return FollowCountResponse.of(followings, followers);
+    }
+
+    /**
+     * 팔로잉 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public FollowListResponse followingList(Long userId) {
+
+        // 1. 기준 유저 조회 (탈퇴 안 한 유저)
+        User user = userRepository.findActivateUserById(userId, NOT_FOUND_USER);
+
+        // 2. 팔로잉 관계 조회
+        List<Follow> follows = followRepository.findAllByFollower(user);
+
+        // 3. followee → 응답 DTO 변환
+        List<FollowListResponse.FollowUserDto> users =
+                follows.stream()
+                        .map(follow -> {
+                            User followee = follow.getFollowee();
+                            return new FollowListResponse.FollowUserDto(
+                                    followee.getId(),
+                                    followee.getNickname()
+                            );
+                        })
+                        .toList();
+
+        return new FollowListResponse(users);
+    }
+
+    /**
+     * 팔로워 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public FollowListResponse followerList(Long userId) {
+
+        // 1. 기준 유저 조회
+        User user = userRepository.findActivateUserById(userId, NOT_FOUND_USER);
+
+        // 2. 팔로워 관계 조회
+        List<Follow> follows = followRepository.findAllByFollowee(user);
+
+        // 3. follower → 응답 DTO 변환
+        List<FollowListResponse.FollowUserDto> users =
+                follows.stream()
+                        .map(follow -> {
+                            User follower = follow.getFollower();
+                            return new FollowListResponse.FollowUserDto(
+                                    follower.getId(),
+                                    follower.getNickname()
+                            );
+                        })
+                        .toList();
+
+        return new FollowListResponse(users);
     }
 }

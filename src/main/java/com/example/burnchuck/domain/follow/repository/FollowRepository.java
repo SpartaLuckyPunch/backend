@@ -6,6 +6,7 @@ import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface FollowRepository extends JpaRepository<Follow, Long> {
@@ -26,4 +27,10 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     long countByFollower(User follower);
 
     long countByFollowee(User followee);
+
+    // 팔로잉 목록 조회
+    List<Follow> findAllByFollower(User follower);
+
+    // 팔로워 목록 조회
+    List<Follow> findAllByFollowee(User followee);
 }

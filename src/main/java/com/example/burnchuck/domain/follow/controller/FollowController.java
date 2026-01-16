@@ -3,6 +3,7 @@ package com.example.burnchuck.domain.follow.controller;
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.follow.model.response.FollowCountResponse;
+import com.example.burnchuck.domain.follow.model.response.FollowListResponse;
 import com.example.burnchuck.domain.follow.model.response.FollowResponse;
 import com.example.burnchuck.domain.follow.service.FollowService;
 import lombok.RequiredArgsConstructor;
@@ -59,5 +60,31 @@ public class FollowController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(GET_SUCCESS, response));
+    }
+
+    /**
+     * 팔로잉 목록 조회
+     */
+    @GetMapping("/{userId}/following-list")
+    public ResponseEntity<CommonResponse<FollowListResponse>> getFollowingList(
+            @PathVariable Long userId
+    ) {
+        FollowListResponse response = followService.followingList(userId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(GET_FOLLOWING_SUCCESS, response));
+    }
+
+    /**
+     * 팔로워 목록 조회
+     */
+    @GetMapping("/{userId}/follower-list")
+    public ResponseEntity<CommonResponse<FollowListResponse>> getFollowerList(
+            @PathVariable Long userId
+    ) {
+        FollowListResponse response = followService.followerList(userId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(GET_FOLLOWER_SUCCESS, response));
     }
 }
