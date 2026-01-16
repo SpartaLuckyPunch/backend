@@ -5,8 +5,8 @@ import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.JwtUtil;
-import com.example.burnchuck.domain.auth.model.request.AuthSignupRequest;
-import com.example.burnchuck.domain.auth.model.response.AuthSignupResponse;
+import com.example.burnchuck.domain.auth.model.request.*;
+import com.example.burnchuck.domain.auth.model.response.*;
 import com.example.burnchuck.domain.user.enums.Gender;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
@@ -65,5 +65,27 @@ public class AuthService {
         String token = jwtUtil.generateToken(user.getId(), email, nickname);
 
         return new AuthSignupResponse(token);
+    }
+
+    /**
+     * 로그인
+     */
+    @Transactional
+    public AuthLoginResponse login(AuthLoginRequest request) {
+
+        // 1. email로 유저 조회
+        User user = userRepository.findUserByEmail(request.getEmail());
+
+        // 2. 비밀번호 확인
+        boolean matches = passwordEncoder.matches(request.getPassword(), user.getPassword());
+
+        if (!matches) {
+            throw new CustomException(ErrorCode.INCORRECT_PASSWORD);
+        }
+
+        // 3. JWT 토큰 생성
+        String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getNickname());
+
+        return new AuthLoginResponse(token);
     }
 }
