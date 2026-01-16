@@ -2,6 +2,7 @@ package com.example.burnchuck.domain.follow.controller;
 
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
+import com.example.burnchuck.domain.follow.model.response.FollowCountResponse;
 import com.example.burnchuck.domain.follow.model.response.FollowResponse;
 import com.example.burnchuck.domain.follow.service.FollowService;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import static com.example.burnchuck.common.enums.SuccessMessage.FOLLOW_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.UNFOLLOW_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,5 +46,18 @@ public class FollowController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.successNodata(UNFOLLOW_SUCCESS));
+    }
+
+    /**
+     * 팔로잉 / 팔로워 수 조회
+     */
+    @GetMapping("/{userId}/follow-count")
+    public ResponseEntity<CommonResponse<FollowCountResponse>> followCount(
+            @PathVariable Long userId
+    ) {
+        FollowCountResponse response = followService.followCount(userId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(GET_SUCCESS, response));
     }
 }

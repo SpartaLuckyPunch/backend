@@ -22,4 +22,8 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
         return findByFollowerAndFollowee(follower, followee)
                 .orElseThrow(() -> new CustomException(errorCode));
     }
+
+    long countByFollower(User follower);
+
+    long countByFollowee(User followee);
 }

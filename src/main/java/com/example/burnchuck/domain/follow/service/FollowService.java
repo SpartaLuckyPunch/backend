@@ -4,6 +4,7 @@ import com.example.burnchuck.common.entity.Follow;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
+import com.example.burnchuck.domain.follow.model.response.FollowCountResponse;
 import com.example.burnchuck.domain.follow.model.response.FollowResponse;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
@@ -74,5 +75,24 @@ public class FollowService {
 
         // 5. 언팔로우 (삭제)
         followRepository.delete(follow);
+    }
+
+    /**
+     * 팔로잉 / 팔로워 수 조회
+     */
+    @Transactional(readOnly = true)
+    public FollowCountResponse followCount(Long userId) {
+
+        // 1. 유저 조회
+        User targetUser = userRepository.findActivateUserById(userId, NOT_FOUND_USER);
+
+        // 2. 팔로잉 수 (내가 팔로우한 사람 수)
+        long followings = followRepository.countByFollower(targetUser);
+
+        // 3. 팔로워 수 (나를 팔로우한 사람 수)
+        long followers = followRepository.countByFollowee(targetUser);
+
+        // 4. 응답 DTO 생성
+        return FollowCountResponse.of(followings, followers);
     }
 }
