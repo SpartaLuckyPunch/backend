@@ -1,6 +1,5 @@
 package com.example.burnchuck.domain.follow.model.response;
 
-import com.example.burnchuck.common.entity.Follow;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
