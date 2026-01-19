@@ -22,6 +22,9 @@ public enum SuccessMessage {
     GET_FOLLOWING_SUCCESS("팔로잉 목록 조회 성공"),
     GET_FOLLOWER_SUCCESS("팔로워 목록 조회 성공"),
 
+    // 리뷰
+    REVIEW_CREATE_SUCCESS("후기 등록 성공"),
+      
     // 좋아요
     LIKE_SUCCESS("좋아요 성공"),
     LIKE_CANCEL_SUCCESS("좋아요 취소 성공"),

@@ -29,6 +29,13 @@ public enum ErrorCode {
     SELF_FOLLOW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "자기 자신을 팔로우할 수 없습니다."),
     ALREADY_FOLLOWING(HttpStatus.CONFLICT, "이미 팔로우한 유저입니다."),
 
+    // 리뷰
+    REVIEWER_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰 작성자가 존재하지 않습니다."),
+    REVIEWEE_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰 대상자가 존재하지 않습니다."),
+    SELF_REVIEW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "자기 자신에게는 리뷰를 남길 수 없습니다."),
+    ALREADY_REVIEWED(HttpStatus.CONFLICT, "이미 해당 모임에서 해당 유저에게 리뷰를 남겼습니다."),
+    REACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 리액션 종류입니다."),
+      
     // 좋아요
     ALREADY_LIKED_MEETING(HttpStatus.CONFLICT, "이미 좋아요한 번개입니다."),
     MEETING_LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "좋아요하지 않은 번개입니다."),
