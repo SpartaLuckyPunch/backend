@@ -16,6 +16,9 @@ public enum SuccessMessage {
     FOLLOW_SUCCESS("팔로우 성공"),
     UNFOLLOW_SUCCESS("언팔로우 성공"),
 
+    // 카테고리
+    CATEGORY_GET_SUCCESS("카테고리 조회 성공"),
+
     // 모임
     MEETING_CREATE_SUCCESS("모임 생성 성공")
     ;
