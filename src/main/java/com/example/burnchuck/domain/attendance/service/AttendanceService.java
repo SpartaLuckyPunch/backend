@@ -16,6 +16,7 @@ import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class AttendanceService {
     /**
      * 모임 참여 신청
      */
+    @Transactional
     public void registerAttendance(AuthUser authUser, Long meetingId) {
 
         // 1. 로그인한 유저 정보로 객체 생성
@@ -57,6 +59,7 @@ public class AttendanceService {
     /**
      * 모임 참여 취소
      */
+    @Transactional
     public void cancelAttendance(AuthUser authUser, Long meetingId) {
 
         // 1. 로그인한 유저 정보로 객체 생성
@@ -85,6 +88,7 @@ public class AttendanceService {
     /**
      * 참여 중인 모임 목록 조회
      */
+    @Transactional(readOnly = true)
     public AttendanceGetMeetingListResponse getAttendingMeetingList(AuthUser authUser) {
 
         // 1. 로그인한 유저 정보로 객체 생성
