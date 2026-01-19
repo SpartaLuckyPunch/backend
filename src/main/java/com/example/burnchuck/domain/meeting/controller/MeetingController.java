@@ -5,6 +5,7 @@ import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +25,9 @@ public class MeetingController {
      * 모임 생성
      */
     @PostMapping
-    public ResponseEntity<CommonResponse<MeetingCreateResponse>> createTask(
+    public ResponseEntity<CommonResponse<MeetingCreateResponse>> createMeeting(
             @AuthenticationPrincipal AuthUser user,
-            @RequestBody MeetingCreateRequest request
+            @Valid @RequestBody MeetingCreateRequest request
     ) {
         MeetingCreateResponse response = meetingService.createMeeting(user, request);
 
