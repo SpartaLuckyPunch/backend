@@ -2,6 +2,8 @@ package com.example.burnchuck.domain.review.repository;
 
 import com.example.burnchuck.common.entity.Review;
 import com.example.burnchuck.common.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -12,4 +14,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     boolean existsByMeetingIdAndReviewerIdAndRevieweeId(Long meetingId, Long reviewerId, Long revieweeId);
 
     List<Review> findAllByReviewee(User reviewee);
+
+    // reviewee에 대한 리뷰 목록를 페이징하여 최신순 조회(내림차순)
+    Page<Review> findAllByRevieweeIdOrderByCreatedDatetimeDesc(Long revieweeId, Pageable pageable);
 }

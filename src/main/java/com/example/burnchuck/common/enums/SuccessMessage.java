@@ -24,6 +24,7 @@ public enum SuccessMessage {
 
     // 리뷰
     REVIEW_CREATE_SUCCESS("후기 등록 성공"),
+    REVIEW_GET_SUCCESS("후기 조회 성공"),
       
     // 좋아요
     LIKE_SUCCESS("좋아요 성공"),
@@ -35,6 +36,7 @@ public enum SuccessMessage {
 
     // 모임
     MEETING_CREATE_SUCCESS("모임 생성 성공"),
+
 
     // 모임 참여
     ATTENDANCE_REGISTER_SUCCESS("번개 참여 신청 성공"),
