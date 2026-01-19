@@ -30,6 +30,12 @@ public enum SuccessMessage {
     LIKE_CANCEL_SUCCESS("좋아요 취소 성공"),
     LIKE_COUNT_SUCCESS("좋아요 수 조회 성공"),
 
+    // 카테고리
+    CATEGORY_GET_SUCCESS("카테고리 조회 성공"),
+
+    // 모임
+    MEETING_CREATE_SUCCESS("모임 생성 성공"),
+
     // 모임 참여
     ATTENDANCE_REGISTER_SUCCESS("번개 참여 신청 성공"),
     ATTENDANCE_CANCEL_SUCCESS("번개 참여 취소 성공"),
