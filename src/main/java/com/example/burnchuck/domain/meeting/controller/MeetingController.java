@@ -6,6 +6,7 @@ import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
+import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,5 +54,19 @@ public class MeetingController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));
+    }
+
+    /**
+     * 모임 단건 조회
+     */
+    @GetMapping("/{meetingId}")
+    public ResponseEntity<CommonResponse<MeetingDetailResponse>> getMeetingDetail(
+            @PathVariable Long meetingId
+    ) {
+        MeetingDetailResponse response = meetingService.getMeetingDetail(meetingId);
+
+        return ResponseEntity.ok(
+                CommonResponse.success(MEETING_GET_SUCCESS, response)
+        );
     }
 }

@@ -43,6 +43,8 @@ public class MeetingCreateRequest {
     @NotNull(message = MEETING_MAX_ATTENDEES_NOT_NULL)
     private int maxAttendees;
 
+    private long views;
+
     @NotNull(message = MEETING_DATETIME_NOT_NULL)
     @Future(message = MEETING_DATETIME_FUTURE)
     private LocalDateTime meetingDateTime;

@@ -1,8 +1,11 @@
 package com.example.burnchuck.domain.meeting.repository;
 
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
+import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
 
 public interface MeetingCustomRepository {
 
@@ -10,4 +13,6 @@ public interface MeetingCustomRepository {
             String category,
             Pageable pageable
     );
+
+    Optional<MeetingDetailResponse> findMeetingDetail(Long meetingId);
 }
