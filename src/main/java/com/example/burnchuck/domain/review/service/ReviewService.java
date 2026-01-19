@@ -17,7 +17,6 @@ import static com.example.burnchuck.common.enums.ErrorCode.SELF_REVIEW_NOT_ALLOW
 
 @Service
 @RequiredArgsConstructor
-// 트랙잭션 메서드에 붙이기 각각 클래스 위에 x -> 메서드에 각각
 public class ReviewService {
 
     private final UserRepository userRepository;
@@ -33,16 +32,14 @@ public class ReviewService {
     public void createReview(Long userId, ReviewCreateRequest request) {
 
         // 1. reviewer(리뷰 작성자)가 존재하는지 검증
-        User reviewer = userRepository.findById(request.getReviewerId())
-                .orElseThrow(() -> new CustomException(ErrorCode.REVIEWER_NOT_FOUND));
+        User reviewer = userRepository.findActivateUserById(request.getReviewerId());
 
         // 2. reviewee(리뷰 대상자)가 존재하는 검증
         User reviewee = userRepository.findById(request.getRevieweeId())
                 .orElseThrow(() -> new CustomException(ErrorCode.REVIEWEE_NOT_FOUND));
 
         // 3. meeting이 존재하는 검증
-        Meeting meeting = meetingRepository.findById(request.getMeetingId())
-                .orElseThrow(() -> new CustomException(ErrorCode.MEETING_NOT_FOUND));
+        Meeting meeting = meetingRepository.findMeetingById(request.getMeetingId());
 
         // 4. 자기 자신에게 후기 작성 방지
         if (reviewer.getId().equals(reviewee.getId()))
@@ -56,14 +53,13 @@ public class ReviewService {
                 reviewee,
                 meeting
         );
-        Review savedReview = reviewRepository.save(review);
+        reviewRepository.save(review);
 
         // 6. ReviewReaction(반응) 중간 테이블 저장
         if (request.getReactionList() != null) {
             for (Long reactionId : request.getReactionList()) {
-                Reaction reaction = reactionRepository.findById(reactionId)
-                        .orElseThrow(() -> new CustomException(ErrorCode.REACTION_NOT_FOUND));
-                reviewReactionRepository.save(new ReviewReaction(savedReview, reaction));
+                Reaction reaction = reactionRepository.findReactionById(reactionId);
+                reviewReactionRepository.save(new ReviewReaction(review, reaction));
             }
 
 
