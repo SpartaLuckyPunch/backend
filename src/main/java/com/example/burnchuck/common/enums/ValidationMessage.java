@@ -30,8 +30,6 @@ public class ValidationMessage {
     public static final String MEETING_LATITUDE_RANGE = "위도는 -90 이상 90 이하여야 합니다.";
     public static final String MEETING_LONGITUDE_NOT_NULL = "경도는 필수입니다.";
     public static final String MEETING_LONGITUDE_RANGE = "경도는 -180 이상 180 이하여야 합니다.";
-    public static final String MEETING_MAX_ATTENDEES_MIN = "모집 인원은 최소 2명 이상이어야 합니다.";
-    public static final String MEETING_MAX_ATTENDEES_MAX = "모집 인원은 최대 100명까지 가능합니다.";
     public static final String MEETING_DATETIME_NOT_NULL = "모임 날짜와 시간은 필수입니다.";
     public static final String MEETING_DATETIME_FUTURE = "모임 시간은 현재 이후여야 합니다.";
     public static final String MEETING_CATEGORY_NOT_NULL = "카테고리는 필수입니다.";
