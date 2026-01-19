@@ -42,6 +42,9 @@ public enum ErrorCode {
     ATTENDANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "번개 참여 신청이 존재하지 않습니다."),
     ATTENDANCE_HOST_CANNOT_CANCEL(HttpStatus.BAD_REQUEST, "호스트는 번개 참여를 취소할 수 없습니다."),
     ATTENDANCE_CANNOT_CANCEL_WHEN_MEETING_CLOSED(HttpStatus.BAD_REQUEST, "번개 시작 10분 전에는 취소할 수 없습니다."),
+
+    // 카테고리
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리가 존재하지 않습니다.")
     ;
 
     private final HttpStatus status;
