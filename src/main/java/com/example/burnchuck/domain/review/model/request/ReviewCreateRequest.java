@@ -26,7 +26,6 @@ public class ReviewCreateRequest {
 
     private List<Long> reactionList;
 
-    @NotBlank(message = ValidationMessage.DETAILED_REVIEW_NOT_BLANK)
     private String detailedReview;
 
 

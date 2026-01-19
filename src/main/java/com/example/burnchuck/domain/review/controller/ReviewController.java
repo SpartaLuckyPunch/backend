@@ -23,12 +23,12 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping("/users/{revieweeId}/review")
-    public ResponseEntity<CommonResponse<Void>> crateReview(
+    public ResponseEntity<CommonResponse<Void>> createReview(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long revieweeId,
             @Valid @RequestBody ReviewCreateRequest request
     ) {
-        reviewService.createReview(authUser.getId(), revieweeId, request);
+        reviewService.createReview(authUser, revieweeId, request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CommonResponse.successNodata(REVIEW_CREATE_SUCCESS));

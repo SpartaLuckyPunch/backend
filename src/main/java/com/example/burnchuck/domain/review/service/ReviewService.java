@@ -3,6 +3,7 @@ package com.example.burnchuck.domain.review.service;
 import com.example.burnchuck.common.entity.*;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.reaction.repository.ReactionRepository;
 import com.example.burnchuck.domain.review.model.request.ReviewCreateRequest;
@@ -29,10 +30,10 @@ public class ReviewService {
      * 후기 등록
      */
     @Transactional
-    public void createReview(Long userId, Long revieweeId, ReviewCreateRequest request) {
+    public void createReview(AuthUser authUser, Long revieweeId, ReviewCreateRequest request) {
 
         // 1. reviewer(리뷰 작성자)가 존재하는지 검증
-        User reviewer = userRepository.findActivateUserById(userId);
+        User reviewer = userRepository.findActivateUserById(authUser.getId());
 
         // 2. reviewee(리뷰 대상자)가 존재하는 검증
         User reviewee = userRepository.findActivateUserById(revieweeId);
