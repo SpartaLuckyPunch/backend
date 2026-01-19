@@ -50,4 +50,32 @@ public class AttendanceService {
 
         userMeetingRepository.save(userMeeting);
     }
+
+    /**
+     * 모임 참여 취소
+     */
+    public void cancelAttendance(AuthUser authUser, Long meetingId) {
+
+        // 1. 로그인한 유저 정보로 객체 생성
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        // 2. 모임 객체 생성
+        Meeting meeting = meetingRepository.findActiveMeetingById(meetingId);
+
+        // 3. 모임 상태 확인 (COMPLETED 상태인 경우, 취소 불가)
+        if (meeting.getStatus() == MeetingStatus.COMPLETED) {
+            throw new CustomException(ErrorCode.ATTENDANCE_CANNOT_CANCEL_WHEN_MEETING_CLOSED);
+        }
+
+        // 4. UserMeeting 객체 조회
+        UserMeeting userMeeting = userMeetingRepository.findUserMeeting(user.getId(), meeting.getId());
+
+        // 5. 주최자인지 확인 -> 주최자는 모임 참여 취소 불가(추후 추가 예정)
+        if (userMeeting.getMeetingRole() == MeetingRole.HOST) {
+            throw new CustomException(ErrorCode.ATTENDANCE_HOST_CANNOT_CANCEL);
+        }
+
+        // 6. 참여 취소(신청 내역 삭제) (추후 채팅방 나가기 처리 추가 예정)
+        userMeetingRepository.delete(userMeeting);
+    }
 }

@@ -24,6 +24,7 @@ public enum SuccessMessage {
 
     // 모임 참여
     ATTENDANCE_REGISTER_SUCCESS("번개 참여 신청 성공"),
+    ATTENDANCE_CANCEL_SUCCESS("번개 참여 취소 성공"),
     ;
 
     private final String message;
