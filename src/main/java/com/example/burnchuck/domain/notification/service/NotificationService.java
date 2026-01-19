@@ -4,13 +4,16 @@ import com.example.burnchuck.common.entity.Follow;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.Notification;
 import com.example.burnchuck.common.entity.User;
+import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.NotificationType;
+import com.example.burnchuck.domain.attendance.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.notification.repository.NotificationRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -19,6 +22,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final FollowRepository followRepository;
+    private final UserMeetingRepository userMeetingRepository;
 
     /**
      * 유저가 모임을 생성했을 때 -> 해당 유저를 팔로우하는 사람에게 알림 발송
@@ -53,5 +57,40 @@ public class NotificationService {
 
         // 4. 알림 저장
         notificationRepository.saveAll(notificationList);
+    }
+
+    /**
+     * 모임에 새로운 유저가 추가되었을 때 -> 해당 모임의 주최자에게 알림 발송
+     * 모임의 유저가 탈퇴했을 때 -> 해당 모임의 주최자에게 알림 발송
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void notifyMeetingMember(boolean join, Meeting meeting, User participant) {
+
+        // 1. 유저 추기 / 탈퇴 구분
+        NotificationType notificationType;
+
+        if (join) {
+            notificationType = NotificationType.MEETING_MEMBER_JOIN;
+        } else {
+            notificationType = NotificationType.MEETING_MEMBER_LEFT;
+        }
+
+        // 2. 상황에 맞게 알림 설명글 수정
+        String description = notificationType.getDescription();
+        description = description.replace("{title}", meeting.getTitle());
+        description = description.replace("{nickname}", participant.getNickname());
+
+        // 3. Meeting의 HOST 조회
+        UserMeeting host = userMeetingRepository.findHostByMeeting(meeting);
+
+        // 4. Notification 객체 생성 및 저장
+        Notification notification = new Notification(
+            notificationType,
+            description,
+            host.getUser(),
+            meeting
+        );
+
+        notificationRepository.save(notification);
     }
 }
