@@ -6,7 +6,7 @@ import com.example.burnchuck.common.exception.CustomException;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserMeetingRepository extends JpaRepository<UserMeeting, Long> {
+public interface UserMeetingRepository extends JpaRepository<UserMeeting, Long>, UserMeetingCustomRepository {
 
     boolean existsByUserIdAndMeetingId(Long userId, Long meetingId);
 
