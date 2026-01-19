@@ -93,7 +93,7 @@ public class MeetingService {
     /**
      * 모임 단건 조회
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public MeetingDetailResponse getMeetingDetail(Long meetingId) {
 
         // 1. 번개 조회
