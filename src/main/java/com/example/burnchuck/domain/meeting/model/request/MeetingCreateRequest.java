@@ -40,6 +40,7 @@ public class MeetingCreateRequest {
     @DecimalMax(value = "180.0", message = MEETING_LONGITUDE_RANGE)
     private Double longitude;
 
+    @NotNull(message = MEETING_MAX_ATTENDEES_NOT_NULL)
     private int maxAttendees;
 
     @NotNull(message = MEETING_DATETIME_NOT_NULL)
