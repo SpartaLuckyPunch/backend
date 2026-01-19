@@ -66,7 +66,7 @@ public class NotificationService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void notifyMeetingMember(boolean join, Meeting meeting, User participant) {
 
-        // 1. 유저 추기 / 탈퇴 구분
+        // 1. 유저 추가 / 탈퇴 구분
         NotificationType notificationType;
 
         if (join) {
