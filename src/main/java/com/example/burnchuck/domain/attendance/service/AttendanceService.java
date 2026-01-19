@@ -31,7 +31,7 @@ public class AttendanceService {
         User user = userRepository.findActivateUserById(authUser.getId());
 
         // 2. 모임 객체 생성
-        Meeting meeting = meetingRepository.findActiveMeetingById(meetingId);
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
         // 3. 모임 상태 확인 (모집 완료 시, 신청 불가)
         if (meeting.getStatus() != MeetingStatus.OPEN) {
@@ -60,7 +60,7 @@ public class AttendanceService {
         User user = userRepository.findActivateUserById(authUser.getId());
 
         // 2. 모임 객체 생성
-        Meeting meeting = meetingRepository.findActiveMeetingById(meetingId);
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
         // 3. 모임 상태 확인 (COMPLETED 상태인 경우, 취소 불가)
         if (meeting.getStatus() == MeetingStatus.COMPLETED) {
