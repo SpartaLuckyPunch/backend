@@ -29,7 +29,7 @@ public class MeetingController {
             @AuthenticationPrincipal AuthUser user,
             @Valid @RequestBody MeetingCreateRequest request
     ) {
-        MeetingCreateResponse response = meetingService.createMeeting(user, request);
+        MeetingCreateResponse response = meetingService.createMeetingAndNotify(user, request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CommonResponse.success(MEETING_CREATE_SUCCESS, response));

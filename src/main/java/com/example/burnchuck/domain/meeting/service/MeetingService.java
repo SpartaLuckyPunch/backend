@@ -13,6 +13,7 @@ import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
+import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,21 +29,33 @@ public class MeetingService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
+    private final NotificationService notificationService;
+
+    /**
+     * 모임 생성과 알림 생성 메서드를 호출하는 메서드
+     */
+    public MeetingCreateResponse createMeetingAndNotify(AuthUser authUser, MeetingCreateRequest request) {
+
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        Meeting meeting = createMeeting(user, request);
+
+        notificationService.notifyNewFollowerPost(meeting, user);
+
+        return MeetingCreateResponse.from(meeting);
+    }
 
     /**
      * 모임 생성
      */
     @Transactional
-    public MeetingCreateResponse createMeeting(AuthUser authUser, MeetingCreateRequest request) {
+    public Meeting createMeeting(User user, MeetingCreateRequest request) {
 
-        // 1. 유저 조회
-        User user = userRepository.findActivateUserById(authUser.getId());
-
-        // 2. 카테고리 조회
+        // 1. 카테고리 조회
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
 
-        // 3. 모임 생성
+        // 2. 모임 생성
         Meeting meeting = new Meeting(
                 request.getTitle(),
                 request.getDescription(),
@@ -56,19 +69,19 @@ public class MeetingService {
                 category
         );
 
-        // 4. 모임 저장
+        // 3. 모임 저장
         meetingRepository.save(meeting);
 
-        // 5. HOST 등록
+        // 4. HOST 등록
         UserMeeting userMeeting = new UserMeeting(
                 user,
                 meeting,
                 MeetingRole.HOST
         );
 
-        // 6. HOST 저장
+        // 5. HOST 저장
         userMeetingRepository.save(userMeeting);
 
-        return MeetingCreateResponse.from(meeting);
+        return meeting;
     }
 }
