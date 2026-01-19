@@ -24,7 +24,7 @@ public class NotificationService {
      * 유저가 모임을 생성했을 때 -> 해당 유저를 팔로우하는 사람에게 알림 발송
      */
     @Transactional
-    public void notifNewFollowerPost(Meeting meeting, User user) {
+    public void notifyNewFollowerPost(Meeting meeting, User user) {
 
         NotificationType notificationType = NotificationType.NEW_FOLLOWING_POST;
 
