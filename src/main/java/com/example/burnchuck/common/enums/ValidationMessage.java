@@ -17,4 +17,22 @@ public class ValidationMessage {
     public static final String DISTRICT_NOT_BLANK = "읍/면/동은 필수입니다.";
     public static final String GENDER_NOT_BLANK = "성별은 필수입니다.";
     public static final String GENDER_PATTERN = "성별은 '남' 또는 '여'만 입력 가능합니다.";
+
+    // --- Meeting 관련 ---
+    public static final String MEETING_TITLE_NOT_BLANK = "모임 제목은 필수입니다.";
+    public static final String MEETING_TITLE_SIZE = "모임 제목은 50자 이내여야 합니다.";
+    public static final String MEETING_DESCRIPTION_NOT_BLANK = "모임 설명은 필수입니다.";
+    public static final String MEETING_DESCRIPTION_SIZE = "모임 설명은 500자 이내여야 합니다.";
+    public static final String MEETING_IMG_URL_NOT_BLANK = "이미지 URL은 필수입니다.";
+    public static final String MEETING_IMG_URL_FORMAT = "이미지 URL 형식이 올바르지 않습니다.";
+    public static final String MEETING_LOCATION_NOT_BLANK = "모임 장소는 필수입니다.";
+    public static final String MEETING_LATITUDE_NOT_NULL = "위도는 필수입니다.";
+    public static final String MEETING_LATITUDE_RANGE = "위도는 -90 이상 90 이하여야 합니다.";
+    public static final String MEETING_LONGITUDE_NOT_NULL = "경도는 필수입니다.";
+    public static final String MEETING_LONGITUDE_RANGE = "경도는 -180 이상 180 이하여야 합니다.";
+    public static final String MEETING_MAX_ATTENDEES_MIN = "모집 인원은 최소 2명 이상이어야 합니다.";
+    public static final String MEETING_MAX_ATTENDEES_MAX = "모집 인원은 최대 100명까지 가능합니다.";
+    public static final String MEETING_DATETIME_NOT_NULL = "모임 날짜와 시간은 필수입니다.";
+    public static final String MEETING_DATETIME_FUTURE = "모임 시간은 현재 이후여야 합니다.";
+    public static final String MEETING_CATEGORY_NOT_NULL = "카테고리는 필수입니다.";
 }
