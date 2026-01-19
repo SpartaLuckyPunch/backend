@@ -10,16 +10,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_CREATE_SUCCESS;
 
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/reviews")
+@RequestMapping("/users/{revieweeId}/review")
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -27,9 +25,10 @@ public class ReviewController {
     @PostMapping
     public ResponseEntity<CommonResponse<Void>> crateReviewApi(
             @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long revieweeId,
             @Valid @RequestBody ReviewCreateRequest request
-    ){
-        reviewService.createReview(authUser.getId(),request);
+    ) {
+        reviewService.createReview(authUser.getId(), revieweeId, request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CommonResponse.successNodata(REVIEW_CREATE_SUCCESS));

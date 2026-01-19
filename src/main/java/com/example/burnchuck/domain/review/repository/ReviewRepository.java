@@ -8,5 +8,8 @@ import java.util.List;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
+    // 세 가지 조건으로 기존 리뷰 존재 여부 확인
+    boolean existsByMeetingIdAndReviewerIdAndRevieweeId(Long meetingId, Long reviewerId, Long revieweeId);
+
     List<Review> findAllByReviewee(User reviewee);
 }

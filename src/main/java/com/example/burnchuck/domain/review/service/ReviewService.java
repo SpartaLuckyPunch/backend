@@ -29,23 +29,29 @@ public class ReviewService {
      * 후기 등록
      */
     @Transactional
-    public void createReview(Long userId, ReviewCreateRequest request) {
+    public void createReview(Long userId, Long revieweeId, ReviewCreateRequest request) {
 
         // 1. reviewer(리뷰 작성자)가 존재하는지 검증
-        User reviewer = userRepository.findActivateUserById(request.getReviewerId());
+        User reviewer = userRepository.findActivateUserById(userId);
 
         // 2. reviewee(리뷰 대상자)가 존재하는 검증
-        User reviewee = userRepository.findById(request.getRevieweeId())
-                .orElseThrow(() -> new CustomException(ErrorCode.REVIEWEE_NOT_FOUND));
+        User reviewee = userRepository.findActivateUserById(revieweeId);
 
         // 3. meeting이 존재하는 검증
         Meeting meeting = meetingRepository.findActiveMeetingById(request.getMeetingId());
 
-        // 4. 자기 자신에게 후기 작성 방지
+        // 4. 중복 리뷰 검증
+        if (reviewRepository.existsByMeetingIdAndReviewerIdAndRevieweeId(
+                meeting.getId(), reviewer.getId(), reviewee.getId())) {
+            throw new CustomException(ErrorCode.ALREADY_REVIEWED);
+
+        }
+
+        // 5. 자기 자신에게 후기 작성 방지
         if (reviewer.getId().equals(reviewee.getId()))
             throw new CustomException(SELF_REVIEW_NOT_ALLOWED);
 
-        // 5. Review 저장
+        // 6. Review 저장
         Review review = new Review(
                 request.getRating().intValue(),
                 request.getDetailedReview(),
@@ -55,7 +61,7 @@ public class ReviewService {
         );
         reviewRepository.save(review);
 
-        // 6. ReviewReaction(반응) 중간 테이블 저장
+        // 7. ReviewReaction(반응) 중간 테이블 저장
         if (request.getReactionList() != null) {
             for (Long reactionId : request.getReactionList()) {
                 Reaction reaction = reactionRepository.findReactionById(reactionId);
