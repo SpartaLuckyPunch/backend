@@ -27,7 +27,14 @@ public enum ErrorCode {
     FOLLOW_NOT_FOUND(HttpStatus.NOT_FOUND, "팔로우 관계가 존재하지 않습니다."),
     SELF_UNFOLLOW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "자기 자신을 언팔로우할 수 없습니다."),
     SELF_FOLLOW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "자기 자신을 팔로우할 수 없습니다."),
-    ALREADY_FOLLOWING(HttpStatus.CONFLICT, "이미 팔로우한 유저입니다.")
+    ALREADY_FOLLOWING(HttpStatus.CONFLICT, "이미 팔로우한 유저입니다."),
+
+    // 모임
+    ALREADY_LIKED_MEETING(HttpStatus.CONFLICT, "이미 좋아요한 모임입니다."),
+    MEETING_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 모임입니다."),
+
+    // 좋아요
+    MEETING_LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "좋아요하지 않은 모임입니다.")
     ;
 
     private final HttpStatus status;

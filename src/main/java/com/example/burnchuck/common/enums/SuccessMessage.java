@@ -19,7 +19,12 @@ public enum SuccessMessage {
     UNFOLLOW_SUCCESS("언팔로우 성공"),
     GET_SUCCESS("조회 성공"),
     GET_FOLLOWING_SUCCESS("팔로잉 목록 조회 성공"),
-    GET_FOLLOWER_SUCCESS("팔로워 목록 조회 성공")
+    GET_FOLLOWER_SUCCESS("팔로워 목록 조회 성공"),
+
+    // 좋아요
+    LIKE_SUCCESS("좋아요 성공"),
+    LIKE_CANCEL_SUCCESS("좋아요 취소 성공"),
+    LIKE_COUNT_SUCCESS("좋아요 수 조회 성공")
     ;
 
     private final String message;
