@@ -18,6 +18,13 @@ public class ValidationMessage {
     public static final String GENDER_NOT_BLANK = "성별은 필수입니다.";
     public static final String GENDER_PATTERN = "성별은 '남' 또는 '여'만 입력 가능합니다.";
 
+    // --- Review 관련 ---
+    public static final String RATING_MIN = "별점은 최소 1점 이상이어야 합니다.";
+    public static final String RATING_MAX = "별점은 최대 5점까지 가능합니다.";
+    public static final String RATING_NOT_NULL = "별점은 필수입니다.";
+    public static final String ID_NOT_NULL = "ID 값은 필수입니다.";
+    public static final String DETAILED_REVIEW_NOT_BLANK = "상세 리뷰 내용은 필수입니다";
+
     // --- Meeting 관련 ---
     public static final String MEETING_TITLE_NOT_BLANK = "모임 제목은 필수입니다.";
     public static final String MEETING_TITLE_SIZE = "모임 제목은 50자 이내여야 합니다.";

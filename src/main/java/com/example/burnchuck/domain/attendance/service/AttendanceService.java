@@ -7,10 +7,13 @@ import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.domain.attendance.model.response.AttendanceGetMeetingListResponse;
 import com.example.burnchuck.domain.attendance.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
+import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -77,5 +80,19 @@ public class AttendanceService {
 
         // 6. 참여 취소(신청 내역 삭제) (추후 채팅방 나가기 처리 추가 예정)
         userMeetingRepository.delete(userMeeting);
+    }
+
+    /**
+     * 참여 중인 모임 목록 조회
+     */
+    public AttendanceGetMeetingListResponse getAttendingMeetingList(AuthUser authUser) {
+
+        // 1. 로그인한 유저 정보로 객체 생성
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        // 2. User 기준으로 Meeting 정보 조회
+       List<MeetingSummaryDto> meetingList = userMeetingRepository.findAllMeetingsByUser(user);
+
+       return new AttendanceGetMeetingListResponse(meetingList);
     }
 }

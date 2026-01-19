@@ -1,0 +1,44 @@
+package com.example.burnchuck.domain.attendance.repository;
+
+import static com.example.burnchuck.common.entity.QMeeting.meeting;
+import static com.example.burnchuck.common.entity.QUserMeeting.userMeeting;
+
+import com.example.burnchuck.common.entity.QUserMeeting;
+import com.example.burnchuck.common.entity.User;
+import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class UserMeetingCustomRepositoryImpl implements UserMeetingCustomRepository {
+
+    private final JPAQueryFactory queryFactory;
+
+    @Override
+    public List<MeetingSummaryDto> findAllMeetingsByUser(User user) {
+
+        // meeting별 참석 인원 수를 카운트하기 위해 같은 테이블 join
+        QUserMeeting attendee = new QUserMeeting("attendee");
+
+        return queryFactory
+            .select(Projections.constructor(
+                MeetingSummaryDto.class,
+                meeting.id,
+                meeting.title,
+                meeting.imgUrl,
+                meeting.location,
+                meeting.meetingDateTime,
+                meeting.maxAttendees,
+                attendee.id.count().intValue()
+            ))
+            .from(userMeeting)
+            .join(userMeeting.meeting, meeting)
+            .join(attendee).on(attendee.meeting.eq(meeting))
+            .where(userMeeting.user.eq(user))
+            .where(meeting.isDeleted.eq(false))
+            .groupBy(meeting.id)
+            .fetch();
+    }
+}
