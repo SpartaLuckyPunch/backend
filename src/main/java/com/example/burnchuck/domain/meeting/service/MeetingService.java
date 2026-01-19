@@ -10,12 +10,15 @@ import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.attendance.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
+import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,4 +87,16 @@ public class MeetingService {
 
         return meeting;
     }
+
+    /**
+     * 모임 조회
+     */
+    @Transactional(readOnly = true)
+    public Page<MeetingSummaryDto> getMeetingPage(
+            String category,
+            Pageable pageable
+    ) {
+        return meetingRepository.findMeetingList(category, pageable);
+    }
+
 }
