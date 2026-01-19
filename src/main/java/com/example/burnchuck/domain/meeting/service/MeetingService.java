@@ -59,7 +59,6 @@ public class MeetingService {
                 request.getLongitude(),
                 request.getMaxAttendees(),
                 request.getMeetingDateTime(),
-                request.getViews(),
                 MeetingStatus.OPEN,
                 category
         );
@@ -98,8 +97,7 @@ public class MeetingService {
     public MeetingDetailResponse getMeetingDetail(Long meetingId) {
 
         // 1. 번개 조회
-        Meeting meeting = meetingRepository.findById(meetingId)
-                .orElseThrow(() -> new CustomException(MEETING_NOT_FOUND));
+        Meeting meeting = meetingRepository.findActivateById(meetingId);
 
         // 2. 번개 조회수 증가
         meeting.increaseViews();

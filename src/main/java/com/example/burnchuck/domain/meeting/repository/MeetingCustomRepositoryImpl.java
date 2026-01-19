@@ -45,7 +45,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository{
                         meeting.location,
                         meeting.meetingDateTime,
                         meeting.maxAttendees,
-                        userMeeting.id.count().intValue()
+                        userMeeting.id.countDistinct().intValue()
                 ))
                 .from(meeting)
                 .leftJoin(userMeeting)
@@ -109,7 +109,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository{
                         meeting.longitude,
                         meeting.meetingDateTime,
                         meeting.maxAttendees,
-                        userMeeting.id.count().intValue(),
+                        userMeeting.id.countDistinct().intValue(),
                         meetingLike.id.countDistinct(),
                         meeting.views
                 ))

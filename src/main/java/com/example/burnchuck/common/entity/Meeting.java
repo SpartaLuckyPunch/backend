@@ -52,7 +52,7 @@ public class Meeting extends BaseEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    public Meeting(String title, String description, String imgUrl, String location, Double latitude, Double longitude, int maxAttendees, LocalDateTime meetingDateTime, long views, MeetingStatus status, Category category) {
+    public Meeting(String title, String description, String imgUrl, String location, Double latitude, Double longitude, int maxAttendees, LocalDateTime meetingDateTime, MeetingStatus status, Category category) {
         this.title = title;
         this.description = description;
         this.imgUrl = imgUrl;
@@ -61,7 +61,7 @@ public class Meeting extends BaseEntity {
         this.longitude = longitude;
         this.maxAttendees = maxAttendees;
         this.meetingDateTime = meetingDateTime;
-        this.views = views;
+        this.views = 0L;
         this.status = status;
         this.category = category;
     }
