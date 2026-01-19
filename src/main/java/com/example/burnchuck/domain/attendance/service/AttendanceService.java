@@ -12,6 +12,7 @@ import com.example.burnchuck.domain.attendance.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
+import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class AttendanceService {
     private final UserMeetingRepository userMeetingRepository;
     private final UserRepository userRepository;
     private final MeetingRepository meetingRepository;
+    private final NotificationService notificationService;
 
     /**
      * 모임 참여 신청
@@ -54,6 +56,9 @@ public class AttendanceService {
         UserMeeting userMeeting = new UserMeeting(user, meeting, MeetingRole.PARTICIPANT);
 
         userMeetingRepository.save(userMeeting);
+
+        // 6. 주최자에게 알림 발송
+        notificationService.notifyMeetingMember(true, meeting, user);
     }
 
     /**
@@ -83,6 +88,9 @@ public class AttendanceService {
 
         // 6. 참여 취소(신청 내역 삭제) (추후 채팅방 나가기 처리 추가 예정)
         userMeetingRepository.delete(userMeeting);
+
+        // 7. 주최자에게 알림 발송
+        notificationService.notifyMeetingMember(false, meeting, user);
     }
 
     /**
