@@ -1,5 +1,6 @@
 package com.example.burnchuck.common.entity;
 
+import com.example.burnchuck.common.enums.MeetingRole;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,8 +23,13 @@ public class UserMeeting {
     @JoinColumn(name = "meeting_id", nullable = false)
     private Meeting meeting;
 
-    public UserMeeting(User user, Meeting meeting) {
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MeetingRole meetingRole;
+
+    public UserMeeting(User user, Meeting meeting, MeetingRole meetingRole) {
         this.user = user;
         this.meeting = meeting;
+        this.meetingRole = meetingRole;
     }
 }

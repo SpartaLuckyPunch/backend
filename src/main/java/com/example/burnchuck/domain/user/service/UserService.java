@@ -1,16 +1,20 @@
 package com.example.burnchuck.domain.user.service;
 
 import com.example.burnchuck.common.entity.Address;
+import com.example.burnchuck.common.entity.Review;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
+import com.example.burnchuck.domain.review.repository.ReviewRepository;
 import com.example.burnchuck.domain.user.model.request.*;
 import com.example.burnchuck.domain.user.model.response.*;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +29,7 @@ public class UserService {
     private final AddressRepository addressRepository;
     private final FollowRepository followRepository;
     private final MeetingLikeRepository meetingLikeRepository;
+    private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -113,5 +118,32 @@ public class UserService {
 
         followRepository.deleteByFollowerId(user.getId());
         followRepository.deleteByFolloweeId(user.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public UserGetProfileReponse getProfile(Long userId) {
+
+        // 1. userId를 통해 유저 객체 생성
+        User user = userRepository.findActivateUserById(userId);
+
+        // 2. 해당 유저의 팔로잉, 팔로워 수 조회
+        Long followings = followRepository.countByFollower(user);
+        Long followers = followRepository.countByFollowee(user);
+
+        // 3. 해당 유저의 평균 별점 조회
+        List<Review> reviewList = reviewRepository.findAllByReviewee(user);
+
+        double avgRates = reviewList.stream()
+            .mapToInt(Review::getRating)
+            .average()
+            .orElse(0.0);
+
+        return new UserGetProfileReponse(
+            user.getProfileImgUrl(),
+            user.getNickname(),
+            followings,
+            followers,
+            avgRates
+        );
     }
 }

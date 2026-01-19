@@ -14,12 +14,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmailAndIsDeletedFalse(String email);
 
-    Optional<User> findByIdAndIsDeletedFalse(Long id);
-
     default User findActivateUserByEmail(String email) {
         return findByEmailAndIsDeletedFalse(email)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
     }
+
+    Optional<User> findByIdAndIsDeletedFalse(Long id);
 
     default User findActivateUserById(Long id) {
         return findByIdAndIsDeletedFalse(id)
