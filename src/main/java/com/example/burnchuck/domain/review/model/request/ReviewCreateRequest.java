@@ -3,7 +3,6 @@ package com.example.burnchuck.domain.review.model.request;
 import com.example.burnchuck.common.enums.ValidationMessage;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
