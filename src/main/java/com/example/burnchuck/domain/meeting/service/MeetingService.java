@@ -97,7 +97,7 @@ public class MeetingService {
     public MeetingDetailResponse getMeetingDetail(Long meetingId) {
 
         // 1. 번개 조회
-        Meeting meeting = meetingRepository.findActivateById(meetingId);
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
         // 2. 번개 조회수 증가
         meeting.increaseViews();

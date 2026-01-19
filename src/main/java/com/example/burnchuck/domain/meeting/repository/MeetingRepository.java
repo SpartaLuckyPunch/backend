@@ -16,8 +16,4 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long>, Meeting
                 .orElseThrow(() -> new CustomException(ErrorCode.MEETING_NOT_FOUND));
     }
 
-    default Meeting findActivateById(Long id) {
-        return findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEETING_NOT_FOUND));
-    }
 }
