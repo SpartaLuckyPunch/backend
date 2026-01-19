@@ -34,7 +34,7 @@ public class MeetingLikeService {
         User user = userRepository.findActivateUserById(authUser.getId());
 
         // 2. 모임 조회 (삭제 여부 있으면 같이 체크)
-        Meeting meeting = meetingRepository.findActivateUserById(meetingId);
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
         // 3. 중복 좋아요 방지
         if (meetingLikeRepository.existsByUserAndMeeting(user, meeting)) {
@@ -58,7 +58,7 @@ public class MeetingLikeService {
         User user = userRepository.findActivateUserById(authUser.getId());
 
         // 2. 모임 조회
-        Meeting meeting = meetingRepository.findActivateUserById(meetingId);
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
         // 3. 좋아요 관계 조회
         MeetingLike meetingLike = meetingLikeRepository.findByUserAndMeetingOrThrow(user, meeting);
@@ -74,7 +74,7 @@ public class MeetingLikeService {
     public MeetingLikeCountResponse countLikes(Long meetingId) {
 
         // 1. 모임 조회 (삭제 안 된 모임)
-        Meeting meeting = meetingRepository.findActivateUserById(meetingId);
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
         // 2. 좋아요 수 조회
         long likes = meetingLikeRepository.countByMeeting(meeting);

@@ -11,7 +11,7 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
 
     Optional<Meeting> findByIdAndIsDeletedFalse(Long id);
 
-    default Meeting findActivateUserById(Long id) {
+    default Meeting findActivateMeetingById(Long id) {
         return findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEETING_NOT_FOUND));
     }
