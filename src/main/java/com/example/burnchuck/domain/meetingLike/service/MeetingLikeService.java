@@ -24,6 +24,9 @@ public class MeetingLikeService {
     private final UserRepository userRepository;
     private final MeetingRepository meetingRepository;
 
+    /**
+     *  좋아요 생성
+     */
     @Transactional
     public MeetingLikeResponse createLike(AuthUser authUser, Long meetingId) {
 
@@ -45,6 +48,9 @@ public class MeetingLikeService {
         return MeetingLikeResponse.from(meeting);
     }
 
+    /**
+     *  좋아요 취소
+     */
     @Transactional
     public void deleteLike(AuthUser authUser, Long meetingId) {
 
@@ -61,6 +67,9 @@ public class MeetingLikeService {
         meetingLikeRepository.delete(meetingLike);
     }
 
+    /**
+     *  모임 별 좋아요 개수 조회
+     */
     @Transactional(readOnly = true)
     public MeetingLikeCountResponse countLikes(Long meetingId) {
 

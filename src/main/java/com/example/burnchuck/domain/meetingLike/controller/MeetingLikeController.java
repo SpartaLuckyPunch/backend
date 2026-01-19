@@ -20,6 +20,9 @@ public class MeetingLikeController {
 
     private final MeetingLikeService meetingLikeService;
 
+    /**
+     *  좋아요 생성
+     */
     @PostMapping("/{meetingId}/likes")
     public ResponseEntity<CommonResponse<MeetingLikeResponse>> createLike(
             @AuthenticationPrincipal AuthUser user,
@@ -31,6 +34,9 @@ public class MeetingLikeController {
                 .body(CommonResponse.success(LIKE_SUCCESS, response));
     }
 
+    /**
+     *  좋아요 취소
+     */
     @DeleteMapping("/{meetingId}/likes")
     public ResponseEntity<CommonResponse<Void>> deleteLike(
             @AuthenticationPrincipal AuthUser user,
@@ -42,6 +48,9 @@ public class MeetingLikeController {
                 .body(CommonResponse.successNodata(LIKE_CANCEL_SUCCESS));
     }
 
+    /**
+     *  모임 별 좋아요 개수 조회
+     */
     @GetMapping("/{meetingId}/likes")
     public ResponseEntity<CommonResponse<MeetingLikeCountResponse>> countLikes(
             @PathVariable Long meetingId
