@@ -38,7 +38,7 @@ public class ReviewService {
         User reviewee = userRepository.findActivateUserById(revieweeId);
 
         // 3. meeting이 존재하는 검증
-        Meeting meeting = meetingRepository.findActiveMeetingById(request.getMeetingId());
+        Meeting meeting = meetingRepository.findActivateMeetingById(request.getMeetingId());
 
         // 4. 중복 리뷰 검증
         if (reviewRepository.existsByMeetingIdAndReviewerIdAndRevieweeId(

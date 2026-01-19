@@ -17,13 +17,13 @@ import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_CREATE_SU
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/users/{revieweeId}/review")
+@RequestMapping("/api")
 public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @PostMapping
-    public ResponseEntity<CommonResponse<Void>> crateReviewApi(
+    @PostMapping("/users/{revieweeId}/review")
+    public ResponseEntity<CommonResponse<Void>> crateReview(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long revieweeId,
             @Valid @RequestBody ReviewCreateRequest request
