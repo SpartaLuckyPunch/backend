@@ -1,15 +1,15 @@
 package com.example.burnchuck.domain.meeting.model.request;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 import static com.example.burnchuck.common.enums.ValidationMessage.*;
 
 @Getter
-@NoArgsConstructor
+@AllArgsConstructor
 public class MeetingCreateRequest {
 
     @NotBlank(message = MEETING_TITLE_NOT_BLANK)
