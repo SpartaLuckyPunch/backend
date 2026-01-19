@@ -13,7 +13,7 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
 
     default Meeting findActivateMeetingById(Long id) {
         return findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEETING_NOT_FOUND));
+            .orElseThrow(() -> new CustomException(ErrorCode.MEETING_NOT_FOUND));
     }
 
 }
