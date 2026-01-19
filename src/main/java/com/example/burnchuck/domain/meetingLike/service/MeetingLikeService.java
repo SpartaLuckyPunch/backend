@@ -42,7 +42,7 @@ public class MeetingLikeService {
         MeetingLike meetingLike = new MeetingLike(user, meeting);
         meetingLikeRepository.save(meetingLike);
 
-        return MeetingLikeResponse.from(meetingLike);
+        return MeetingLikeResponse.from(meeting);
     }
 
     @Transactional

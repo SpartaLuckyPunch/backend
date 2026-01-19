@@ -1,6 +1,6 @@
 package com.example.burnchuck.domain.meetingLike.model.response;
 
-import com.example.burnchuck.common.entity.MeetingLike;
+import com.example.burnchuck.common.entity.Meeting;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -10,9 +10,9 @@ public class MeetingLikeResponse {
 
     private final Long meetingId;
 
-    public static MeetingLikeResponse from(MeetingLike meetingLike) {
+    public static MeetingLikeResponse from(Meeting meeting) {
         return new MeetingLikeResponse(
-                meetingLike.getId()
+                meeting.getId()
         );
     }
 }
