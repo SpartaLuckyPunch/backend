@@ -1,5 +1,10 @@
 package com.example.burnchuck.domain.review.model.request;
 
+import com.example.burnchuck.common.enums.ValidationMessage;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,11 +16,23 @@ import java.util.List;
 @AllArgsConstructor
 public class ReviewCreateRequest {
 
+    @NotNull(message = ValidationMessage.ID_NOT_NULL)
     private Long meetingId;
+
+    @NotNull(message = ValidationMessage.ID_NOT_NULL)
     private Long reviewerId;
+
+    @NotNull(message = ValidationMessage.ID_NOT_NULL)
     private Long revieweeId;
+
+    @Min(value = 1, message = ValidationMessage.RATING_MIN)
+    @Max(value = 5, message = ValidationMessage.RATING_MAX)
+    @NotNull(message = ValidationMessage.RATING_NOT_NULL )
     private Long rating;
+
     private List<Long> reactionList;
+
+    @NotBlank(message = ValidationMessage.DETAILED_REVIEW_NOT_BLANK)
     private String detailedReview;
 
 
