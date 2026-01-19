@@ -20,7 +20,10 @@ public enum SuccessMessage {
     UNFOLLOW_SUCCESS("언팔로우 성공"),
     GET_SUCCESS("조회 성공"),
     GET_FOLLOWING_SUCCESS("팔로잉 목록 조회 성공"),
-    GET_FOLLOWER_SUCCESS("팔로워 목록 조회 성공")
+    GET_FOLLOWER_SUCCESS("팔로워 목록 조회 성공"),
+
+    // 모임 참여
+    ATTENDANCE_REGISTER_SUCCESS("번개 참여 신청 성공"),
     ;
 
     private final String message;
