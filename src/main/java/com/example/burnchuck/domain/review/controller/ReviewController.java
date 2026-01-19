@@ -25,8 +25,10 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping
-    public ResponseEntity<CommonResponse<Void>> crateReviewApi(@AuthenticationPrincipal AuthUser authUser,
-                               @Valid @RequestBody ReviewCreateRequest request){
+    public ResponseEntity<CommonResponse<Void>> crateReviewApi(
+            @AuthenticationPrincipal AuthUser authUser,
+            @Valid @RequestBody ReviewCreateRequest request
+    ){
         reviewService.createReview(authUser.getId(),request);
 
         return ResponseEntity.status(HttpStatus.CREATED)

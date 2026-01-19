@@ -39,7 +39,7 @@ public class ReviewService {
                 .orElseThrow(() -> new CustomException(ErrorCode.REVIEWEE_NOT_FOUND));
 
         // 3. meeting이 존재하는 검증
-        Meeting meeting = meetingRepository.findMeetingById(request.getMeetingId());
+        Meeting meeting = meetingRepository.findActiveMeetingById(request.getMeetingId());
 
         // 4. 자기 자신에게 후기 작성 방지
         if (reviewer.getId().equals(reviewee.getId()))
