@@ -66,6 +66,18 @@ public class Meeting extends BaseEntity {
         this.category = category;
     }
 
+    public void updateMeeting(String title, String description, String imgUrl, String location, Double latitude, Double longitude, int maxAttendees, LocalDateTime meetingDateTime, Category category) {
+        this.title = title;
+        this.description = description;
+        this.imgUrl = imgUrl;
+        this.location = location;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.maxAttendees = maxAttendees;
+        this.meetingDateTime = meetingDateTime;
+        this.category = category;
+    }
+
     public void increaseViews() {
         this.views++;
     }
