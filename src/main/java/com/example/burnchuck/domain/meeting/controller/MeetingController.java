@@ -5,8 +5,10 @@ import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.model.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.model.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_CREATE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -67,6 +68,22 @@ public class MeetingController {
 
         return ResponseEntity.ok(
                 CommonResponse.success(MEETING_GET_SUCCESS, response)
+        );
+    }
+
+    /**
+     * 모임 수정
+     */
+    @PatchMapping("/{meetingId}")
+    public ResponseEntity<CommonResponse<MeetingUpdateResponse>> updateMeeting(
+            @AuthenticationPrincipal AuthUser user,
+            @PathVariable Long meetingId,
+            @RequestBody MeetingUpdateRequest request
+    ) {
+        MeetingUpdateResponse response = meetingService.updateMeeting(user, meetingId, request);
+
+        return ResponseEntity.ok(
+                CommonResponse.success(MEETING_UPDATE_SUCCESS, response)
         );
     }
 }
