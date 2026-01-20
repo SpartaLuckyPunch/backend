@@ -20,8 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_CREATE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_GET_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 
 @RestController
@@ -84,7 +83,7 @@ public class ReviewController {
         List<ReactionResponse> response = reviewService.getReviewReactionList();
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(REVIEW_GET_SUCCESS, response));
+                .body(CommonResponse.success(REVIEW_REACTION_GET_SUCCESS, response));
     }
 
 
