@@ -1,20 +1,20 @@
 package com.example.burnchuck.domain.meeting.model.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class HostedMeetingResponse {
 
-    private Long meetingId;
-    private String meetingTitle;
-    private String imgUrl;
-    private String location;
-    private LocalDateTime meetingDatetime;
-    private String status;
-    private int maxAttendees;
-    private Long currentAttendees;
+    private final Long meetingId;
+    private final String meetingTitle;
+    private final String imgUrl;
+    private final String location;
+    private final LocalDateTime meetingDatetime;
+    private final String status;
+    private final int maxAttendees;
+    private final Long currentAttendees;
 }
