@@ -41,7 +41,7 @@ public class SchedulingService {
                 // 상태 변경
                 targetMeeting.updateStatus(MeetingStatus.COMPLETED);
             },
-            meeting.getMeetingDateTime().minusMinutes(1)
+            meeting.getMeetingDateTime().minusMinutes(10)
         );
     }
 }
