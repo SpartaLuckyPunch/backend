@@ -66,9 +66,22 @@ public class MeetingController {
     ) {
         MeetingDetailResponse response = meetingService.getMeetingDetail(meetingId);
 
-        return ResponseEntity.ok(
-                CommonResponse.success(MEETING_GET_SUCCESS, response)
-        );
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(MEETING_GET_SUCCESS, response));
+    }
+
+    /**
+     * 모임 삭제
+     */
+    @DeleteMapping("/{meetingId}")
+    public ResponseEntity<CommonResponse<Void>> deleteMeeting(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long meetingId
+    ) {
+        meetingService.deleteMeeting(authUser, meetingId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.successNodata(MEETING_DELETE_SUCCESS));
     }
 
     /**

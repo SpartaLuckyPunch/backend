@@ -161,4 +161,26 @@ public class MeetingService {
         // 5. 객체 반환
         return MeetingUpdateResponse.from(meeting);
     }
+  
+   /**
+     * 모임 삭제
+     */
+    @Transactional
+    public void deleteMeeting(AuthUser authUser, Long meetingId) {
+
+        // 1. 접근 유저 확인
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        // 2. 모임 조회 (삭제되지 않은 모임)
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+
+        // 3. HOST 권한 확인
+        UserMeeting meetingHost = userMeetingRepository.findHostByMeeting(meeting);
+        if (!Objects.equals(user.getId(), meetingHost.getUser().getId())) {
+            throw new CustomException(ACCESS_DENIED);
+        }
+
+        // 4. 삭제
+        meeting.delete();
+    }
 }
