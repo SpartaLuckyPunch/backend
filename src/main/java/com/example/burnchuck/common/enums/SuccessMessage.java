@@ -44,6 +44,7 @@ public enum SuccessMessage {
 
     // 알림
     NOTIFICATION_GET_LIST_SUCCESS("알림 목록 조회 성공"),
+    NOTIFICATION_GET_ONE_SUCCESS("알림 목록 조회 성공"),
     ;
 
     private final String message;

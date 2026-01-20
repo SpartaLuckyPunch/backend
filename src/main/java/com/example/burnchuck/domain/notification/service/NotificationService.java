@@ -113,4 +113,19 @@ public class NotificationService {
 
         return new NotificationGetListResponse(notificaionList);
     }
+
+    /**
+     * 알림 단건 조회 (알림 읽음 처리)
+     */
+    @Transactional
+    public NotificationResponse readNotification(Long notificationId) {
+
+        // 1. 알림 객체 생성
+        Notification notification = notificationRepository.findNotificationById(notificationId);
+
+        // 2. 알림 읽음 처리
+        notification.read();
+
+        return NotificationResponse.from(notification);
+    }
 }

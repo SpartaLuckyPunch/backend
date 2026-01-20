@@ -1,10 +1,13 @@
 package com.example.burnchuck.domain.notification.model.response;
 
+import com.example.burnchuck.common.entity.Notification;
 import com.example.burnchuck.common.enums.NotificationType;
 import java.time.LocalDateTime;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public class NotificationResponse {
 
     private final Long notificationId;
@@ -28,5 +31,16 @@ public class NotificationResponse {
         this.notificatedDatetime = notificatedDatetime;
         this.meetingId = meetingId;
         this.check = check;
+    }
+
+    public static NotificationResponse from(Notification notification) {
+        return new NotificationResponse(
+            notification.getId(),
+            notification.getType().toString(),
+            notification.getDescription(),
+            notification.getNotifiedDatetime(),
+            notification.getMeeting().getId(),
+            notification.isRead()
+        );
     }
 }
