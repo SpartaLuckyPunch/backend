@@ -2,11 +2,10 @@ package com.example.burnchuck.domain.review.controller;
 
 
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.review.model.request.ReviewCreateRequest;
+import com.example.burnchuck.domain.review.model.response.ReviewDetailResponse;
 import com.example.burnchuck.domain.review.model.response.ReviewGetListResponse;
-import com.example.burnchuck.domain.review.model.response.ReviewSummary;
 import com.example.burnchuck.domain.review.service.ReviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -58,5 +57,19 @@ public class ReviewController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(REVIEW_GET_SUCCESS, response));
     }
+
+    /**
+     * 후기 단건조회
+     */
+    @GetMapping("/reviews/{reviewId}")
+    public ResponseEntity<CommonResponse<ReviewDetailResponse>> getReviewDetail(
+            @PathVariable Long reviewId
+    ) {
+        ReviewDetailResponse response = reviewService.getReviewDetail(reviewId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(REVIEW_GET_SUCCESS, response));
+    }
+
 
 }

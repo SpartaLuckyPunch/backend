@@ -30,6 +30,7 @@ public enum ErrorCode {
     ALREADY_FOLLOWING(HttpStatus.CONFLICT, "이미 팔로우한 유저입니다."),
 
     // 리뷰
+    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰가 존재하지 않습니다."),
     REVIEWER_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰 작성자가 존재하지 않습니다."),
     REVIEWEE_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰 대상자가 존재하지 않습니다."),
     SELF_REVIEW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "자기 자신에게는 리뷰를 남길 수 없습니다."),
