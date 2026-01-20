@@ -151,7 +151,7 @@ public class MeetingService {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
 
-        // 4. 내용 수정
+        // 5. 내용 수정
         meeting.updateMeeting(
                 request.getTitle(),
                 request.getDescription(),
@@ -164,7 +164,10 @@ public class MeetingService {
                 category
         );
 
-        // 5. 객체 반환
+        // 6. 이벤트 생성
+        eventPublisherService.publishMeetingUpdatedEvent(meeting);
+
+        // 7. 객체 반환
         return MeetingUpdateResponse.from(meeting);
     }
 
@@ -188,6 +191,9 @@ public class MeetingService {
 
         // 4. 삭제
         meeting.delete();
+
+        // 5. 이벤트 생성
+        eventPublisherService.publishMeetingDeletedEvent(meeting);
     }
 
     /**
