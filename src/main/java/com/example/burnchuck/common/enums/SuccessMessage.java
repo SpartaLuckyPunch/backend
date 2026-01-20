@@ -40,12 +40,15 @@ public enum SuccessMessage {
     // 모임
     MEETING_CREATE_SUCCESS("모임 생성 성공"),
     MEETING_GET_SUCCESS("모임 조회 성공"),
-
+    MEETING_DELETE_SUCCESS("모임 삭제 성공"),
+    MEETING_UPDATE_SUCCESS("모임 수정 성공"),
+    MEETING_LIST_GET_SUCCESS("내가 주최한 모임 목록 조회 성공"),
 
     // 모임 참여
     ATTENDANCE_REGISTER_SUCCESS("번개 참여 신청 성공"),
     ATTENDANCE_CANCEL_SUCCESS("번개 참여 취소 성공"),
     ATTENDANCE_GET_MEETING_LIST_SUCCESS("참여 중인 번개 목록 조회 성공"),
+    MEETING_MEMBER_GET_SUCCESS("모임 참여자 목록 조회 성공"),
 
     // 알림
     NOTIFICATION_GET_LIST_SUCCESS("알림 목록 조회 성공"),

@@ -43,6 +43,7 @@ public enum ErrorCode {
 
     // 모임
     MEETING_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 번개입니다."),
+    HOST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주최자입니다"),
 
     // 모임 참여
     ATTENDANCE_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 참여 신청한 번개입니다."),
