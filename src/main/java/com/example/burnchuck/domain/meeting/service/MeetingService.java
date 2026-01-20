@@ -13,19 +13,23 @@ import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
+import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.example.burnchuck.common.enums.ErrorCode.CATEGORY_NOT_FOUND;
+import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MeetingService {
 
     private final MeetingRepository meetingRepository;
@@ -99,4 +103,20 @@ public class MeetingService {
         return meetingRepository.findMeetingList(category, pageable);
     }
 
+    /**
+     * 모임 단건 조회
+     */
+    @Transactional
+    public MeetingDetailResponse getMeetingDetail(Long meetingId) {
+
+        // 1. 번개 조회
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+
+        // 2. 번개 조회수 증가
+        meeting.increaseViews();
+
+        // 3. QueryDSL에서 응답객체 반환
+        return meetingRepository.findMeetingDetail(meetingId)
+                .orElseThrow(() -> new CustomException(MEETING_NOT_FOUND));
+    }
 }

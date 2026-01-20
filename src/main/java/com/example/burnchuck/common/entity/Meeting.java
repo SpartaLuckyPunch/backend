@@ -41,6 +41,9 @@ public class Meeting extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime meetingDateTime;
 
+    @Column(nullable = false)
+    private long views;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MeetingStatus status;
@@ -58,7 +61,12 @@ public class Meeting extends BaseEntity {
         this.longitude = longitude;
         this.maxAttendees = maxAttendees;
         this.meetingDateTime = meetingDateTime;
+        this.views = 0L;
         this.status = status;
         this.category = category;
+    }
+
+    public void increaseViews() {
+        this.views++;
     }
 }

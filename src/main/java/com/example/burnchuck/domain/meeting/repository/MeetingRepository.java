@@ -15,4 +15,5 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long>, Meeting
         return findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEETING_NOT_FOUND));
     }
+
 }
