@@ -7,8 +7,12 @@ import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.NotificationType;
 import com.example.burnchuck.domain.attendance.repository.UserMeetingRepository;
+import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
+import com.example.burnchuck.domain.notification.model.response.NotificationGetListResponse;
+import com.example.burnchuck.domain.notification.model.response.NotificationResponse;
 import com.example.burnchuck.domain.notification.repository.NotificationRepository;
+import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +27,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final FollowRepository followRepository;
     private final UserMeetingRepository userMeetingRepository;
+    private final UserRepository userRepository;
 
     /**
      * 유저가 모임을 생성했을 때 -> 해당 유저를 팔로우하는 사람에게 알림 발송
@@ -92,5 +97,20 @@ public class NotificationService {
         );
 
         notificationRepository.save(notification);
+    }
+
+    /**
+     * 알림 목록 조회 (로그인한 유저 기준)
+     */
+    @Transactional(readOnly = true)
+    public NotificationGetListResponse getNotificationList(AuthUser authUser) {
+
+        // 1. 로그인한 유저 정보로 객체 생성
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        // 2. 유저 기준 알림 목록 조회
+        List<NotificationResponse> notificaionList = notificationRepository.findAllNotificationsByUser(user);
+
+        return new NotificationGetListResponse(notificaionList);
     }
 }
