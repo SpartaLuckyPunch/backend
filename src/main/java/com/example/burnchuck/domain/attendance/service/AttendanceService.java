@@ -8,6 +8,7 @@ import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.attendance.model.response.AttendanceGetMeetingListResponse;
+import com.example.burnchuck.domain.attendance.model.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.attendance.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
@@ -106,5 +107,13 @@ public class AttendanceService {
        List<MeetingSummaryDto> meetingList = userMeetingRepository.findAllMeetingsByUser(user);
 
        return new AttendanceGetMeetingListResponse(meetingList);
+    }
+
+    /**
+     * 모임 참여자 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public MeetingMemberResponse getMeetingMembers(Long meetingId) {
+
     }
 }
