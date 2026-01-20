@@ -49,14 +49,14 @@ public class ReviewController {
      * 후기 목록조회
      */
     @GetMapping("/users/{userId}/reviews")
-    public ResponseEntity<CommonResponse<ReviewGetListResponse<PageResponse<ReviewSummary>>>> getReviewList(
+    public ResponseEntity<CommonResponse<ReviewGetListResponse>> getReviewList(
             @PathVariable Long userId,
             @PageableDefault(size = 10, sort = "createdDatetime", direction = Sort.Direction.DESC) Pageable pageable
-    ){
-        ReviewGetListResponse<PageResponse<ReviewSummary>> response = reviewService.getReviewList(userId, pageable);
+    ) {
+        ReviewGetListResponse response = reviewService.getReviewList(userId, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(REVIEW_GET_SUCCESS,response));
+                .body(CommonResponse.success(REVIEW_GET_SUCCESS, response));
     }
 
 }

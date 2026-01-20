@@ -10,13 +10,11 @@ import com.example.burnchuck.domain.reaction.repository.ReactionRepository;
 import com.example.burnchuck.domain.review.model.request.ReviewCreateRequest;
 import com.example.burnchuck.domain.review.model.response.ReactionCount;
 import com.example.burnchuck.domain.review.model.response.ReviewGetListResponse;
-import com.example.burnchuck.domain.review.model.response.ReviewSummary;
 import com.example.burnchuck.domain.review.repository.ReviewReactionRepository;
 import com.example.burnchuck.domain.review.repository.ReviewRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,7 +87,7 @@ public class ReviewService {
      * 후기 목록조회
      */
     @Transactional(readOnly = true)
-    public ReviewGetListResponse<PageResponse<ReviewSummary>> getReviewList(Long userId, Pageable pageable) {
+    public ReviewGetListResponse getReviewList(Long userId, Pageable pageable) {
 
         // 1. 유저 존재하는지 검증
         User user = userRepository.findActivateUserById(userId);

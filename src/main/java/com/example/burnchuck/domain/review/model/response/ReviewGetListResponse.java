@@ -13,12 +13,12 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class ReviewGetListResponse<T> {
+public class ReviewGetListResponse {
 
     private List<ReactionCount> reactionCountList;
-    private T reviewList; // PageResponse가 담길 자리
+    private PageResponse<ReviewSummary> reviewList;
 
-    public static ReviewGetListResponse<PageResponse<ReviewSummary>> of(List<ReactionCount> reactionCounts, Page<Review> reviews) {
+    public static ReviewGetListResponse of(List<ReactionCount> reactionCounts, Page<Review> reviews) {
 
         // 1. 외부로 뺀 ReviewSummary의 from 메서드 사용
         Page<ReviewSummary> reviewSummaryPage = reviews.map(ReviewSummary::from);
@@ -26,6 +26,6 @@ public class ReviewGetListResponse<T> {
         // 2. 공통 규격인 PageResponse로 변환
         PageResponse<ReviewSummary> pageResponse = PageResponse.from(reviewSummaryPage);
 
-        return new ReviewGetListResponse<>(reactionCounts, pageResponse);
+        return new ReviewGetListResponse(reactionCounts, pageResponse);
     }
 }
