@@ -8,6 +8,8 @@ import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.attendance.model.response.AttendanceGetMeetingListResponse;
+import com.example.burnchuck.domain.attendance.model.response.AttendeeResponse;
+import com.example.burnchuck.domain.attendance.model.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.attendance.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
@@ -18,6 +20,9 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.example.burnchuck.common.enums.ErrorCode.HOST_NOT_FOUND;
+import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -119,5 +124,43 @@ public class AttendanceService {
        List<MeetingSummaryDto> meetingList = userMeetingRepository.findAllMeetingsByUser(user);
 
        return new AttendanceGetMeetingListResponse(meetingList);
+    }
+
+    /**
+     * 모임 참여자 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public MeetingMemberResponse getMeetingMembers(Long meetingId) {
+
+        // 1. 유저 미팅 객체 조회
+        List<UserMeeting> userMeetings = userMeetingRepository.findMeetingMembers(meetingId);
+
+        if (userMeetings.isEmpty()) {
+            throw new CustomException(MEETING_NOT_FOUND);
+        }
+
+        // 2. 유저 미팅 객체에서 호스트 역할 유저 조회
+        UserMeeting host = userMeetings.stream()
+                .filter(userMeeting -> userMeeting.getMeetingRole() == MeetingRole.HOST)
+                .findFirst()
+                .orElseThrow(() -> new CustomException(HOST_NOT_FOUND));
+
+        // 3. 유저 미팅 객체에서 참여자 역할 유저 조회
+        List<AttendeeResponse> attendees = userMeetings.stream()
+                .filter(userMeeting -> userMeeting.getMeetingRole() == MeetingRole.PARTICIPANT)
+                .map(userMeeting -> new AttendeeResponse(
+                        userMeeting.getUser().getId(),
+                        userMeeting.getUser().getProfileImgUrl(),
+                        userMeeting.getUser().getNickname()
+                ))
+                .toList();
+
+        // 4. 응답 객체 반환
+        return new MeetingMemberResponse(
+                host.getUser().getId(),
+                host.getUser().getProfileImgUrl(),
+                host.getUser().getNickname(),
+                attendees
+        );
     }
 }

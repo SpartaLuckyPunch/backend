@@ -5,8 +5,11 @@ import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
+import com.example.burnchuck.domain.meeting.model.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.model.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +21,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_CREATE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/meetings")
+@RequestMapping("/api")
 public class MeetingController {
 
     private final MeetingService meetingService;
@@ -31,7 +33,7 @@ public class MeetingController {
     /**
      * 모임 생성
      */
-    @PostMapping
+    @PostMapping("/meetings")
     public ResponseEntity<CommonResponse<MeetingCreateResponse>> createMeeting(
             @AuthenticationPrincipal AuthUser user,
             @Valid @RequestBody MeetingCreateRequest request
@@ -45,7 +47,7 @@ public class MeetingController {
     /**
      * 모임 전체 조회
      */
-    @GetMapping
+    @GetMapping("/meetings")
     public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryDto>>> getMeetings(
             @RequestParam(required = false) String category,
             @PageableDefault(size = 6) Pageable pageable
@@ -59,14 +61,57 @@ public class MeetingController {
     /**
      * 모임 단건 조회
      */
-    @GetMapping("/{meetingId}")
+    @GetMapping("/meetings/{meetingId}")
     public ResponseEntity<CommonResponse<MeetingDetailResponse>> getMeetingDetail(
             @PathVariable Long meetingId
     ) {
         MeetingDetailResponse response = meetingService.getMeetingDetail(meetingId);
 
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(MEETING_GET_SUCCESS, response));
+    }
+
+    /**
+     * 모임 삭제
+     */
+    @DeleteMapping("/meetings/{meetingId}")
+    public ResponseEntity<CommonResponse<Void>> deleteMeeting(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long meetingId
+    ) {
+        meetingService.deleteMeeting(authUser, meetingId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.successNodata(MEETING_DELETE_SUCCESS));
+    }
+
+    /**
+     * 모임 수정
+     */
+    @PatchMapping("/meetings/{meetingId}")
+    public ResponseEntity<CommonResponse<MeetingUpdateResponse>> updateMeeting(
+            @AuthenticationPrincipal AuthUser user,
+            @PathVariable Long meetingId,
+            @Valid @RequestBody MeetingUpdateRequest request
+    ) {
+        MeetingUpdateResponse response = meetingService.updateMeeting(user, meetingId, request);
+
         return ResponseEntity.ok(
-                CommonResponse.success(MEETING_GET_SUCCESS, response)
+                CommonResponse.success(MEETING_UPDATE_SUCCESS, response)
         );
+    }
+
+    /**
+     * 주최한 모임 목록 조회
+     */
+    @GetMapping("/me/meetings/hosted")
+    public ResponseEntity<CommonResponse<PageResponse<HostedMeetingResponse>>> getHostedMeetings(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PageableDefault(size = 6) Pageable pageable
+    ) {
+        Page<HostedMeetingResponse> page = meetingService.getHostedMeetings(authUser, pageable);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));
     }
 }
