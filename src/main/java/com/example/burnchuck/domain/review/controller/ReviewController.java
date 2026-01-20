@@ -6,6 +6,7 @@ import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.review.model.request.ReviewCreateRequest;
 import com.example.burnchuck.domain.review.model.response.ReviewGetListResponse;
+import com.example.burnchuck.domain.review.model.response.ReviewSummary;
 import com.example.burnchuck.domain.review.service.ReviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,11 +49,11 @@ public class ReviewController {
      * 후기 목록조회
      */
     @GetMapping("/users/{userId}/reviews")
-    public ResponseEntity<CommonResponse<PageResponse<ReviewGetListResponse>>> getReviewList(
+    public ResponseEntity<CommonResponse<ReviewGetListResponse<PageResponse<ReviewSummary>>>> getReviewList(
             @PathVariable Long userId,
             @PageableDefault(size = 10, sort = "createdDatetime", direction = Sort.Direction.DESC) Pageable pageable
     ){
-        PageResponse<ReviewGetListResponse> response = reviewService.getReviewList(userId, pageable);
+        ReviewGetListResponse<PageResponse<ReviewSummary>> response = reviewService.getReviewList(userId, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(REVIEW_GET_SUCCESS,response));

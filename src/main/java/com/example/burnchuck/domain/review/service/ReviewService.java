@@ -10,6 +10,7 @@ import com.example.burnchuck.domain.reaction.repository.ReactionRepository;
 import com.example.burnchuck.domain.review.model.request.ReviewCreateRequest;
 import com.example.burnchuck.domain.review.model.response.ReactionCount;
 import com.example.burnchuck.domain.review.model.response.ReviewGetListResponse;
+import com.example.burnchuck.domain.review.model.response.ReviewSummary;
 import com.example.burnchuck.domain.review.repository.ReviewReactionRepository;
 import com.example.burnchuck.domain.review.repository.ReviewRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
@@ -88,7 +89,7 @@ public class ReviewService {
      * 후기 목록조회
      */
     @Transactional(readOnly = true)
-    public PageResponse<ReviewGetListResponse> getReviewList(Long userId, Pageable pageable) {
+    public ReviewGetListResponse<PageResponse<ReviewSummary>> getReviewList(Long userId, Pageable pageable) {
 
         // 1. 유저 존재하는지 검증
         User user = userRepository.findActivateUserById(userId);
@@ -100,11 +101,7 @@ public class ReviewService {
         // 3. 리뷰 목록 조회 (페이징 + 생성일시 내림차순)
         Page<Review> reviewPage = reviewRepository.findAllByRevieweeId(userId, pageable);
 
-        // 4. 리액션통계와 리뷰 목록을 하나로 묶음
-        ReviewGetListResponse reviewData = ReviewGetListResponse.of(reactionCounts, reviewPage);
-        Page<ReviewGetListResponse> responsePage = new PageImpl<>(List.of(reviewData), pageable, 1);
-
-        // 5. Dto 반환
-        return PageResponse.from(responsePage);
+        // 4. Dto 반환
+        return ReviewGetListResponse.of(reactionCounts, reviewPage);
     }
 }

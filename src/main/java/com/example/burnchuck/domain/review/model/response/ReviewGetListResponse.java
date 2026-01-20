@@ -1,51 +1,31 @@
 package com.example.burnchuck.domain.review.model.response;
 
+import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.common.entity.Review;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
 
-// 외부 클래스
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class ReviewGetListResponse {
+public class ReviewGetListResponse<T> {
 
-    private final List<ReactionCount> reactionCountList;
-    private final Page<ReviewSummary> reviewList;
+    private List<ReactionCount> reactionCountList;
+    private T reviewList; // PageResponse가 담길 자리
 
-    public static ReviewGetListResponse of(List<ReactionCount> reactionCountList, Page<Review> reviews) {
+    public static ReviewGetListResponse<PageResponse<ReviewSummary>> of(List<ReactionCount> reactionCounts, Page<Review> reviews) {
 
+        // 1. 외부로 뺀 ReviewSummary의 from 메서드 사용
+        Page<ReviewSummary> reviewSummaryPage = reviews.map(ReviewSummary::from);
 
-        // 리뷰 요약 리스트
-        Page<ReviewSummary> reviewPage = reviews.map(ReviewSummary::from);
+        // 2. 공통 규격인 PageResponse로 변환
+        PageResponse<ReviewSummary> pageResponse = PageResponse.from(reviewSummaryPage);
 
-
-
-        return new ReviewGetListResponse(reactionCountList, reviewPage);
-    }
-
-    // 내부 클래스
-    @Getter
-    @AllArgsConstructor
-    public static class ReviewSummary {
-        private final Long reviewId;
-        private final Long reviewerId;
-        private final String reviewerProfileImgUrl;
-        private final String reviewerNickname;
-        private final Integer rating;
-        private final String detailedReview;
-
-        public static ReviewSummary from(Review review) {
-            return new ReviewSummary(
-                    review.getId(),
-                    review.getReviewer().getId(),
-                    review.getReviewer().getProfileImgUrl(),
-                    review.getReviewer().getNickname(),
-                    review.getRating(),
-                    review.getDetailedReview()
-            );
-        }
+        return new ReviewGetListResponse<>(reactionCounts, pageResponse);
     }
 }
