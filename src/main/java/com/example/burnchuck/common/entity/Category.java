@@ -15,9 +15,13 @@ public class Category {
     private Long id;
 
     @Column(nullable = false)
+    private String code;
+
+    @Column(nullable = false)
     private String category;
 
-    public Category(String category) {
+    public Category(String code, String category) {
+        this.code = code;
         this.category = category;
     }
 }
