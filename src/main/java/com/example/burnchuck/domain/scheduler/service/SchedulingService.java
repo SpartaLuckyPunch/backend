@@ -6,6 +6,7 @@ import static com.example.burnchuck.domain.scheduler.repository.SchedulingReposi
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
+import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.scheduler.model.dto.SchedulingTask;
 import com.example.burnchuck.domain.scheduler.repository.SchedulingRepository;
 import java.time.Instant;
@@ -26,6 +27,7 @@ public class SchedulingService {
     private final TransactionTemplate transactionTemplate;
     private final MeetingRepository meetingRepository;
     private final SchedulingRepository schedulingRepository;
+    private final NotificationService notificationService;
 
     private <T> void scheduleTask(
         T target,
@@ -73,10 +75,11 @@ public class SchedulingService {
             meeting.getId(),
             NOTIFICATION_REVIEW_REQUEST,
             e -> {
-
+                // 영속성 컨텍스트에 올리기 위해 다시 조회
                 Meeting targetMeeting = meetingRepository.findActivateMeetingById(meeting.getId());
 
                 // 알림 생성
+                notificationService.notifyCommentRequest(meeting);
             },
             meeting.getMeetingDateTime().plusHours(3)
         );
