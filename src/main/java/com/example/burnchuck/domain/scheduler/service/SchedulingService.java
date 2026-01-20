@@ -81,4 +81,9 @@ public class SchedulingService {
             meeting.getMeetingDateTime().plusHours(3)
         );
     }
+
+    public void scheduleCancel(Long targetId) {
+
+        schedulingRepository.cancel(targetId);
+    }
 }
