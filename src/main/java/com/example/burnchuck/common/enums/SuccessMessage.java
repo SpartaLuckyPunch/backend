@@ -26,6 +26,9 @@ public enum SuccessMessage {
     REVIEW_CREATE_SUCCESS("후기 등록 성공"),
     REVIEW_GET_SUCCESS("후기 조회 성공"),
 
+    // 리뷰 리액션
+    REVIEW_REACTION_GET_SUCCESS("후기 리액션 조회 성공"),
+      
     // 좋아요
     LIKE_SUCCESS("좋아요 성공"),
     LIKE_CANCEL_SUCCESS("좋아요 취소 성공"),

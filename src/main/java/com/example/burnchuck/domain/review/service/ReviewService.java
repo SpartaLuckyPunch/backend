@@ -111,7 +111,7 @@ public class ReviewService {
     public ReviewDetailResponse getReviewDetail(Long reviewId) {
 
         // 1. 리뷰 엔티티 조회
-        Review review = reviewRepository.findReviewByById(reviewId);
+        Review review = reviewRepository.findReviewById(reviewId);
 
         // 2. 리액션 리스트 조회
         List<ReactionResponse> reactionResponses = reviewReactionRepository.findAllByReviewId(reviewId)
@@ -125,5 +125,17 @@ public class ReviewService {
         // 3. 반환
         return ReviewDetailResponse.of(review, reactionResponses);
 
+    }
+
+    /**
+     * 전체 후기 리액션 조회
+     */
+    @Transactional(readOnly = true)
+    public List<ReactionResponse> getReviewReactionList() {
+
+        return reactionRepository.findAll()
+                .stream()
+                .map(ReactionResponse::from)
+                .toList();
     }
 }
