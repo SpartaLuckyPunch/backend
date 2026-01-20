@@ -3,8 +3,10 @@ package com.example.burnchuck.domain.attendance.repository;
 import static com.example.burnchuck.common.entity.QMeeting.meeting;
 import static com.example.burnchuck.common.entity.QUserMeeting.userMeeting;
 
+import com.example.burnchuck.common.entity.QUser;
 import com.example.burnchuck.common.entity.QUserMeeting;
 import com.example.burnchuck.common.entity.User;
+import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -40,5 +42,19 @@ public class UserMeetingCustomRepositoryImpl implements UserMeetingCustomReposit
             .where(meeting.isDeleted.eq(false))
             .groupBy(meeting.id)
             .fetch();
+    }
+
+
+    @Override
+    public List<UserMeeting> findMeetingMembers(Long meetingId) {
+
+        QUserMeeting userMeeting = QUserMeeting.userMeeting;
+        QUser user = QUser.user;
+
+        return queryFactory
+                .selectFrom(userMeeting)
+                .join(userMeeting.user, user).fetchJoin()
+                .where(userMeeting.meeting.id.eq(meetingId))
+                .fetch();
     }
 }
