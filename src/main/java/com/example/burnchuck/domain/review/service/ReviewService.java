@@ -133,7 +133,7 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public List<ReactionResponse> getReviewReactionList() {
 
-        return reviewReactionRepository.findAll()
+        return reactionRepository.findAll()
                 .stream()
                 .map(ReactionResponse::from)
                 .toList();
