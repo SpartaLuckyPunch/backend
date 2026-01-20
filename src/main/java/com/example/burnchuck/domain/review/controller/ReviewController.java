@@ -66,6 +66,7 @@ public class ReviewController {
             @PathVariable Long reviewId
     ) {
         ReviewDetailResponse response = reviewService.getReviewDetail(reviewId);
+
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(REVIEW_GET_SUCCESS, response));
     }
