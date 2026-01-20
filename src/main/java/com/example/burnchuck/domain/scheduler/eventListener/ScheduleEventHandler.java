@@ -46,7 +46,7 @@ public class ScheduleEventHandler {
      * MeetingCreatedEvent에 대한 Handler -> TaskSchedule 생성
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void meetingCreateScheduleEventHandler(MeetingCreatedEvent event) {
 
         Meeting meeting = event.getMeeting();
