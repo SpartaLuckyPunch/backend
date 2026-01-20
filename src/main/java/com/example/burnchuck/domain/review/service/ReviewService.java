@@ -1,6 +1,5 @@
 package com.example.burnchuck.domain.review.service;
 
-import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.common.entity.*;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
@@ -9,6 +8,8 @@ import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.reaction.repository.ReactionRepository;
 import com.example.burnchuck.domain.review.model.request.ReviewCreateRequest;
 import com.example.burnchuck.domain.review.model.response.ReactionCount;
+import com.example.burnchuck.domain.review.model.response.ReactionResponse;
+import com.example.burnchuck.domain.review.model.response.ReviewDetailResponse;
 import com.example.burnchuck.domain.review.model.response.ReviewGetListResponse;
 import com.example.burnchuck.domain.review.repository.ReviewReactionRepository;
 import com.example.burnchuck.domain.review.repository.ReviewRepository;
@@ -101,5 +102,29 @@ public class ReviewService {
 
         // 4. Dto 반환
         return ReviewGetListResponse.of(reactionCounts, reviewPage);
+    }
+
+    /**
+     * 후기 단건조회
+     */
+    @Transactional(readOnly = true)
+    public ReviewDetailResponse getReviewDetail(Long reviewId) {
+
+        // 1. 리뷰 엔티티 조회
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new CustomException(ErrorCode.REViEW_NOT_FOUND));
+
+        // 2. 리액션 리스트 조회
+        List<ReactionResponse> reactionResponses = reviewReactionRepository.findAllByReviewId(reviewId)
+                .stream()
+                .map(rr -> new ReactionResponse(
+                        rr.getId(), // 리액션 고유 ID
+                        rr.getReaction().getReaction() // 리액션 이름
+                ))
+                .toList();
+
+        // 3. 반환
+        return ReviewDetailResponse.of(review, reactionResponses);
+
     }
 }

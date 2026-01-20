@@ -131,7 +131,7 @@ public class UserService {
         Long followers = followRepository.countByFollowee(user);
 
         // 3. 해당 유저의 평균 별점 조회
-        List<Review> reviewList = reviewRepository.findAllByReviewee(user);
+        List<Review> reviewList = reviewRepository.findAllByRevieweeId(user.getId());
 
         double avgRates = reviewList.stream()
             .mapToInt(Review::getRating)
