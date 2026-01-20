@@ -20,7 +20,6 @@ import com.example.burnchuck.domain.meeting.model.response.MeetingUpdateResponse
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
-import com.example.burnchuck.domain.scheduler.service.SchedulingService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
