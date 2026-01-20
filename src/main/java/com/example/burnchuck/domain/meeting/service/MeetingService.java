@@ -16,6 +16,7 @@ import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse
 import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
+import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
 import com.example.burnchuck.domain.scheduler.service.SchedulingService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,7 @@ public class MeetingService {
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
     private final NotificationService notificationService;
-    private final SchedulingService schedulingService;
+    private final EventPublisherService eventPublisherService;
 
     /**
      * 모임 생성과 알림 생성 메서드를 호출하는 메서드
@@ -51,7 +52,7 @@ public class MeetingService {
 
         notificationService.notifyNewFollowerPost(meeting, user);
 
-        schedulingService.scheduleMeetingStatusComplete(meeting);
+        eventPublisherService.publishMeetingCreatedEvent(meeting);
 
         return MeetingCreateResponse.from(meeting);
     }
