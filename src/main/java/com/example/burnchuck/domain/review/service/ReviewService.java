@@ -111,8 +111,7 @@ public class ReviewService {
     public ReviewDetailResponse getReviewDetail(Long reviewId) {
 
         // 1. 리뷰 엔티티 조회
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new CustomException(ErrorCode.REViEW_NOT_FOUND));
+        Review review = reviewRepository.findReviewByById(reviewId);
 
         // 2. 리액션 리스트 조회
         List<ReactionResponse> reactionResponses = reviewReactionRepository.findAllByReviewId(reviewId)
