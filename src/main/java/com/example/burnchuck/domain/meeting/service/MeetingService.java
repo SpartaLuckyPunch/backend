@@ -12,6 +12,7 @@ import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
@@ -118,5 +119,16 @@ public class MeetingService {
         // 3. QueryDSL에서 응답객체 반환
         return meetingRepository.findMeetingDetail(meetingId)
                 .orElseThrow(() -> new CustomException(MEETING_NOT_FOUND));
+    }
+
+    /**
+     * 주최한 모임 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public Page<HostedMeetingResponse> getHostedMeetings(
+            AuthUser authUser,
+            Pageable pageable
+    ) {
+        return meetingRepository.findHostedMeetings(authUser.getId(), pageable);
     }
 }
