@@ -4,6 +4,7 @@ package com.example.burnchuck.domain.review.controller;
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.review.model.request.ReviewCreateRequest;
+import com.example.burnchuck.domain.review.model.response.ReactionResponse;
 import com.example.burnchuck.domain.review.model.response.ReviewDetailResponse;
 import com.example.burnchuck.domain.review.model.response.ReviewGetListResponse;
 import com.example.burnchuck.domain.review.service.ReviewService;
@@ -16,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_CREATE_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_GET_SUCCESS;
@@ -66,6 +69,19 @@ public class ReviewController {
             @PathVariable Long reviewId
     ) {
         ReviewDetailResponse response = reviewService.getReviewDetail(reviewId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(REVIEW_GET_SUCCESS, response));
+    }
+
+    /**
+     * 후기 리액션 목록조회
+     */
+    @GetMapping("/reactions/{reviewId}")
+    public ResponseEntity<CommonResponse<List<ReactionResponse>>> getReviewReactionList(
+            @PathVariable Long reviewId
+    ) {
+        List<ReactionResponse> response = reviewService.getReviewReactionList(reviewId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(REVIEW_GET_SUCCESS, response));

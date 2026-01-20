@@ -126,4 +126,24 @@ public class ReviewService {
         return ReviewDetailResponse.of(review, reactionResponses);
 
     }
+
+    /**
+     * 후기 리액션 목록조회
+     */
+    @Transactional(readOnly = true)
+    public List<ReactionResponse> getReviewReactionList(Long reviewId) {
+
+        // 1. 리뷰 엔티티 조회
+        Review review = reviewRepository.findReviewByById(reviewId);
+
+        // 2. 리액션 리스트 조회
+        // rr.getReaction().getId()를 사용하여 실제 리액션 고유 ID를 가져오기
+        return reviewReactionRepository.findAllByReviewId(reviewId)
+                .stream()
+                .map(rr -> new ReactionResponse(
+                        rr.getReaction().getId(),
+                        rr.getReaction().getReaction()
+                ))
+                .toList();
+    }
 }
