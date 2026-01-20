@@ -117,7 +117,7 @@ public class ReviewService {
         List<ReactionResponse> reactionResponses = reviewReactionRepository.findAllByReviewId(reviewId)
                 .stream()
                 .map(rr -> new ReactionResponse(
-                        rr.getId(), // 리액션 고유 ID
+                        rr.getReaction().getId(), // 리액션 고유 ID
                         rr.getReaction().getReaction() // 리액션 이름
                 ))
                 .toList();
