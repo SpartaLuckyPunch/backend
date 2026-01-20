@@ -155,19 +155,10 @@ public class MeetingService {
                 request.getLongitude(),
                 request.getMaxAttendees(),
                 request.getMeetingDateTime(),
-                category);
-        meetingRepository.saveAndFlush(meeting);
-
-        // 5. 반환
-        return new MeetingUpdateResponse(
-                meeting.getId(),
-                meeting.getTitle(),
-                meeting.getImgUrl(),
-                meeting.getDescription(),
-                meeting.getLocation(),
-                meeting.getLatitude(),
-                meeting.getLongitude(),
-                meeting.getMeetingDateTime()
+                category
         );
+
+        // 5. 객체 반환
+        return MeetingUpdateResponse.from(meeting);
     }
 }

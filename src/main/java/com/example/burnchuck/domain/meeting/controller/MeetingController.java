@@ -78,7 +78,7 @@ public class MeetingController {
     public ResponseEntity<CommonResponse<MeetingUpdateResponse>> updateMeeting(
             @AuthenticationPrincipal AuthUser user,
             @PathVariable Long meetingId,
-            @RequestBody MeetingUpdateRequest request
+            @Valid @RequestBody MeetingUpdateRequest request
     ) {
         MeetingUpdateResponse response = meetingService.updateMeeting(user, meetingId, request);
 

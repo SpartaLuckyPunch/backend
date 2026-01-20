@@ -1,20 +1,35 @@
 package com.example.burnchuck.domain.meeting.model.response;
 
+import com.example.burnchuck.common.entity.Meeting;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class MeetingUpdateResponse {
 
-    private final Long meetingId;
-    private final String meetingTitle;
-    private final String imgUrl;
-    private final String description;
-    private final String location;
-    private final Double latitude;
-    private final Double longitude;
-    private final LocalDateTime meetingDatetime;
+    private Long meetingId;
+    private String title;
+    private String imgUrl;
+    private String description;
+    private String location;
+    private Double latitude;
+    private Double longitude;
+    private LocalDateTime meetingDateTime;
+
+    public static MeetingUpdateResponse from(Meeting meeting) {
+        return new MeetingUpdateResponse(
+                meeting.getId(),
+                meeting.getTitle(),
+                meeting.getImgUrl(),
+                meeting.getDescription(),
+                meeting.getLocation(),
+                meeting.getLatitude(),
+                meeting.getLongitude(),
+                meeting.getMeetingDateTime()
+        );
+    }
 }
+
