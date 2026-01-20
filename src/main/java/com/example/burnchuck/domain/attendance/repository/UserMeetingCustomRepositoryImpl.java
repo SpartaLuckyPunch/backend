@@ -7,7 +7,7 @@ import com.example.burnchuck.common.entity.QUser;
 import com.example.burnchuck.common.entity.QUserMeeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
-import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
+import com.example.burnchuck.domain.attendance.model.response.AttendanceMeetingResponse;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -19,19 +19,20 @@ public class UserMeetingCustomRepositoryImpl implements UserMeetingCustomReposit
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<MeetingSummaryDto> findAllMeetingsByUser(User user) {
+    public List<AttendanceMeetingResponse> findAllMeetingsByUser(User user) {
 
         // meeting별 참석 인원 수를 카운트하기 위해 같은 테이블 join
         QUserMeeting attendee = new QUserMeeting("attendee");
 
         return queryFactory
             .select(Projections.constructor(
-                MeetingSummaryDto.class,
+                AttendanceMeetingResponse.class,
                 meeting.id,
                 meeting.title,
                 meeting.imgUrl,
                 meeting.location,
                 meeting.meetingDateTime,
+                meeting.status.stringValue(),
                 meeting.maxAttendees,
                 attendee.id.count().intValue()
             ))
