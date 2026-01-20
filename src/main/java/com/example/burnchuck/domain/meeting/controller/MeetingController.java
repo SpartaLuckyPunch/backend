@@ -18,8 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_CREATE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -65,8 +64,21 @@ public class MeetingController {
     ) {
         MeetingDetailResponse response = meetingService.getMeetingDetail(meetingId);
 
-        return ResponseEntity.ok(
-                CommonResponse.success(MEETING_GET_SUCCESS, response)
-        );
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(MEETING_GET_SUCCESS, response));
+    }
+
+    /**
+     * 모임 삭제
+     */
+    @DeleteMapping("/{meetingId}")
+    public ResponseEntity<CommonResponse<Void>> deleteMeeting(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long meetingId
+    ) {
+        meetingService.deleteMeeting(authUser, meetingId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.successNodata(MEETING_DELETE_SUCCESS));
     }
 }

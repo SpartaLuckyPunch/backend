@@ -24,8 +24,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.example.burnchuck.common.enums.ErrorCode.CATEGORY_NOT_FOUND;
-import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
+import java.util.Objects;
+
+import static com.example.burnchuck.common.enums.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -118,5 +119,27 @@ public class MeetingService {
         // 3. QueryDSL에서 응답객체 반환
         return meetingRepository.findMeetingDetail(meetingId)
                 .orElseThrow(() -> new CustomException(MEETING_NOT_FOUND));
+    }
+
+    /**
+     * 모임 삭제
+     */
+    @Transactional
+    public void deleteMeeting(AuthUser authUser, Long meetingId) {
+
+        // 1. 접근 유저 확인
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        // 2. 모임 조회 (삭제되지 않은 모임)
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+
+        // 3. HOST 권한 확인
+        UserMeeting meetingHost = userMeetingRepository.findHostByMeeting(meeting);
+        if (!Objects.equals(user.getId(), meetingHost.getUser().getId())) {
+            throw new CustomException(ACCESS_DENIED);
+        }
+
+        // 4. 삭제
+        meeting.delete();
     }
 }
