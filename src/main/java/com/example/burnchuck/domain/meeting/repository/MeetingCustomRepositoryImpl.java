@@ -4,8 +4,10 @@ import com.example.burnchuck.common.entity.QCategory;
 import com.example.burnchuck.common.entity.QMeeting;
 import com.example.burnchuck.common.entity.QMeetingLike;
 import com.example.burnchuck.common.entity.QUserMeeting;
+import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
+import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -123,5 +125,53 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository{
                 .fetchOne();
 
         return Optional.ofNullable(result);
+    }
+
+    /**
+     * 내가 주최한 모임 조회
+     */
+    public Page<HostedMeetingResponse> findHostedMeetings(
+            Long userId,
+            Pageable pageable
+    ) {
+        QMeeting meeting = QMeeting.meeting;
+        QUserMeeting userMeeting = QUserMeeting.userMeeting;
+
+        List<HostedMeetingResponse> content = queryFactory
+                .select(Projections.constructor(
+                        HostedMeetingResponse.class,
+                        meeting.id,
+                        meeting.title,
+                        meeting.imgUrl,
+                        meeting.location,
+                        meeting.meetingDateTime,
+                        meeting.status.stringValue(),
+                        meeting.maxAttendees,
+                        userMeeting.id.countDistinct()
+                ))
+                .from(userMeeting)
+                .join(userMeeting.meeting, meeting)
+                .where(
+                        meeting.isDeleted.isFalse(),
+                        userMeeting.user.id.eq(userId),
+                        userMeeting.meetingRole.eq(MeetingRole.HOST)
+                )
+                .groupBy(meeting.id)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = queryFactory
+                .select(meeting.id.countDistinct())
+                .from(userMeeting)
+                .join(userMeeting.meeting, meeting)
+                .where(
+                        meeting.isDeleted.isFalse(),
+                        userMeeting.user.id.eq(userId),
+                        userMeeting.meetingRole.eq(MeetingRole.HOST)
+                )
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total == null ? 0 : total);
     }
 }
