@@ -79,7 +79,7 @@ public class SchedulingService {
                 Meeting targetMeeting = meetingRepository.findActivateMeetingById(meeting.getId());
 
                 // 알림 생성
-                notificationService.notifyCommentRequest(meeting);
+                notificationService.notifyCommentRequest(targetMeeting);
             },
             meeting.getMeetingDateTime().plusHours(3)
         );
