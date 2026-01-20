@@ -1,5 +1,6 @@
 package com.example.burnchuck.domain.review.service;
 
+import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.common.entity.*;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
@@ -7,20 +8,21 @@ import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.reaction.repository.ReactionRepository;
 import com.example.burnchuck.domain.review.model.request.ReviewCreateRequest;
+import com.example.burnchuck.domain.review.model.response.ReactionCount;
 import com.example.burnchuck.domain.review.model.response.ReviewGetListResponse;
 import com.example.burnchuck.domain.review.repository.ReviewReactionRepository;
 import com.example.burnchuck.domain.review.repository.ReviewRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+
 
 import static com.example.burnchuck.common.enums.ErrorCode.SELF_REVIEW_NOT_ALLOWED;
 
@@ -86,24 +88,23 @@ public class ReviewService {
      * 후기 목록조회
      */
     @Transactional(readOnly = true)
-    public ReviewGetListResponse getReviewList(Long userId, Pageable pageable) {
+    public PageResponse<ReviewGetListResponse> getReviewList(Long userId, Pageable pageable) {
 
         // 1. 유저 존재하는지 검증
         User user = userRepository.findActivateUserById(userId);
 
         // 2. 리액션 통계 조회
-        List<Object[]> counts = reviewReactionRepository.countReactionsByRevieweeId(userId);
-        Map<String, Long> reactionCountMap = counts.stream()
-                .collect(Collectors.toMap(
-                        row -> (String) row[0],
-                        row -> (Long) row[1]
-                ));
+        List<ReactionCount> reactionCounts =
+                reviewReactionRepository.countReactionsByRevieweeId(userId);
 
         // 3. 리뷰 목록 조회 (페이징 + 생성일시 내림차순)
-        Page<Review> reviewPage = reviewRepository.findAllByRevieweeIdOrderByCreatedDatetimeDesc(userId, pageable);
+        Page<Review> reviewPage = reviewRepository.findAllByRevieweeId(userId, pageable);
 
-        // 4. Dto 반환
-        return ReviewGetListResponse.of(reactionCountMap, reviewPage.getContent());
+        // 4. 리액션통계와 리뷰 목록을 하나로 묶음
+        ReviewGetListResponse reviewData = ReviewGetListResponse.of(reactionCounts, reviewPage);
+        Page<ReviewGetListResponse> responsePage = new PageImpl<>(List.of(reviewData), pageable, 1);
 
+        // 5. Dto 반환
+        return PageResponse.from(responsePage);
     }
 }

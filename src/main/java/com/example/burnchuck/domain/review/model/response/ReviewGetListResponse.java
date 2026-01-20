@@ -3,10 +3,9 @@ package com.example.burnchuck.domain.review.model.response;
 import com.example.burnchuck.common.entity.Review;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.data.domain.Page;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 // 외부 클래스
 @Getter
@@ -14,37 +13,20 @@ import java.util.Map;
 public class ReviewGetListResponse {
 
     private final List<ReactionCount> reactionCountList;
-    private final List<ReviewSummary> reviewList;
+    private final Page<ReviewSummary> reviewList;
 
-    public static ReviewGetListResponse of(Map<String, Long> reactionCountMap, List<Review> reviews) {
+    public static ReviewGetListResponse of(List<ReactionCount> reactionCountList, Page<Review> reviews) {
 
-        // 반응 갯수 리스트
-        List<ReactionCount> reactionCountList = new ArrayList<>();
-        for (Map.Entry<String, Long> entry : reactionCountMap.entrySet()) {
-            reactionCountList.add(ReactionCount.of(entry.getKey(), entry.getValue()));
-        }
 
         // 리뷰 요약 리스트
-        List<ReviewSummary> reviewList = new ArrayList<>();
-        for (Review review : reviews) {
-            reviewList.add(ReviewSummary.from(review));
-        }
+        Page<ReviewSummary> reviewPage = reviews.map(ReviewSummary::from);
 
-        return new ReviewGetListResponse(reactionCountList, reviewList);
+
+
+        return new ReviewGetListResponse(reactionCountList, reviewPage);
     }
 
     // 내부 클래스
-    @Getter
-    @AllArgsConstructor
-    public static class ReactionCount {
-        private final String reaction;
-        private final Long count;
-
-        public static ReactionCount of(String reaction, Long count) {
-            return new ReactionCount(reaction, count);
-        }
-    }
-
     @Getter
     @AllArgsConstructor
     public static class ReviewSummary {

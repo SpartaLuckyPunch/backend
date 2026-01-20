@@ -16,5 +16,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findAllByReviewee(User reviewee);
 
     // reviewee에 대한 리뷰 목록를 페이징하여 최신순 조회(내림차순)
-    Page<Review> findAllByRevieweeIdOrderByCreatedDatetimeDesc(Long revieweeId, Pageable pageable);
+    Page<Review> findAllByRevieweeId(Long revieweeId, Pageable pageable);
 }
