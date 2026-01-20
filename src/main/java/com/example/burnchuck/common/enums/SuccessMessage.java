@@ -37,6 +37,7 @@ public enum SuccessMessage {
     // 모임
     MEETING_CREATE_SUCCESS("모임 생성 성공"),
     MEETING_GET_SUCCESS("모임 조회 성공"),
+    MEETING_UPDATE_SUCCESS("모임 수정 성공"),
 
 
     // 모임 참여
