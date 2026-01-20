@@ -1,7 +1,6 @@
 package com.example.burnchuck.domain.review.repository;
 
 import com.example.burnchuck.common.entity.Review;
-import com.example.burnchuck.common.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
