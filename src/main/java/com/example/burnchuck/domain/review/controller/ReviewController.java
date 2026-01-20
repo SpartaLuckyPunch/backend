@@ -75,13 +75,13 @@ public class ReviewController {
     }
 
     /**
-     * 후기 리액션 목록조회
+     * 전체 후기 리액션 조회
      */
-    @GetMapping("/reactions/{reviewId}")
-    public ResponseEntity<CommonResponse<List<ReactionResponse>>> getReviewReactionList(
-            @PathVariable Long reviewId
-    ) {
-        List<ReactionResponse> response = reviewService.getReviewReactionList(reviewId);
+    @GetMapping("/reactions")
+    public ResponseEntity<CommonResponse<List<ReactionResponse>>> getReviewReactionList() {
+
+        // 서비스에서 전체 목록을 가져옴
+        List<ReactionResponse> response = reviewService.getReviewReactionList();
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(REVIEW_GET_SUCCESS, response));
