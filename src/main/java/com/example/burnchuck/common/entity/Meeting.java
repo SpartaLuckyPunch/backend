@@ -69,4 +69,8 @@ public class Meeting extends BaseEntity {
     public void increaseViews() {
         this.views++;
     }
+
+    public void updateStatus(MeetingStatus status) {
+        this.status = status;
+    }
 }

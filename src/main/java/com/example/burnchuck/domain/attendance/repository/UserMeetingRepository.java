@@ -22,6 +22,8 @@ public interface UserMeetingRepository extends JpaRepository<UserMeeting, Long>,
         """)
     UserMeeting findHostByMeeting(@Param("meeting") Meeting meeting);
 
+    int countByMeeting(Meeting meeting);
+
     default UserMeeting findUserMeeting(Long userId, Long meetingId) {
         return findByUserIdAndMeetingId(userId, meetingId)
             .orElseThrow(() -> new CustomException(ErrorCode.ATTENDANCE_NOT_FOUND));

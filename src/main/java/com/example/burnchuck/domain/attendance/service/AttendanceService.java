@@ -58,7 +58,15 @@ public class AttendanceService {
 
         userMeetingRepository.save(userMeeting);
 
-        // 6. 주최자에게 알림 발송
+        // 6. 모임 상태 '모집 마감'으로 변경 (해당 모임의 마지막 참여자인 경우)
+        int maxAttendees = meeting.getMaxAttendees();
+        int currentAttendees = userMeetingRepository.countByMeeting(meeting);
+
+        if (maxAttendees == currentAttendees) {
+            meeting.updateStatus(MeetingStatus.CLOSED);
+        }
+
+        // 7. 주최자에게 알림 발송
         notificationService.notifyMeetingMember(true, meeting, user);
     }
 
@@ -90,7 +98,12 @@ public class AttendanceService {
         // 6. 참여 취소(신청 내역 삭제) (추후 채팅방 나가기 처리 추가 예정)
         userMeetingRepository.delete(userMeeting);
 
-        // 7. 주최자에게 알림 발송
+        // 7. 모임 상태가 CLOSED인 경우, OPEN으로 변경
+        if (meeting.getStatus() == MeetingStatus.CLOSED) {
+            meeting.updateStatus(MeetingStatus.OPEN);
+        }
+
+        // 8. 주최자에게 알림 발송
         notificationService.notifyMeetingMember(false, meeting, user);
     }
 

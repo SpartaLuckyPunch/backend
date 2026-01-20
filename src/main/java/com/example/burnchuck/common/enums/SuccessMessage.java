@@ -24,7 +24,8 @@ public enum SuccessMessage {
 
     // 리뷰
     REVIEW_CREATE_SUCCESS("후기 등록 성공"),
-      
+    REVIEW_GET_SUCCESS("후기 조회 성공"),
+
     // 좋아요
     LIKE_SUCCESS("좋아요 성공"),
     LIKE_CANCEL_SUCCESS("좋아요 취소 성공"),
@@ -37,11 +38,16 @@ public enum SuccessMessage {
     MEETING_CREATE_SUCCESS("모임 생성 성공"),
     MEETING_GET_SUCCESS("모임 조회 성공"),
 
+
     // 모임 참여
     ATTENDANCE_REGISTER_SUCCESS("번개 참여 신청 성공"),
     ATTENDANCE_CANCEL_SUCCESS("번개 참여 취소 성공"),
     ATTENDANCE_GET_MEETING_LIST_SUCCESS("참여 중인 번개 목록 조회 성공"),
     MEETING_MEMBER_GET_SUCCESS("모임 참여자 목록 조회 성공"),
+
+    // 알림
+    NOTIFICATION_GET_LIST_SUCCESS("알림 목록 조회 성공"),
+    NOTIFICATION_GET_ONE_SUCCESS("알림 목록 조회 성공"),
     ;
 
     private final String message;
