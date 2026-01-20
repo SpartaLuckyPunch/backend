@@ -2,20 +2,16 @@ package com.example.burnchuck.domain.attendance.model.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class MeetingMemberResponse {
 
-    private final Long meetingId;
-    private final List<MeetingMemberDto> members;
+    private Long hostId;
+    private String hostProfileImgUrl;
+    private String hostNickname;
 
-    @Getter
-    @AllArgsConstructor
-    public static class MeetingMemberDto {
-        private Long userId;
-    }
+    private List<AttendeeResponse> attendeeList;
 }

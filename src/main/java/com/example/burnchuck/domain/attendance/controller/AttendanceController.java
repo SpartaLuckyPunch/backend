@@ -69,7 +69,7 @@ public class AttendanceController {
     /**
      * 모임 참여자 목록 조회
      */
-    @GetMapping("/{meetingId}")
+    @GetMapping("/meetings/{meetingId}/attendees")
     public ResponseEntity<CommonResponse<MeetingMemberResponse>> getMeetingMembers(
             @PathVariable Long meetingId
     ) {
