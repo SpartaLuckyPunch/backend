@@ -178,15 +178,20 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      */
     @Override
     public Page<MeetingSummaryDto> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
+
         QMeeting meeting = QMeeting.meeting;
         QCategory qCategory = QCategory.category1;
         QUserMeeting userMeeting = QUserMeeting.userMeeting;
         QMeetingLike meetingLike = QMeetingLike.meetingLike;
 
         // 1. 정렬 조건 설정 (인기순일 때 좋아요 개수 기준으로)
-        OrderSpecifier<?> orderSpecifier = "POPULAR".equalsIgnoreCase(request.getOrder())
-                ? meetingLike.id.countDistinct().desc()
-                : meeting.createdDatetime.desc();
+        OrderSpecifier<?> orderSpecifier =
+            switch (request.getOrder()) {
+
+                case POPULAR -> meetingLike.id.countDistinct().desc();
+
+                default -> meeting.createdDatetime.desc();
+            };
 
         // 2. 데이터 조회 쿼리
         List<MeetingSummaryDto> content = queryFactory
