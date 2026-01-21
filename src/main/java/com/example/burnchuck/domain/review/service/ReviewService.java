@@ -79,10 +79,7 @@ public class ReviewService {
                 Reaction reaction = reactionRepository.findReactionById(reactionId);
                 reviewReactionRepository.save(new ReviewReaction(review, reaction));
             }
-
-
         }
-
     }
 
     /**
@@ -95,8 +92,7 @@ public class ReviewService {
         User user = userRepository.findActivateUserById(userId);
 
         // 2. 리액션 통계 조회
-        List<ReactionCount> reactionCounts =
-                reviewReactionRepository.countReactionsByRevieweeId(userId);
+        List<ReactionCount> reactionCounts = reviewReactionRepository.countReactionsByRevieweeId(userId);
 
         // 3. 리뷰 목록 조회 (페이징 + 생성일시 내림차순)
         Page<Review> reviewPage = reviewRepository.findAllByRevieweeId(userId, pageable);

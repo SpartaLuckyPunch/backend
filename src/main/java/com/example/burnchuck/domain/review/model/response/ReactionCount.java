@@ -9,8 +9,4 @@ public class ReactionCount {
 
     private final String reaction;
     private final Long count;
-
-    public static ReactionCount of(String reaction, Long count) {
-        return new ReactionCount(reaction, count);
-    }
 }

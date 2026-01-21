@@ -120,6 +120,9 @@ public class UserService {
         followRepository.deleteByFolloweeId(user.getId());
     }
 
+    /**
+     * 프로필 조회
+     */
     @Transactional(readOnly = true)
     public UserGetProfileReponse getProfile(Long userId) {
 
