@@ -20,6 +20,5 @@ public class UserUpdateProfileRequest {
     @NotBlank(message = ValidationMessage.CITY_NOT_BLANK)
     private String city;
 
-    @NotBlank(message = ValidationMessage.DISTRICT_NOT_BLANK)
     private String district;
 }
