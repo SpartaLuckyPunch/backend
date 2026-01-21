@@ -19,15 +19,6 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     void deleteByFolloweeId(Long id);
 
-    default Follow getByFollowerAndFolloweeOrThrow(
-            User follower,
-            User followee,
-            ErrorCode errorCode
-    ) {
-        return findByFollowerAndFollowee(follower, followee)
-                .orElseThrow(() -> new CustomException(errorCode));
-    }
-
     long countByFollower(User follower);
 
     long countByFollowee(User followee);
@@ -37,4 +28,13 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     // 팔로워 목록 조회
     List<Follow> findAllByFollowee(User followee);
+
+    default Follow getByFollowerAndFolloweeOrThrow(
+        User follower,
+        User followee,
+        ErrorCode errorCode
+    ) {
+        return findByFollowerAndFollowee(follower, followee)
+            .orElseThrow(() -> new CustomException(errorCode));
+    }
 }

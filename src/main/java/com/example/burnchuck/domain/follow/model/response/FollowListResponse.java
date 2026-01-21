@@ -9,7 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 public class FollowListResponse {
 
-    private List<FollowUserDto> users;
+    private List<FollowUserDto> followUserList;
 
     @Getter
     @AllArgsConstructor

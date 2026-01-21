@@ -26,6 +26,4 @@ public class ReviewCreateRequest {
     private List<Long> reactionList;
 
     private String detailedReview;
-
-
 }

@@ -1,6 +1,12 @@
 package com.example.burnchuck.domain.review.service;
 
-import com.example.burnchuck.common.entity.*;
+import static com.example.burnchuck.common.enums.ErrorCode.SELF_REVIEW_NOT_ALLOWED;
+
+import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.common.entity.Reaction;
+import com.example.burnchuck.common.entity.Review;
+import com.example.burnchuck.common.entity.ReviewReaction;
+import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
@@ -14,17 +20,12 @@ import com.example.burnchuck.domain.review.model.response.ReviewGetListResponse;
 import com.example.burnchuck.domain.review.repository.ReviewReactionRepository;
 import com.example.burnchuck.domain.review.repository.ReviewRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-
-import java.util.List;
-
-
-import static com.example.burnchuck.common.enums.ErrorCode.SELF_REVIEW_NOT_ALLOWED;
 
 @Service
 @RequiredArgsConstructor
@@ -78,10 +79,7 @@ public class ReviewService {
                 Reaction reaction = reactionRepository.findReactionById(reactionId);
                 reviewReactionRepository.save(new ReviewReaction(review, reaction));
             }
-
-
         }
-
     }
 
     /**
@@ -94,8 +92,7 @@ public class ReviewService {
         User user = userRepository.findActivateUserById(userId);
 
         // 2. 리액션 통계 조회
-        List<ReactionCount> reactionCounts =
-                reviewReactionRepository.countReactionsByRevieweeId(userId);
+        List<ReactionCount> reactionCounts = reviewReactionRepository.countReactionsByRevieweeId(userId);
 
         // 3. 리뷰 목록 조회 (페이징 + 생성일시 내림차순)
         Page<Review> reviewPage = reviewRepository.findAllByRevieweeId(userId, pageable);
@@ -117,25 +114,12 @@ public class ReviewService {
         List<ReactionResponse> reactionResponses = reviewReactionRepository.findAllByReviewId(reviewId)
                 .stream()
                 .map(rr -> new ReactionResponse(
-                        rr.getReaction().getId(), // 리액션 고유 ID
-                        rr.getReaction().getReaction() // 리액션 이름
+                        rr.getReaction().getId(),
+                        rr.getReaction().getReaction()
                 ))
                 .toList();
 
         // 3. 반환
         return ReviewDetailResponse.of(review, reactionResponses);
-
-    }
-
-    /**
-     * 전체 후기 리액션 조회
-     */
-    @Transactional(readOnly = true)
-    public List<ReactionResponse> getReviewReactionList() {
-
-        return reactionRepository.findAll()
-                .stream()
-                .map(ReactionResponse::from)
-                .toList();
     }
 }

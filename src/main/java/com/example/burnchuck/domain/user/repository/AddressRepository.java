@@ -12,6 +12,6 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
 
     default Address findAddressByAddressInfo(String province, String city, String district) {
         return findByProvinceAndCityAndDistrict(province, city, district)
-            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ADDRESS));
+            .orElseThrow(() -> new CustomException(ErrorCode.ADDRESS_NOT_FOUND));
     }
 }

@@ -7,7 +7,7 @@ import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.JwtUtil;
 import com.example.burnchuck.domain.auth.model.request.*;
 import com.example.burnchuck.domain.auth.model.response.*;
-import com.example.burnchuck.domain.user.enums.Gender;
+import com.example.burnchuck.common.enums.Gender;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

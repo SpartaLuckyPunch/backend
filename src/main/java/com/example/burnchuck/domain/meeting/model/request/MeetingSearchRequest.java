@@ -1,5 +1,6 @@
 package com.example.burnchuck.domain.meeting.model.request;
 
+import com.example.burnchuck.common.enums.MeetingSortOption;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,6 @@ public class MeetingSearchRequest {
 
     private String keyword;
     private Double distance;
-    private String order;      // 정렬 기준: "LATEST"(최신순), "POPULAR"(인기순)
+    private MeetingSortOption order;
     private String category;
 }

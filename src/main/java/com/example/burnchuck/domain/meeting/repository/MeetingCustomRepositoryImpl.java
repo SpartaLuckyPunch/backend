@@ -13,7 +13,6 @@ import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,6 @@ import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
 import java.util.Optional;
-
 
 @RequiredArgsConstructor
 public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
@@ -88,15 +86,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
         return new PageImpl<>(content, pageable, total);
     }
 
-    private BooleanExpression categoryEq(String categoryName) {
-
-        if (categoryName == null) {
-            return null;
-        }
-
-        return QCategory.category1.category.eq(categoryName);
-    }
-
     /**
      * 모임 상세 조회
      */
@@ -120,6 +109,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                         meeting.meetingDateTime,
                         meeting.maxAttendees,
                         userMeeting.id.countDistinct().intValue(),
+                        meeting.status.stringValue(),
                         meetingLike.id.countDistinct(),
                         meeting.views
                 ))
@@ -188,15 +178,20 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      */
     @Override
     public Page<MeetingSummaryDto> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
+
         QMeeting meeting = QMeeting.meeting;
         QCategory qCategory = QCategory.category1;
         QUserMeeting userMeeting = QUserMeeting.userMeeting;
         QMeetingLike meetingLike = QMeetingLike.meetingLike;
 
         // 1. 정렬 조건 설정 (인기순일 때 좋아요 개수 기준으로)
-        OrderSpecifier<?> orderSpecifier = "POPULAR".equalsIgnoreCase(request.getOrder())
-                ? meetingLike.id.countDistinct().desc() // 좋아요(MeetingLike) 갯수로 정렬
-                : meeting.createdDatetime.desc();
+        OrderSpecifier<?> orderSpecifier =
+            switch (request.getOrder()) {
+
+                case POPULAR -> meetingLike.id.countDistinct().desc();
+
+                default -> meeting.createdDatetime.desc();
+            };
 
         // 2. 데이터 조회 쿼리
         List<MeetingSummaryDto> content = queryFactory
@@ -209,18 +204,18 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                         meeting.longitude,
                         meeting.meetingDateTime,
                         meeting.maxAttendees,
-                        userMeeting.id.countDistinct().intValue() // 실제 참여자 수
+                        userMeeting.id.countDistinct().intValue()
                 ))
                 .from(meeting)
                 .leftJoin(meeting.category, qCategory)
                 .leftJoin(userMeeting).on(userMeeting.meeting.eq(meeting))
-                .leftJoin(meetingLike).on(meetingLike.meeting.eq(meeting)) // 좋아요 테이블을 모임과 연결
+                .leftJoin(meetingLike).on(meetingLike.meeting.eq(meeting))
                 .where(
                         keywordContains(request.getKeyword()),
                         categoryEq(request.getCategory()),
-                        meeting.status.eq(MeetingStatus.OPEN) // 오픈 상태 추가
+                        meeting.status.eq(MeetingStatus.OPEN)
                 )
-                .groupBy(meeting.id) // 카운트하기 위해 모임별로 묶어줌
+                .groupBy(meeting.id)
                 .orderBy(orderSpecifier)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -234,11 +229,19 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .where(
                         keywordContains(request.getKeyword()),
                         categoryEq(request.getCategory()),
-                        meeting.status.eq(MeetingStatus.OPEN) // 오픈 상태 추가
+                        meeting.status.eq(MeetingStatus.OPEN)
                 );
 
-        // 반환
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    private BooleanExpression categoryEq(String categoryName) {
+
+        if (categoryName == null) {
+            return null;
+        }
+
+        return QCategory.category1.category.eq(categoryName);
     }
 
     // 키워드 검색

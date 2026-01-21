@@ -76,6 +76,6 @@ public class AttendanceController {
         MeetingMemberResponse response = attendanceService.getMeetingMembers(meetingId);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(MEETING_MEMBER_GET_SUCCESS, response));
+                .body(CommonResponse.success(MEETING_GET_MEMBER_LIST_SUCCESS, response));
     }
 }
