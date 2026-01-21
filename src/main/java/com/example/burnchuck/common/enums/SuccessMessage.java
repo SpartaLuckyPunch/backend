@@ -18,9 +18,9 @@ public enum SuccessMessage {
     // 팔로우
     FOLLOW_SUCCESS("팔로우 성공"),
     UNFOLLOW_SUCCESS("언팔로우 성공"),
-    GET_SUCCESS("조회 성공"),
-    GET_FOLLOWING_SUCCESS("팔로잉 목록 조회 성공"),
-    GET_FOLLOWER_SUCCESS("팔로워 목록 조회 성공"),
+    FOLLOW_GET_SUCCESS("조회 성공"),
+    FOLLOW_GET_FOLLOWING_SUCCESS("팔로잉 목록 조회 성공"),
+    FOLLOW_GET_FOLLOWER_SUCCESS("팔로워 목록 조회 성공"),
 
     // 리뷰
     REVIEW_CREATE_SUCCESS("후기 등록 성공"),

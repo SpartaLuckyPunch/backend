@@ -59,7 +59,7 @@ public class FollowController {
         FollowCountResponse response = followService.followCount(userId);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(GET_SUCCESS, response));
+                .body(CommonResponse.success(FOLLOW_GET_SUCCESS, response));
     }
 
     /**
@@ -72,7 +72,7 @@ public class FollowController {
         FollowListResponse response = followService.followingList(userId);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(GET_FOLLOWING_SUCCESS, response));
+                .body(CommonResponse.success(FOLLOW_GET_FOLLOWING_SUCCESS, response));
     }
 
     /**
@@ -85,6 +85,6 @@ public class FollowController {
         FollowListResponse response = followService.followerList(userId);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(GET_FOLLOWER_SUCCESS, response));
+                .body(CommonResponse.success(FOLLOW_GET_FOLLOWER_SUCCESS, response));
     }
 }
