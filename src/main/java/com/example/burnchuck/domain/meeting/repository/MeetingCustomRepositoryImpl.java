@@ -233,7 +233,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .leftJoin(meeting.category, qCategory)
                 .where(
                         keywordContains(request.getKeyword()),
-                        categoryEq(request.getCategory())
+                        categoryEq(request.getCategory()),
+                        meeting.status.eq(MeetingStatus.OPEN) // 오픈 상태 추가
                 );
 
         // 반환
