@@ -3,17 +3,14 @@ package com.example.burnchuck.domain.review.controller;
 import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_CREATE_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_GET_LIST_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_GET_ONE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_REACTION_GET_SUCCESS;
 
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.review.model.request.ReviewCreateRequest;
-import com.example.burnchuck.domain.review.model.response.ReactionResponse;
 import com.example.burnchuck.domain.review.model.response.ReviewDetailResponse;
 import com.example.burnchuck.domain.review.model.response.ReviewGetListResponse;
 import com.example.burnchuck.domain.review.service.ReviewService;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -78,19 +75,4 @@ public class ReviewController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(REVIEW_GET_ONE_SUCCESS, response));
     }
-
-    /**
-     * 전체 후기 리액션 조회
-     */
-    @GetMapping("/reactions")
-    public ResponseEntity<CommonResponse<List<ReactionResponse>>> getReviewReactionList() {
-
-        // 서비스에서 전체 목록을 가져옴
-        List<ReactionResponse> response = reviewService.getReviewReactionList();
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(REVIEW_REACTION_GET_SUCCESS, response));
-    }
-
-
 }
