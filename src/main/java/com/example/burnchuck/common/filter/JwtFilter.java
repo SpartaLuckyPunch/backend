@@ -1,14 +1,22 @@
 package com.example.burnchuck.common.filter;
 
+import com.example.burnchuck.common.dto.CommonResponse;
+import com.example.burnchuck.common.enums.ErrorCode;
+import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.jwt.JwtAuthenticationToken;
 import com.example.burnchuck.common.utils.JwtUtil;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -34,7 +42,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String jwt = authorizationHeader.substring(7);
 
         if (!jwtUtil.validateToken(jwt)) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 토큰입니다.");
+            handleCustomException(response, new CustomException(ErrorCode.INVALID_TOKEN));
             return;
         }
 
@@ -48,5 +56,30 @@ public class JwtFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         filterChain.doFilter(request, response);
+    }
+
+    // Filter 내부에서 발생하는 CustomException 처리
+    private void handleCustomException(HttpServletResponse response, CustomException e) throws IOException {
+
+        response.setStatus(e.getErrorCode().getStatus().value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+
+        CommonResponse commonResponse = CommonResponse.exception(e.getErrorCode().getMessage());
+        writeErrorResponse(response, commonResponse);
+    }
+
+    private void writeErrorResponse(HttpServletResponse response, CommonResponse body) throws IOException {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        String json = objectMapper.writeValueAsString(body);
+
+        try (PrintWriter writer = response.getWriter()) {
+            writer.write(json);
+            writer.flush();
+        }
     }
 }

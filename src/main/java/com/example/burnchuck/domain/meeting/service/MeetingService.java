@@ -20,6 +20,7 @@ import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse
 import com.example.burnchuck.domain.meeting.model.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
+import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,7 @@ public class MeetingService {
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
     private final NotificationService notificationService;
+    private final EventPublisherService eventPublisherService;
 
     /**
      * 모임 생성과 알림 생성 메서드를 호출하는 메서드
@@ -53,6 +55,8 @@ public class MeetingService {
         Meeting meeting = createMeeting(user, request);
 
         notificationService.notifyNewFollowerPost(meeting, user);
+
+        eventPublisherService.publishMeetingCreatedEvent(meeting);
 
         return MeetingCreateResponse.from(meeting);
     }
@@ -147,7 +151,7 @@ public class MeetingService {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
 
-        // 4. 내용 수정
+        // 5. 내용 수정
         meeting.updateMeeting(
                 request.getTitle(),
                 request.getDescription(),
@@ -160,7 +164,10 @@ public class MeetingService {
                 category
         );
 
-        // 5. 객체 반환
+        // 6. 이벤트 생성
+        eventPublisherService.publishMeetingUpdatedEvent(meeting);
+
+        // 7. 객체 반환
         return MeetingUpdateResponse.from(meeting);
     }
 
@@ -184,6 +191,9 @@ public class MeetingService {
 
         // 4. 삭제
         meeting.delete();
+
+        // 5. 이벤트 생성
+        eventPublisherService.publishMeetingDeletedEvent(meeting);
     }
 
     /**

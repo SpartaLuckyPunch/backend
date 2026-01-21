@@ -100,6 +100,40 @@ public class NotificationService {
     }
 
     /**
+     * 후기 작성 안내 -> 모임 시작 시간 3시간 뒤, 모임 참석자들에게 발송
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void notifyCommentRequest(Meeting meeting) {
+
+        NotificationType notificationType = NotificationType.COMMENT_REQUESTED;
+
+        // 1. 해당 모임의 참석자 조회
+        List<UserMeeting> userMeetingList = userMeetingRepository.findMeetingMembers(meeting.getId());
+
+        // 2. 상황에 맞게 알림 설명글 수정
+        String description = notificationType.getDescription();
+        description = description.replace("{title}", meeting.getTitle());
+
+        // 3. 리스트 순회하며 알림 생성
+        List<Notification> notificationList = new ArrayList<>();
+
+        for (UserMeeting userMeeting : userMeetingList) {
+
+            Notification notification = new Notification(
+                notificationType,
+                description,
+                userMeeting.getUser(),
+                meeting
+            );
+
+            notificationList.add(notification);
+        }
+
+        // 4. 알림 저장
+        notificationRepository.saveAll(notificationList);
+    }
+
+    /**
      * 알림 목록 조회 (로그인한 유저 기준)
      */
     @Transactional(readOnly = true)
