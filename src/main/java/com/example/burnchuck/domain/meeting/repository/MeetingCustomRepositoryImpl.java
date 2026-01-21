@@ -193,7 +193,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
 
         // 1. 정렬 조건 설정 (인기순일 때 좋아요 개수 기준으로)
         OrderSpecifier<?> orderSpecifier = "POPULAR".equalsIgnoreCase(request.getOrder())
-                ? meetingLike.id.count().desc() // 좋아요(MeetingLike) 갯수로 정렬
+                ? meetingLike.id.countDistinct().desc() // 좋아요(MeetingLike) 갯수로 정렬
                 : meeting.createdDatetime.desc();
 
         // 2. 데이터 조회 쿼리
@@ -233,8 +233,13 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                         categoryEq(request.getCategory())
                 );
 
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+        // fetchOne() 결과 null 체크 및 NPE 방지
+        return PageableExecutionUtils.getPage(content, pageable, () -> {
+            Long total = countQuery.fetchOne();
+            return total != null ? total : 0L;
+        });
     }
+
     // 키워드 검색
     private BooleanExpression keywordContains(String keyword) {
         return (keyword != null && !keyword.isBlank())
