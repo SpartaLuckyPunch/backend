@@ -7,21 +7,27 @@ import com.example.burnchuck.common.entity.QUserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
+import com.example.burnchuck.domain.meeting.model.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
 import java.util.Optional;
 
+
 @RequiredArgsConstructor
-public class MeetingCustomRepositoryImpl implements MeetingCustomRepository{
+public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
 
     private final JPAQueryFactory queryFactory;
 
@@ -173,5 +179,56 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository{
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total == null ? 0 : total);
+    }
+
+    /**
+     * 모임 검색
+     */
+    public Page<MeetingSummaryDto> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
+        QMeeting meeting = QMeeting.meeting;
+        QCategory qCategory = QCategory.category1;
+
+        // 검색어 조건
+        BooleanExpression keywordCondition = (request.getKeyword() != null && !request.getKeyword().isBlank())
+                ? meeting.title.containsIgnoreCase(request.getKeyword()) : null;
+
+        // 카테고리 조건
+        BooleanExpression categoryCondition = (request.getCategory() != null && !request.getCategory().isBlank())
+                ? qCategory.category.eq(request.getCategory()) : null;
+
+        // 정렬 (최신순 - 인기순)
+        OrderSpecifier<?> orderSpecifier = "POPULAR".equalsIgnoreCase(request.getOrder())
+                ? meeting.views.desc()
+                : meeting.createdDatetime.desc();
+
+        List<MeetingSummaryDto> content = queryFactory
+                .select(Projections.constructor(MeetingSummaryDto.class,
+                        meeting.id,
+                        meeting.title,
+                        meeting.imgUrl,
+                        meeting.location,
+                        meeting.latitude,
+                        meeting.longitude,
+                        meeting.meetingDateTime,
+                        meeting.maxAttendees,
+                        Expressions.asNumber(0)
+                ))
+                .from(meeting)
+                .leftJoin(meeting.category, qCategory)
+                .where(keywordCondition, categoryCondition)
+                .orderBy(orderSpecifier)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 5. 카운트 쿼리
+        JPAQuery<Long> countQuery = queryFactory
+                .select(meeting.count())
+                .from(meeting)
+                .leftJoin(meeting.category, qCategory)
+                .where(keywordCondition, categoryCondition);
+
+        // 6. 반환
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 }

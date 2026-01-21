@@ -12,6 +12,7 @@ import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.model.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.model.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
@@ -163,7 +164,7 @@ public class MeetingService {
         return MeetingUpdateResponse.from(meeting);
     }
 
-   /**
+    /**
      * 모임 삭제
      */
     @Transactional
@@ -195,4 +196,14 @@ public class MeetingService {
     ) {
         return meetingRepository.findHostedMeetings(authUser.getId(), pageable);
     }
+
+    /**
+     * 모임 검색
+     */
+    @Transactional(readOnly = true)
+    public Page<MeetingSummaryDto> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
+
+        return meetingRepository.searchMeetings(request, pageable);
+    }
 }
+
