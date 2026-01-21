@@ -15,5 +15,5 @@ public class AttendanceMeetingResponse {
     private final LocalDateTime meetingDatetime;
     private final String status;
     private final int maxAttendees;
-    private final Long currentAttendees;
+    private final int currentAttendees;
 }
