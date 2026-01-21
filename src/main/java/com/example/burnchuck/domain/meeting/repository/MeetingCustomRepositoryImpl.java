@@ -184,23 +184,19 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     /**
      * 모임 검색
      */
+    @Override
     public Page<MeetingSummaryDto> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
         QMeeting meeting = QMeeting.meeting;
         QCategory qCategory = QCategory.category1;
+        QUserMeeting userMeeting = QUserMeeting.userMeeting;
+        QMeetingLike meetingLike = QMeetingLike.meetingLike;
 
-        // 검색어 조건
-        BooleanExpression keywordCondition = (request.getKeyword() != null && !request.getKeyword().isBlank())
-                ? meeting.title.containsIgnoreCase(request.getKeyword()) : null;
-
-        // 카테고리 조건
-        BooleanExpression categoryCondition = (request.getCategory() != null && !request.getCategory().isBlank())
-                ? qCategory.category.eq(request.getCategory()) : null;
-
-        // 정렬 (최신순 - 인기순)
+        // 1. 정렬 조건 설정 (인기순일 때 좋아요 개수 기준으로)
         OrderSpecifier<?> orderSpecifier = "POPULAR".equalsIgnoreCase(request.getOrder())
-                ? meeting.views.desc()
+                ? meetingLike.id.count().desc() // 좋아요(MeetingLike) 갯수로 정렬
                 : meeting.createdDatetime.desc();
 
+        // 2. 데이터 조회 쿼리
         List<MeetingSummaryDto> content = queryFactory
                 .select(Projections.constructor(MeetingSummaryDto.class,
                         meeting.id,
@@ -211,24 +207,37 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                         meeting.longitude,
                         meeting.meetingDateTime,
                         meeting.maxAttendees,
-                        Expressions.asNumber(0)
+                        userMeeting.id.countDistinct().intValue() // 실제 참여자 수
                 ))
                 .from(meeting)
                 .leftJoin(meeting.category, qCategory)
-                .where(keywordCondition, categoryCondition)
+                .leftJoin(userMeeting).on(userMeeting.meeting.eq(meeting))
+                .leftJoin(meetingLike).on(meetingLike.meeting.eq(meeting)) // 좋아요 테이블을 모임과 연결
+                .where(
+                        keywordContains(request.getKeyword()),
+                        categoryEq(request.getCategory())
+                )
+                .groupBy(meeting.id) // 카운트하기 위해 모임별로 묶어줌
                 .orderBy(orderSpecifier)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // 5. 카운트 쿼리
+        // 3. 카운트 쿼리
         JPAQuery<Long> countQuery = queryFactory
                 .select(meeting.count())
                 .from(meeting)
                 .leftJoin(meeting.category, qCategory)
-                .where(keywordCondition, categoryCondition);
+                .where(
+                        keywordContains(request.getKeyword()),
+                        categoryEq(request.getCategory())
+                );
 
-        // 6. 반환
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+    // 키워드 검색
+    private BooleanExpression keywordContains(String keyword) {
+        return (keyword != null && !keyword.isBlank())
+                ? QMeeting.meeting.title.containsIgnoreCase(keyword) : null;
     }
 }
