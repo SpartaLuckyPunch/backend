@@ -1,7 +1,6 @@
 package com.example.burnchuck.domain.meeting.service;
 
 import static com.example.burnchuck.common.enums.ErrorCode.ACCESS_DENIED;
-import static com.example.burnchuck.common.enums.ErrorCode.CATEGORY_NOT_FOUND;
 import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.entity.Category;
@@ -68,8 +67,7 @@ public class MeetingService {
     public Meeting createMeeting(User user, MeetingCreateRequest request) {
 
         // 1. 카테고리 조회
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
+        Category category = categoryRepository.findCategoryById(request.getCategoryId());
 
         // 2. 모임 생성
         Meeting meeting = new Meeting(request, category);
@@ -137,8 +135,7 @@ public class MeetingService {
         }
 
         // 4. 카테고리 확인
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
+        Category category = categoryRepository.findCategoryById(request.getCategoryId());
 
         // 5. 내용 수정
         meeting.updateMeeting(request, category);
