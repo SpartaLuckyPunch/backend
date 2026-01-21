@@ -1,6 +1,7 @@
 package com.example.burnchuck.domain.meeting.repository;
 
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
+import com.example.burnchuck.domain.meeting.model.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
 import org.springframework.data.domain.Page;
@@ -21,4 +22,6 @@ public interface MeetingCustomRepository {
             Long userId,
             Pageable pageable
     );
+
+    Page<MeetingSummaryDto> searchMeetings(MeetingSearchRequest request, Pageable pageable);
 }

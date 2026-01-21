@@ -5,6 +5,7 @@ import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.model.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
 import com.example.burnchuck.domain.meeting.model.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
@@ -113,5 +114,20 @@ public class MeetingController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));
+    }
+
+    /**
+     * 모임 검색
+     */
+    @GetMapping("/search")
+    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryDto>>> searchMeetings(
+            @ModelAttribute MeetingSearchRequest searchRequest,
+            @PageableDefault(size = 6) Pageable pageable
+    ) {
+
+        Page<MeetingSummaryDto> page = meetingService.searchMeetings(searchRequest, pageable);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(MEETING_SEARCH_SUCCESS, PageResponse.from(page)));
     }
 }
