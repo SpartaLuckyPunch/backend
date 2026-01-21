@@ -15,15 +15,15 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long>, Meeting
 
     Optional<Meeting> findByIdAndIsDeletedFalse(Long id);
 
-    default Meeting findActivateMeetingById(Long id) {
-        return findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEETING_NOT_FOUND));
-    }
-
     @Query("""
             SELECT m
             FROM Meeting m
             WHERE m.status != :status AND m.isDeleted = false
             """)
     List<Meeting> findActivateMeetingByStatusNot(@Param("status") MeetingStatus meetingStatus);
+
+    default Meeting findActivateMeetingById(Long id) {
+        return findByIdAndIsDeletedFalse(id)
+            .orElseThrow(() -> new CustomException(ErrorCode.MEETING_NOT_FOUND));
+    }
 }
