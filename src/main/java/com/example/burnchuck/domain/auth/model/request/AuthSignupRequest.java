@@ -34,7 +34,6 @@ public class AuthSignupRequest {
     @NotBlank(message = ValidationMessage.CITY_NOT_BLANK)
     private String city;
 
-    @NotBlank(message = ValidationMessage.DISTRICT_NOT_BLANK)
     private String district;
 
     @NotBlank(message = ValidationMessage.GENDER_NOT_BLANK)
