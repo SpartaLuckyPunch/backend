@@ -10,11 +10,11 @@ import java.util.List;
 @AllArgsConstructor
 public class CategoryListResponse {
 
-    private List<CategoryResponse> categories;
+    private List<CategoryResponse> categoryResponseList;
 
-    public static CategoryListResponse from(List<Category> categories) {
+    public static CategoryListResponse from(List<Category> categoryList) {
         return new CategoryListResponse(
-                categories.stream()
+                categoryList.stream()
                         .map(CategoryResponse::from)
                         .toList()
         );
