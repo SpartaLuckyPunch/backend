@@ -1,6 +1,5 @@
-package com.example.burnchuck.domain.user.enums;
+package com.example.burnchuck.common.enums;
 
-import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
 import java.util.Arrays;
 import lombok.AllArgsConstructor;
