@@ -1,5 +1,9 @@
 package com.example.burnchuck.domain.review.controller;
 
+import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_CREATE_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_GET_LIST_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_GET_ONE_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_REACTION_GET_SUCCESS;
 
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
@@ -9,6 +13,7 @@ import com.example.burnchuck.domain.review.model.response.ReviewDetailResponse;
 import com.example.burnchuck.domain.review.model.response.ReviewGetListResponse;
 import com.example.burnchuck.domain.review.service.ReviewService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,11 +21,12 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
-import static com.example.burnchuck.common.enums.SuccessMessage.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
@@ -57,7 +63,7 @@ public class ReviewController {
         ReviewGetListResponse response = reviewService.getReviewList(userId, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(REVIEW_GET_SUCCESS, response));
+                .body(CommonResponse.success(REVIEW_GET_LIST_SUCCESS, response));
     }
 
     /**
@@ -70,7 +76,7 @@ public class ReviewController {
         ReviewDetailResponse response = reviewService.getReviewDetail(reviewId);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(REVIEW_GET_SUCCESS, response));
+                .body(CommonResponse.success(REVIEW_GET_ONE_SUCCESS, response));
     }
 
     /**

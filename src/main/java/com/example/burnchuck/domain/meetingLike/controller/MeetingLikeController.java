@@ -31,7 +31,7 @@ public class MeetingLikeController {
         MeetingLikeResponse response = meetingLikeService.createLike(user, meetingId);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(CommonResponse.success(LIKE_SUCCESS, response));
+                .body(CommonResponse.success(LIKE_CREATE_SUCCESS, response));
     }
 
     /**

@@ -32,7 +32,7 @@ public class FollowController {
         FollowResponse response = followService.follow(user, userId);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(CommonResponse.success(FOLLOW_SUCCESS, response));
+                .body(CommonResponse.success(FOLLOW_CREATE_SUCCESS, response));
     }
 
     /**
@@ -46,7 +46,7 @@ public class FollowController {
         followService.unfollow(user, userId);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.successNodata(UNFOLLOW_SUCCESS));
+                .body(CommonResponse.successNodata(FOLLOW_DELETE_SUCCESS));
     }
 
     /**
