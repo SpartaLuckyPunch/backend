@@ -217,7 +217,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .leftJoin(meetingLike).on(meetingLike.meeting.eq(meeting)) // 좋아요 테이블을 모임과 연결
                 .where(
                         keywordContains(request.getKeyword()),
-                        categoryEq(request.getCategory())
+                        categoryEq(request.getCategory()),
+                        meeting.status.eq(MeetingStatus.OPEN) // 오픈 상태 추가
                 )
                 .groupBy(meeting.id) // 카운트하기 위해 모임별로 묶어줌
                 .orderBy(orderSpecifier)
@@ -235,11 +236,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                         categoryEq(request.getCategory())
                 );
 
-        // fetchOne() 결과 null 체크 및 NPE 방지
-        return PageableExecutionUtils.getPage(content, pageable, () -> {
-            Long total = countQuery.fetchOne();
-            return total != null ? total : 0L;
-        });
+        // 반환
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
     // 키워드 검색
