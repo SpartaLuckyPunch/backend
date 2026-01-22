@@ -1,5 +1,6 @@
 package com.example.burnchuck.common.utils;
 
+import com.example.burnchuck.common.enums.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
@@ -7,8 +8,10 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+
 import java.util.Date;
 import javax.crypto.SecretKey;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -34,13 +37,14 @@ public class JwtUtil {
     }
 
     // 토큰 생성
-    public String generateToken(Long id, String email, String nickname) {
+    public String generateToken(Long id, String email, String nickname, UserRole userRole) {
         Date now = new Date();
 
         return BEARER_PREFIX + Jwts.builder()
             .claim("id", id)
             .claim("email", email)
             .claim("nickname", nickname)
+            .claim("role", userRole.name())
             .issuedAt(now)
             .expiration(new Date(now.getTime() + TOKEN_TIME))
             .signWith(key, Jwts.SIG.HS256)
@@ -77,5 +81,9 @@ public class JwtUtil {
 
     public String extractNickname(String token) {
         return extractAllClaims(token).get("nickname", String.class);
+    }
+
+    public String extractRole(String token) {
+        return extractAllClaims(token).get("role", String.class);
     }
 }

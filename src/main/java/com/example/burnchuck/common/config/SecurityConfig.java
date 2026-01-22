@@ -1,5 +1,6 @@
 package com.example.burnchuck.common.config;
 
+import com.example.burnchuck.common.enums.UserRole;
 import com.example.burnchuck.common.filter.JwtFilter;
 import com.example.burnchuck.common.jwt.JwtAccessDeniedHandler;
 import com.example.burnchuck.common.jwt.JwtAuthenticationEntryPoint;
