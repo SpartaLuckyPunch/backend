@@ -2,13 +2,14 @@ package com.example.burnchuck.common.entity;
 
 import com.example.burnchuck.common.enums.MeetingRole;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "user_meeting")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserMeeting {
 
     @Id
@@ -31,5 +32,9 @@ public class UserMeeting {
         this.user = user;
         this.meeting = meeting;
         this.meetingRole = meetingRole;
+    }
+
+    public boolean isHost() {
+        return this.meetingRole == MeetingRole.HOST;
     }
 }

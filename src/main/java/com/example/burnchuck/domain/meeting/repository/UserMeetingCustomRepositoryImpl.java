@@ -1,9 +1,9 @@
 package com.example.burnchuck.domain.meeting.repository;
 
 import static com.example.burnchuck.common.entity.QMeeting.meeting;
+import static com.example.burnchuck.common.entity.QUser.user;
 import static com.example.burnchuck.common.entity.QUserMeeting.userMeeting;
 
-import com.example.burnchuck.common.entity.QUser;
 import com.example.burnchuck.common.entity.QUserMeeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
@@ -47,9 +47,6 @@ public class UserMeetingCustomRepositoryImpl implements UserMeetingCustomReposit
 
     @Override
     public List<UserMeeting> findMeetingMembers(Long meetingId) {
-
-        QUserMeeting userMeeting = QUserMeeting.userMeeting;
-        QUser user = QUser.user;
 
         return queryFactory
                 .selectFrom(userMeeting)

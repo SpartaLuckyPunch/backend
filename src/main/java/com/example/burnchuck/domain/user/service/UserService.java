@@ -1,26 +1,26 @@
 package com.example.burnchuck.domain.user.service;
 
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Review;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
-import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
 import com.example.burnchuck.domain.review.repository.ReviewRepository;
-import com.example.burnchuck.domain.user.dto.request.*;
-import com.example.burnchuck.domain.user.dto.response.*;
+import com.example.burnchuck.domain.user.dto.request.UserUpdatePasswordRequest;
+import com.example.burnchuck.domain.user.dto.request.UserUpdateProfileRequest;
+import com.example.burnchuck.domain.user.dto.response.UserGetProfileReponse;
+import com.example.burnchuck.domain.user.dto.response.UserUpdateProfileResponse;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
-
 import java.util.List;
-import java.util.Objects;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +45,7 @@ public class UserService {
         String currentNickname = user.getNickname();
         String newNickname = request.getNickname();
 
-        boolean isNicknameChanged = !Objects.equals(currentNickname, newNickname);
+        boolean isNicknameChanged = !ObjectUtils.nullSafeEquals(currentNickname, newNickname);
         boolean existNickname = userRepository.existsByNickname(newNickname);
 
         if (isNicknameChanged && existNickname) {
@@ -73,7 +73,7 @@ public class UserService {
         String oldPassword = request.getOldPassword();
         String newPassword = request.getNewPassword();
 
-        if (Objects.equals(oldPassword, newPassword)) {
+        if (ObjectUtils.nullSafeEquals(oldPassword, newPassword)) {
             throw new CustomException(ErrorCode.SAME_PASSWORD);
         }
 
