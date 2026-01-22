@@ -28,13 +28,13 @@ public class UserController {
      */
     @PatchMapping
     public ResponseEntity<CommonResponse<UserUpdateProfileResponse>> updateProfile(
-            @AuthenticationPrincipal AuthUser authUser,
-            @Valid @RequestBody UserUpdateProfileRequest request
+        @AuthenticationPrincipal AuthUser authUser,
+        @Valid @RequestBody UserUpdateProfileRequest request
     ) {
         UserUpdateProfileResponse response = userService.updateProfile(authUser, request);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(USER_UPDATE_PROFILE_SUCCESS, response));
+            .body(CommonResponse.success(USER_UPDATE_PROFILE_SUCCESS, response));
     }
 
     /**
@@ -42,13 +42,13 @@ public class UserController {
      */
     @PutMapping("/password")
     public ResponseEntity<CommonResponse<Void>> updatePassword(
-            @AuthenticationPrincipal AuthUser authUser,
-            @Valid @RequestBody UserUpdatePasswordRequest request
+        @AuthenticationPrincipal AuthUser authUser,
+        @Valid @RequestBody UserUpdatePasswordRequest request
     ) {
         userService.updatePassword(authUser, request);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.successNodata(USER_UPDATE_PASSWORD_SUCCESS));
+            .body(CommonResponse.successNodata(USER_UPDATE_PASSWORD_SUCCESS));
     }
 
     /**
@@ -56,12 +56,12 @@ public class UserController {
      */
     @DeleteMapping
     public ResponseEntity<CommonResponse<Void>> deleteUser(
-            @AuthenticationPrincipal AuthUser authUser
+        @AuthenticationPrincipal AuthUser authUser
     ) {
         userService.deleteUser(authUser);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.successNodata(USER_DELETE_SUCCESS));
+            .body(CommonResponse.successNodata(USER_DELETE_SUCCESS));
     }
 
     /**
@@ -69,12 +69,11 @@ public class UserController {
      */
     @GetMapping("/{userId}")
     public ResponseEntity<CommonResponse<UserGetProfileReponse>> getProfile(
-            @PathVariable Long userId
+        @PathVariable Long userId
     ) {
         UserGetProfileReponse response = userService.getProfile(userId);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(USER_GET_PROFILE_SUCCESS, response));
+            .body(CommonResponse.success(USER_GET_PROFILE_SUCCESS, response));
     }
-
 }
