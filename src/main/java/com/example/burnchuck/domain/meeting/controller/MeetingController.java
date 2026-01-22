@@ -15,7 +15,7 @@ import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.model.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.model.request.MeetingUpdateRequest;
-import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
+import com.example.burnchuck.domain.meeting.model.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingMemberResponse;
@@ -122,11 +122,11 @@ public class MeetingController {
      * 주최한 모임 목록 조회 (로그인한 유저 기준)
      */
     @GetMapping("/hosted-meetings")
-    public ResponseEntity<CommonResponse<PageResponse<HostedMeetingResponse>>> getMyHostedMeetings(
+    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryWithStatusResponse>>> getMyHostedMeetings(
         @AuthenticationPrincipal AuthUser authUser,
         @PageableDefault(size = 6) Pageable pageable
     ) {
-        Page<HostedMeetingResponse> page = meetingService.getMyHostedMeetings(authUser, pageable);
+        Page<MeetingSummaryWithStatusResponse> page = meetingService.getMyHostedMeetings(authUser, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(MEETING_GET_HOSTED_LIST_SUCCESS, PageResponse.from(page)));
@@ -136,11 +136,11 @@ public class MeetingController {
      * 주최한 모임 목록 조회 (입력받은 유저 기준)
      */
     @GetMapping("/hosted-meetings/users/{userId}")
-    public ResponseEntity<CommonResponse<PageResponse<HostedMeetingResponse>>> getOthersHostedMeetings(
+    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryWithStatusResponse>>> getOthersHostedMeetings(
         @PathVariable Long userId,
         @PageableDefault(size = 6) Pageable pageable
     ) {
-        Page<HostedMeetingResponse> page = meetingService.getOthersHostedMeetings(userId, pageable);
+        Page<MeetingSummaryWithStatusResponse> page = meetingService.getOthersHostedMeetings(userId, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(MEETING_GET_HOSTED_LIST_SUCCESS, PageResponse.from(page)));

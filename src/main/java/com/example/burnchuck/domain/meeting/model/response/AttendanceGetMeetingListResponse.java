@@ -8,5 +8,5 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AttendanceGetMeetingListResponse {
 
-    private final List<AttendanceMeetingResponse> meetingList;
+    private final List<MeetingSummaryWithStatusResponse> meetingList;
 }

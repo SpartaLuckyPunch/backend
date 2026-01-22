@@ -8,7 +8,7 @@ import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.example.burnchuck.domain.meeting.model.request.MeetingSearchRequest;
-import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
+import com.example.burnchuck.domain.meeting.model.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -128,16 +128,16 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     /**
      * 내가 주최한 모임 조회
      */
-    public Page<HostedMeetingResponse> findHostedMeetings(
+    public Page<MeetingSummaryWithStatusResponse> findHostedMeetings(
             Long userId,
             Pageable pageable
     ) {
         QMeeting meeting = QMeeting.meeting;
         QUserMeeting userMeeting = QUserMeeting.userMeeting;
 
-        List<HostedMeetingResponse> content = queryFactory
+        List<MeetingSummaryWithStatusResponse> content = queryFactory
                 .select(Projections.constructor(
-                        HostedMeetingResponse.class,
+                        MeetingSummaryWithStatusResponse.class,
                         meeting.id,
                         meeting.title,
                         meeting.imgUrl,

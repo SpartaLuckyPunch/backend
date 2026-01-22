@@ -2,7 +2,7 @@ package com.example.burnchuck.domain.meeting.repository;
 
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.example.burnchuck.domain.meeting.model.request.MeetingSearchRequest;
-import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
+import com.example.burnchuck.domain.meeting.model.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +18,7 @@ public interface MeetingCustomRepository {
 
     Optional<MeetingDetailResponse> findMeetingDetail(Long meetingId);
 
-    Page<HostedMeetingResponse> findHostedMeetings(
+    Page<MeetingSummaryWithStatusResponse> findHostedMeetings(
             Long userId,
             Pageable pageable
     );

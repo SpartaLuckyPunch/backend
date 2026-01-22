@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @RequiredArgsConstructor
-public class HostedMeetingResponse {
+public class MeetingSummaryWithStatusResponse {
 
     private final Long meetingId;
     private final String meetingTitle;

@@ -17,7 +17,7 @@ import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.model.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.model.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.model.response.AttendeeResponse;
-import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
+import com.example.burnchuck.domain.meeting.model.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingMemberResponse;
@@ -180,7 +180,7 @@ public class MeetingService {
      * 주최한 모임 목록 조회 (로그인한 유저 기준)
      */
     @Transactional(readOnly = true)
-    public Page<HostedMeetingResponse> getMyHostedMeetings(AuthUser authUser, Pageable pageable) {
+    public Page<MeetingSummaryWithStatusResponse> getMyHostedMeetings(AuthUser authUser, Pageable pageable) {
 
         return meetingRepository.findHostedMeetings(authUser.getId(), pageable);
     }
@@ -189,7 +189,7 @@ public class MeetingService {
      * 주최한 모임 목록 조회 (입력받은 유저 기준)
      */
     @Transactional(readOnly = true)
-    public Page<HostedMeetingResponse> getOthersHostedMeetings(Long userId, Pageable pageable) {
+    public Page<MeetingSummaryWithStatusResponse> getOthersHostedMeetings(Long userId, Pageable pageable) {
 
         User user = userRepository.findActivateUserById(userId);
 

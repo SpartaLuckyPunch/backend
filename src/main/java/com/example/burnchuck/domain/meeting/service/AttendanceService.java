@@ -9,7 +9,7 @@ import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.model.response.AttendanceGetMeetingListResponse;
-import com.example.burnchuck.domain.meeting.model.response.AttendanceMeetingResponse;
+import com.example.burnchuck.domain.meeting.model.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
@@ -116,7 +116,7 @@ public class AttendanceService {
         User user = userRepository.findActivateUserById(authUser.getId());
 
         // 2. User 기준으로 Meeting 정보 조회
-       List<AttendanceMeetingResponse> meetingList = userMeetingRepository.findAllMeetingsByUser(user);
+       List<MeetingSummaryWithStatusResponse> meetingList = userMeetingRepository.findAllMeetingsByUser(user);
 
        return new AttendanceGetMeetingListResponse(meetingList);
     }
