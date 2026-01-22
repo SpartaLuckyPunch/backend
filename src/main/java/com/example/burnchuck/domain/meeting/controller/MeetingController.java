@@ -2,8 +2,9 @@ package com.example.burnchuck.domain.meeting.controller;
 
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_CREATE_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_DELETE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_HOSTED_LIST_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_MEMBER_LIST_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_SEARCH_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_UPDATE_SUCCESS;
 
@@ -17,6 +18,7 @@ import com.example.burnchuck.domain.meeting.model.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.model.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
 import jakarta.validation.Valid;
@@ -117,17 +119,30 @@ public class MeetingController {
     }
 
     /**
-     * 주최한 모임 목록 조회
+     * 주최한 모임 목록 조회 (로그인한 유저 기준)
      */
     @GetMapping("/meetings/hosted-meetings")
-    public ResponseEntity<CommonResponse<PageResponse<HostedMeetingResponse>>> getHostedMeetings(
-            @AuthenticationPrincipal AuthUser authUser,
-            @PageableDefault(size = 6) Pageable pageable
+    public ResponseEntity<CommonResponse<PageResponse<HostedMeetingResponse>>> getMyHostedMeetings(
+        @AuthenticationPrincipal AuthUser authUser,
+        @PageableDefault(size = 6) Pageable pageable
     ) {
-        Page<HostedMeetingResponse> page = meetingService.getHostedMeetings(authUser, pageable);
+        Page<HostedMeetingResponse> page = meetingService.getMyHostedMeetings(authUser, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(MEETING_GET_HOSTED_LIST_SUCCESS, PageResponse.from(page)));
+            .body(CommonResponse.success(MEETING_GET_HOSTED_LIST_SUCCESS, PageResponse.from(page)));
+    }
+
+    /**
+     * 모임 참여자 목록 조회
+     */
+    @GetMapping("/meetings/{meetingId}/attendees")
+    public ResponseEntity<CommonResponse<MeetingMemberResponse>> getMeetingMembers(
+        @PathVariable Long meetingId
+    ) {
+        MeetingMemberResponse response = meetingService.getMeetingMembers(meetingId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.success(MEETING_GET_MEMBER_LIST_SUCCESS, response));
     }
 
     /**

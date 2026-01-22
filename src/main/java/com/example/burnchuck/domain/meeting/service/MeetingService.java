@@ -1,6 +1,7 @@
 package com.example.burnchuck.domain.meeting.service;
 
 import static com.example.burnchuck.common.enums.ErrorCode.ACCESS_DENIED;
+import static com.example.burnchuck.common.enums.ErrorCode.HOST_NOT_FOUND;
 import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.entity.Category;
@@ -9,21 +10,24 @@ import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.exception.CustomException;
-import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
 import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.model.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.model.request.MeetingUpdateRequest;
+import com.example.burnchuck.domain.meeting.model.response.AttendeeResponse;
 import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.model.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.model.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
+import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -173,14 +177,50 @@ public class MeetingService {
     }
 
     /**
-     * 주최한 모임 목록 조회
+     * 주최한 모임 목록 조회 (로그인한 유저 기준)
      */
     @Transactional(readOnly = true)
-    public Page<HostedMeetingResponse> getHostedMeetings(
-            AuthUser authUser,
-            Pageable pageable
-    ) {
+    public Page<HostedMeetingResponse> getMyHostedMeetings(AuthUser authUser, Pageable pageable) {
+
         return meetingRepository.findHostedMeetings(authUser.getId(), pageable);
+    }
+
+    /**
+     * 모임 참여자 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public MeetingMemberResponse getMeetingMembers(Long meetingId) {
+
+        // 1. 유저 미팅 객체 조회
+        List<UserMeeting> userMeetings = userMeetingRepository.findMeetingMembers(meetingId);
+
+        if (userMeetings.isEmpty()) {
+            throw new CustomException(MEETING_NOT_FOUND);
+        }
+
+        // 2. 유저 미팅 객체에서 호스트 역할 유저 조회
+        UserMeeting host = userMeetings.stream()
+            .filter(userMeeting -> userMeeting.getMeetingRole() == MeetingRole.HOST)
+            .findFirst()
+            .orElseThrow(() -> new CustomException(HOST_NOT_FOUND));
+
+        // 3. 유저 미팅 객체에서 참여자 역할 유저 조회
+        List<AttendeeResponse> attendees = userMeetings.stream()
+            .filter(userMeeting -> userMeeting.getMeetingRole() == MeetingRole.PARTICIPANT)
+            .map(userMeeting -> new AttendeeResponse(
+                userMeeting.getUser().getId(),
+                userMeeting.getUser().getProfileImgUrl(),
+                userMeeting.getUser().getNickname()
+            ))
+            .toList();
+
+        // 4. 응답 객체 반환
+        return new MeetingMemberResponse(
+            host.getUser().getId(),
+            host.getUser().getProfileImgUrl(),
+            host.getUser().getNickname(),
+            attendees
+        );
     }
 
     /**

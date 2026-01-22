@@ -3,13 +3,11 @@ package com.example.burnchuck.domain.meeting.controller;
 import static com.example.burnchuck.common.enums.SuccessMessage.ATTENDANCE_CANCEL_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.ATTENDANCE_GET_MEETING_LIST_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.ATTENDANCE_REGISTER_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_MEMBER_LIST_SUCCESS;
 
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.domain.meeting.model.response.AttendanceGetMeetingListResponse;
-import com.example.burnchuck.domain.meeting.model.response.MeetingMemberResponse;
-import com.example.burnchuck.domain.meeting.service.AttendanceService;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
+import com.example.burnchuck.domain.meeting.model.response.AttendanceGetMeetingListResponse;
+import com.example.burnchuck.domain.meeting.service.AttendanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,18 +65,5 @@ public class AttendanceController {
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(ATTENDANCE_GET_MEETING_LIST_SUCCESS, response));
-    }
-
-    /**
-     * 모임 참여자 목록 조회
-     */
-    @GetMapping("/meetings/{meetingId}/attendees")
-    public ResponseEntity<CommonResponse<MeetingMemberResponse>> getMeetingMembers(
-            @PathVariable Long meetingId
-    ) {
-        MeetingMemberResponse response = attendanceService.getMeetingMembers(meetingId);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(MEETING_GET_MEMBER_LIST_SUCCESS, response));
     }
 }
