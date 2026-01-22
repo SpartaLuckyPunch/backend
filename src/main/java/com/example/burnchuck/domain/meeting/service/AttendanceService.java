@@ -1,13 +1,14 @@
 package com.example.burnchuck.domain.meeting.service;
 
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
+import com.example.burnchuck.common.enums.NotificationType;
 import com.example.burnchuck.common.exception.CustomException;
-import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.dto.response.AttendanceGetMeetingListResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
@@ -59,7 +60,7 @@ public class AttendanceService {
             meeting.updateStatus(MeetingStatus.CLOSED);
         }
 
-        notificationService.notifyMeetingMember(true, meeting, user);
+        notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
     }
 
     /**
@@ -88,7 +89,7 @@ public class AttendanceService {
             meeting.updateStatus(MeetingStatus.OPEN);
         }
 
-        notificationService.notifyMeetingMember(false, meeting, user);
+        notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_LEFT, meeting, user);
     }
 
     /**
