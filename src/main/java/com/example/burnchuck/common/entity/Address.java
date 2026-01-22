@@ -20,7 +20,6 @@ public class Address {
     @Column(nullable = false)
     private String city;
 
-    @Column(nullable = false)
     private String district;
 
     @Column(nullable = false)
@@ -28,12 +27,4 @@ public class Address {
 
     @Column(nullable = false)
     private double longitude;
-
-    public Address(String province, String city, String district, double latitude, double longitude) {
-        this.province = province;
-        this.city = city;
-        this.district = district;
-        this.latitude = latitude;
-        this.longitude = longitude;
-    }
 }
