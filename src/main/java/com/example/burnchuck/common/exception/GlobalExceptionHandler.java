@@ -3,6 +3,8 @@ package com.example.burnchuck.common.exception;
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.enums.ErrorCode;
 import jakarta.servlet.ServletException;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
@@ -86,6 +89,39 @@ public class GlobalExceptionHandler {
         log.warn("ServletException 발생 : {}", e.getMessage());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    // 파일 업로드 / 다운로드 중 예외 발생
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<CommonResponse<Void>> handleIOException(IOException e) {
+
+        CommonResponse<Void> response = CommonResponse.exception("파일 처리 중 오류가 발생했습니다.");
+
+        log.error("IOException 발생", e);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    // 외부 시스템 / 비동기 처리 시 Timeout 되었을 때
+    @ExceptionHandler(TimeoutException.class)
+    public ResponseEntity<CommonResponse<Void>> handleTimeout(TimeoutException e) {
+
+        CommonResponse<Void> response = CommonResponse.exception("요청 시간이 초과되었습니다.");
+
+        log.error("TimeoutException 발생", e);
+
+        return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body(response);
+    }
+
+    // 외부 API 호출 실패
+    @ExceptionHandler(HttpClientErrorException.class)
+    public ResponseEntity<CommonResponse<Void>> handleHttpClientError(HttpClientErrorException e) {
+
+        CommonResponse<Void> response = CommonResponse.exception("외부 서비스 요청이 실패했습니다.");
+
+        log.warn("HttpClientErrorException 발생", e);
+
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(response);
     }
 
     // RuntimeException을 상속받는 모든 예외 처리
