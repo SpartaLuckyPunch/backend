@@ -88,4 +88,16 @@ public class Meeting extends BaseEntity {
     public void updateStatus(MeetingStatus status) {
         this.status = status;
     }
+
+    public boolean isOpen() {
+        return this.status == MeetingStatus.OPEN;
+    }
+
+    public boolean isClosed() {
+        return this.status == MeetingStatus.CLOSED;
+    }
+
+    public boolean isCompleted() {
+        return this.status == MeetingStatus.COMPLETED;
+    }
 }

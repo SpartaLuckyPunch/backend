@@ -33,4 +33,8 @@ public class UserMeeting {
         this.meeting = meeting;
         this.meetingRole = meetingRole;
     }
+
+    public boolean isHost() {
+        return this.meetingRole == MeetingRole.HOST;
+    }
 }

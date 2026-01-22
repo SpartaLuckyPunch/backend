@@ -4,6 +4,7 @@ import com.example.burnchuck.common.exception.CustomException;
 import java.util.Arrays;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.ObjectUtils;
 
 @Getter
 @RequiredArgsConstructor
@@ -17,7 +18,7 @@ public enum Gender {
 
     public static Gender findEnum(String kor) {
         return Arrays.stream(values())
-            .filter(gender -> gender.kor.equals(kor))
+            .filter(gender -> ObjectUtils.nullSafeEquals(gender.kor, kor))
             .findFirst()
             .orElseThrow(() ->
                 new CustomException(ErrorCode.INVALID_GENDER_FORMAT)

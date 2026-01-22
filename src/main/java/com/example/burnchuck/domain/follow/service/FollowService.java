@@ -20,6 +20,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +42,7 @@ public class FollowService {
 
         User followee = userRepository.findActivateUserById(userId, FOLLOWEE_NOT_FOUND);
 
-        if (follower.getId().equals(followee.getId())) {
+        if (ObjectUtils.nullSafeEquals(follower.getId(), followee.getId())) {
             throw new CustomException(SELF_FOLLOW_NOT_ALLOWED);
         }
 
@@ -66,7 +67,7 @@ public class FollowService {
 
         User followee = userRepository.findActivateUserById(userId, FOLLOWEE_NOT_FOUND);
 
-        if (follower.getId().equals(followee.getId())) {
+        if (ObjectUtils.nullSafeEquals(follower.getId(), followee.getId())) {
             throw new CustomException(SELF_UNFOLLOW_NOT_ALLOWED);
         }
 
