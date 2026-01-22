@@ -32,8 +32,8 @@ public class JwtUtil {
         byte[] bytes = Decoders.BASE64.decode(secretKeyString);
         this.key = Keys.hmacShaKeyFor(bytes);
         this.parser = Jwts.parser()
-                .verifyWith(this.key)
-                .build();
+            .verifyWith(this.key)
+            .build();
     }
 
     // 토큰 생성
