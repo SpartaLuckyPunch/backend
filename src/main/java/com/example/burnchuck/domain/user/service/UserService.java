@@ -35,7 +35,6 @@ public class UserService {
 
     /**
      * 내 정보 수정(닉네임, 주소)
-     *
      * 고도화 작업 시, 프로필 이미지 수정 항목 추가 예정
      */
     @Transactional

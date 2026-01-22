@@ -13,14 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,7 +24,6 @@ public class UserController {
 
     /**
      * 내 정보 수정(닉네임, 주소)
-     *
      * 고도화 작업 시, 프로필 이미지 수정 항목 추가 예정
      */
     @PatchMapping
@@ -78,7 +70,7 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseEntity<CommonResponse<UserGetProfileReponse>> getProfile(
         @PathVariable Long userId
-    ){
+    ) {
         UserGetProfileReponse response = userService.getProfile(userId);
 
         return ResponseEntity.status(HttpStatus.OK)
