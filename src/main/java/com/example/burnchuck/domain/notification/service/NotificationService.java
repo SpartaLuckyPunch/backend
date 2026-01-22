@@ -39,9 +39,7 @@ public class NotificationService {
 
         List<Follow> followerList = followRepository.findAllByFollowee(user);
 
-        String description = notificationType.getDescription();
-        description = description.replace("{nickname}", user.getNickname());
-        description = description.replace("{title}", meeting.getTitle());
+        String description = notificationType.getDescription(notificationType, meeting.getTitle(), user.getNickname());
 
         List<Notification> notificationList = new ArrayList<>();
 
@@ -75,9 +73,7 @@ public class NotificationService {
             notificationType = NotificationType.MEETING_MEMBER_LEFT;
         }
 
-        String description = notificationType.getDescription();
-        description = description.replace("{title}", meeting.getTitle());
-        description = description.replace("{nickname}", participant.getNickname());
+        String description = notificationType.getDescription(notificationType, meeting.getTitle(), participant.getNickname());
 
         UserMeeting host = userMeetingRepository.findHostByMeeting(meeting);
 
@@ -101,8 +97,7 @@ public class NotificationService {
 
         List<UserMeeting> userMeetingList = userMeetingRepository.findMeetingMembers(meeting.getId());
 
-        String description = notificationType.getDescription();
-        description = description.replace("{title}", meeting.getTitle());
+        String description = notificationType.getDescription(notificationType, meeting.getTitle(), null);
 
         List<Notification> notificationList = new ArrayList<>();
 
