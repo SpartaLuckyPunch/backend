@@ -2,6 +2,7 @@ package com.example.burnchuck.common.exception;
 
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.enums.ErrorCode;
+import jakarta.servlet.ServletException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +61,17 @@ public class GlobalExceptionHandler {
 
         log.warn("HttpRequestMethodNotSupportedException 발생 : {}", e.getMessage());
 
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(response);
+    }
+
+    // ServletException을 상속받는 모든 예외 처리(요청 형식이 잘못되었을 때)
+    @ExceptionHandler(ServletException.class)
+    public ResponseEntity<CommonResponse<Void>> exception(ServletException e) {
+
+        CommonResponse<Void> response = CommonResponse.exception("요청 형식이 올바르지 않습니다.");
+
+        log.warn("ServletException 발생 : {}", e.getMessage());
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
@@ -67,7 +79,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<CommonResponse<Void>> handleRuntimeException(RuntimeException e) {
 
-        CommonResponse<Void> response = CommonResponse.exception("요청 본문 형식이 올바르지 않습니다");
+        CommonResponse<Void> response = CommonResponse.exception("서버 내부 오류가 발생했습니다.");
 
         log.error("기타 예외 발생", e);
 
