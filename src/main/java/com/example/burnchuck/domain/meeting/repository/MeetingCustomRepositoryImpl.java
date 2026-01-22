@@ -69,8 +69,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // 전체 개수 조회 (페이징용)
-        // total에서 NPE 에러가 날 수 있으므로 Optional.ofNullable 사용
         Long total = Optional.ofNullable(
                 queryFactory
                         .select(meeting.id.countDistinct())
@@ -184,7 +182,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
         QUserMeeting userMeeting = QUserMeeting.userMeeting;
         QMeetingLike meetingLike = QMeetingLike.meetingLike;
 
-        // 1. 정렬 조건 설정 (인기순일 때 좋아요 개수 기준으로)
         OrderSpecifier<?> orderSpecifier =
             switch (request.getOrder()) {
 
@@ -193,7 +190,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 default -> meeting.createdDatetime.desc();
             };
 
-        // 2. 데이터 조회 쿼리
         List<MeetingSummaryResponse> content = queryFactory
                 .select(Projections.constructor(MeetingSummaryResponse.class,
                         meeting.id,
@@ -221,7 +217,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // 3. 카운트 쿼리
         JPAQuery<Long> countQuery = queryFactory
                 .select(meeting.count())
                 .from(meeting)

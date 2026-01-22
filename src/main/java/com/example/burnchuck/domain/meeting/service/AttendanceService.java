@@ -34,30 +34,24 @@ public class AttendanceService {
     @Transactional
     public void registerAttendance(AuthUser authUser, Long meetingId) {
 
-        // 1. 로그인한 유저 정보로 객체 생성
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        // 2. 모임 객체 생성
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
-        // 3. 모임 상태 확인 (모집 완료 시, 신청 불가)
         if (meeting.getStatus() != MeetingStatus.OPEN) {
             throw new CustomException(ErrorCode.ATTENDANCE_CANNOT_REGISTER);
         }
 
-        // 4. 이미 참가한 모임인지 확인
         boolean exists = userMeetingRepository.existsByUserIdAndMeetingId(user.getId(), meeting.getId());
 
         if (exists) {
             throw new CustomException(ErrorCode.ATTENDANCE_ALREADY_REGISTERED);
         }
 
-        // 5. UserMeeting 객체 생성 및 저장
         UserMeeting userMeeting = new UserMeeting(user, meeting, MeetingRole.PARTICIPANT);
 
         userMeetingRepository.save(userMeeting);
 
-        // 6. 모임 상태 '모집 마감'으로 변경 (해당 모임의 마지막 참여자인 경우)
         int maxAttendees = meeting.getMaxAttendees();
         int currentAttendees = userMeetingRepository.countByMeeting(meeting);
 
@@ -65,7 +59,6 @@ public class AttendanceService {
             meeting.updateStatus(MeetingStatus.CLOSED);
         }
 
-        // 7. 주최자에게 알림 발송
         notificationService.notifyMeetingMember(true, meeting, user);
     }
 
@@ -75,34 +68,26 @@ public class AttendanceService {
     @Transactional
     public void cancelAttendance(AuthUser authUser, Long meetingId) {
 
-        // 1. 로그인한 유저 정보로 객체 생성
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        // 2. 모임 객체 생성
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
-        // 3. 모임 상태 확인 (COMPLETED 상태인 경우, 취소 불가)
         if (meeting.getStatus() == MeetingStatus.COMPLETED) {
             throw new CustomException(ErrorCode.ATTENDANCE_CANNOT_CANCEL_WHEN_MEETING_CLOSED);
         }
 
-        // 4. UserMeeting 객체 조회
         UserMeeting userMeeting = userMeetingRepository.findUserMeeting(user.getId(), meeting.getId());
 
-        // 5. 주최자인지 확인 -> 주최자는 모임 참여 취소 불가(추후 추가 예정)
         if (userMeeting.getMeetingRole() == MeetingRole.HOST) {
             throw new CustomException(ErrorCode.ATTENDANCE_HOST_CANNOT_CANCEL);
         }
 
-        // 6. 참여 취소(신청 내역 삭제) (추후 채팅방 나가기 처리 추가 예정)
         userMeetingRepository.delete(userMeeting);
 
-        // 7. 모임 상태가 CLOSED인 경우, OPEN으로 변경
         if (meeting.getStatus() == MeetingStatus.CLOSED) {
             meeting.updateStatus(MeetingStatus.OPEN);
         }
 
-        // 8. 주최자에게 알림 발송
         notificationService.notifyMeetingMember(false, meeting, user);
     }
 
@@ -112,12 +97,10 @@ public class AttendanceService {
     @Transactional(readOnly = true)
     public AttendanceGetMeetingListResponse getAttendingMeetingList(AuthUser authUser) {
 
-        // 1. 로그인한 유저 정보로 객체 생성
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        // 2. User 기준으로 Meeting 정보 조회
-       List<MeetingSummaryWithStatusResponse> meetingList = userMeetingRepository.findAllMeetingsByUser(user);
+        List<MeetingSummaryWithStatusResponse> meetingList = userMeetingRepository.findAllMeetingsByUser(user);
 
-       return new AttendanceGetMeetingListResponse(meetingList);
+        return new AttendanceGetMeetingListResponse(meetingList);
     }
 }

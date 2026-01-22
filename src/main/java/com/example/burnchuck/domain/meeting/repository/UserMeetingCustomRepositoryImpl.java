@@ -21,7 +21,6 @@ public class UserMeetingCustomRepositoryImpl implements UserMeetingCustomReposit
     @Override
     public List<MeetingSummaryWithStatusResponse> findAllMeetingsByUser(User user) {
 
-        // meeting별 참석 인원 수를 카운트하기 위해 같은 테이블 join
         QUserMeeting attendee = new QUserMeeting("attendee");
 
         return queryFactory

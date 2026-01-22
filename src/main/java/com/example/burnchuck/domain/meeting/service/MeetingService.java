@@ -70,23 +70,18 @@ public class MeetingService {
     @Transactional
     public Meeting createMeeting(User user, MeetingCreateRequest request) {
 
-        // 1. 카테고리 조회
         Category category = categoryRepository.findCategoryById(request.getCategoryId());
 
-        // 2. 모임 생성
         Meeting meeting = new Meeting(request, category);
 
-        // 3. 모임 저장
         meetingRepository.save(meeting);
 
-        // 4. HOST 등록
         UserMeeting userMeeting = new UserMeeting(
                 user,
                 meeting,
                 MeetingRole.HOST
         );
 
-        // 5. HOST 저장
         userMeetingRepository.save(userMeeting);
 
         return meeting;
@@ -109,13 +104,10 @@ public class MeetingService {
     @Transactional
     public MeetingDetailResponse getMeetingDetail(Long meetingId) {
 
-        // 1. 번개 조회
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
-        // 2. 번개 조회수 증가
         meeting.increaseViews();
 
-        // 3. QueryDSL에서 응답객체 반환
         return meetingRepository.findMeetingDetail(meetingId)
                 .orElseThrow(() -> new CustomException(MEETING_NOT_FOUND));
     }
@@ -126,28 +118,21 @@ public class MeetingService {
     @Transactional
     public MeetingUpdateResponse updateMeeting(AuthUser authUser, Long meetingId, MeetingUpdateRequest request) {
 
-        // 1. 접근 유저 확인
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        // 2. 모임 확인
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
-        // 3. 모임 호스트 확인 및 비교
         UserMeeting meetingHost = userMeetingRepository.findHostByMeeting(meeting);
         if (!Objects.equals(user.getId(), meetingHost.getUser().getId())) {
             throw new CustomException(ACCESS_DENIED);
         }
 
-        // 4. 카테고리 확인
         Category category = categoryRepository.findCategoryById(request.getCategoryId());
 
-        // 5. 내용 수정
         meeting.updateMeeting(request, category);
 
-        // 6. 이벤트 생성
         eventPublisherService.publishMeetingUpdatedEvent(meeting);
 
-        // 7. 객체 반환
         return MeetingUpdateResponse.from(meeting);
     }
 
@@ -157,22 +142,17 @@ public class MeetingService {
     @Transactional
     public void deleteMeeting(AuthUser authUser, Long meetingId) {
 
-        // 1. 접근 유저 확인
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        // 2. 모임 조회 (삭제되지 않은 모임)
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
-        // 3. HOST 권한 확인
         UserMeeting meetingHost = userMeetingRepository.findHostByMeeting(meeting);
         if (!Objects.equals(user.getId(), meetingHost.getUser().getId())) {
             throw new CustomException(ACCESS_DENIED);
         }
 
-        // 4. 삭제
         meeting.delete();
 
-        // 5. 이벤트 생성
         eventPublisherService.publishMeetingDeletedEvent(meeting);
     }
 
@@ -202,20 +182,17 @@ public class MeetingService {
     @Transactional(readOnly = true)
     public MeetingMemberResponse getMeetingMembers(Long meetingId) {
 
-        // 1. 유저 미팅 객체 조회
         List<UserMeeting> userMeetings = userMeetingRepository.findMeetingMembers(meetingId);
 
         if (userMeetings.isEmpty()) {
             throw new CustomException(MEETING_NOT_FOUND);
         }
 
-        // 2. 유저 미팅 객체에서 호스트 역할 유저 조회
         UserMeeting host = userMeetings.stream()
             .filter(userMeeting -> userMeeting.getMeetingRole() == MeetingRole.HOST)
             .findFirst()
             .orElseThrow(() -> new CustomException(HOST_NOT_FOUND));
 
-        // 3. 유저 미팅 객체에서 참여자 역할 유저 조회
         List<AttendeeResponse> attendees = userMeetings.stream()
             .filter(userMeeting -> userMeeting.getMeetingRole() == MeetingRole.PARTICIPANT)
             .map(userMeeting -> new AttendeeResponse(
@@ -225,7 +202,6 @@ public class MeetingService {
             ))
             .toList();
 
-        // 4. 응답 객체 반환
         return new MeetingMemberResponse(
             host.getUser().getId(),
             host.getUser().getProfileImgUrl(),

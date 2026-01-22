@@ -26,7 +26,6 @@ public class ReactionController {
     @GetMapping
     public ResponseEntity<CommonResponse<List<ReactionResponse>>> getReviewReactionList() {
 
-        // 서비스에서 전체 목록을 가져옴
         List<ReactionResponse> response = reactionService.getReviewReactionList();
 
         return ResponseEntity.status(HttpStatus.OK)

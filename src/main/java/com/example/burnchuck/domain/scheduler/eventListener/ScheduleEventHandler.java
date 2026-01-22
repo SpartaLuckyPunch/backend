@@ -32,10 +32,8 @@ public class ScheduleEventHandler {
     @EventListener(ApplicationReadyEvent.class)
     public void restoreSchedules() {
 
-        // COMPLETED 되지 않은 meeting 조회
         List<Meeting> meetingList = meetingRepository.findActivateMeetingByStatusNot(MeetingStatus.COMPLETED);
 
-        // task 등록
         meetingList.forEach(meeting -> {
             schedulingService.scheduleMeetingStatusComplete(meeting);
             schedulingService.scheduleNotification(meeting);
@@ -69,10 +67,8 @@ public class ScheduleEventHandler {
         Meeting meeting = event.getMeeting();
 
         try {
-            // 1. 예정된 작업 취소
             schedulingService.scheduleCancel(meeting.getId());
 
-            // 2. 새로운 작업 생성
             schedulingService.scheduleMeetingStatusComplete(meeting);
             schedulingService.scheduleNotification(meeting);
         } catch (Exception e) {

@@ -55,10 +55,7 @@ public class SchedulingService {
             meeting.getId(),
             MEETING_CHANGE_STATUS,
             e -> {
-                // 영속성 컨텍스트에 올리기 위해 다시 조회
                 Meeting targetMeeting = meetingRepository.findActivateMeetingById(meeting.getId());
-
-                // 상태 변경
                 targetMeeting.updateStatus(MeetingStatus.COMPLETED);
             },
             meeting.getMeetingDateTime().minusMinutes(10)
@@ -75,10 +72,7 @@ public class SchedulingService {
             meeting.getId(),
             NOTIFICATION_REVIEW_REQUEST,
             e -> {
-                // 영속성 컨텍스트에 올리기 위해 다시 조회
                 Meeting targetMeeting = meetingRepository.findActivateMeetingById(meeting.getId());
-
-                // 알림 생성
                 notificationService.notifyCommentRequest(targetMeeting);
             },
             meeting.getMeetingDateTime().plusHours(3)
