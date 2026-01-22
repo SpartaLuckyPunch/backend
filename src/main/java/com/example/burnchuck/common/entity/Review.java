@@ -17,7 +17,6 @@ public class Review extends BaseEntity{
     @Column(nullable = false)
     private int rating;
 
-    @Column(nullable = false)
     private String detailedReview;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
