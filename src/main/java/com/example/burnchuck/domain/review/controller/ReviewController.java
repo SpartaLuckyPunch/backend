@@ -52,7 +52,7 @@ public class ReviewController {
     /**
      * 후기 목록조회
      */
-    @GetMapping("/users/{userId}/reviews")
+    @GetMapping("/reviews/users/{userId}")
     public ResponseEntity<CommonResponse<ReviewGetListResponse>> getReviewList(
             @PathVariable Long userId,
             @PageableDefault(size = 10, sort = "createdDatetime", direction = Sort.Direction.DESC) Pageable pageable

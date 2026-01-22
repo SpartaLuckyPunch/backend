@@ -48,7 +48,7 @@ public class UserController {
     /**
      * 비밀번호 변경
      */
-    @PutMapping
+    @PutMapping("/password")
     public ResponseEntity<CommonResponse<Void>> updatePassword(
         @AuthenticationPrincipal AuthUser authUser,
         @Valid @RequestBody UserUpdatePasswordRequest request

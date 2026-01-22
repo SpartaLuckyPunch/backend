@@ -119,7 +119,7 @@ public class MeetingController {
     /**
      * 주최한 모임 목록 조회
      */
-    @GetMapping("/me/meetings/hosted")
+    @GetMapping("/meetings/hosted-meetings")
     public ResponseEntity<CommonResponse<PageResponse<HostedMeetingResponse>>> getHostedMeetings(
             @AuthenticationPrincipal AuthUser authUser,
             @PageableDefault(size = 6) Pageable pageable
@@ -133,7 +133,7 @@ public class MeetingController {
     /**
      * 모임 검색
      */
-    @GetMapping("/search")
+    @GetMapping("/meetings/search")
     public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryDto>>> searchMeetings(
             @ModelAttribute MeetingSearchRequest searchRequest,
             @PageableDefault(size = 6) Pageable pageable
