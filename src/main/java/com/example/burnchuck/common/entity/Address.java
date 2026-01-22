@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "addresses")
+@Table(name = "addresses",
+        indexes = {@Index(name = "idx_address_province_city_district", columnList = "province, city, district")})
 @Getter
 @NoArgsConstructor
 public class Address {
