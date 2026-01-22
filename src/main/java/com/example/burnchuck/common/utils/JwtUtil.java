@@ -41,14 +41,14 @@ public class JwtUtil {
         Date now = new Date();
 
         return BEARER_PREFIX + Jwts.builder()
-                .claim("id", id)
-                .claim("email", email)
-                .claim("nickname", nickname)
-                .claim("role", userRole.name())
-                .issuedAt(now)
-                .expiration(new Date(now.getTime() + TOKEN_TIME))
-                .signWith(key, Jwts.SIG.HS256)
-                .compact();
+            .claim("id", id)
+            .claim("email", email)
+            .claim("nickname", nickname)
+            .claim("role", userRole.name())
+            .issuedAt(now)
+            .expiration(new Date(now.getTime() + TOKEN_TIME))
+            .signWith(key, Jwts.SIG.HS256)
+            .compact();
     }
 
     // 토큰 검증
