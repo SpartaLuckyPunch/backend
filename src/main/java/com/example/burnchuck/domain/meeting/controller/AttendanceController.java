@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/meetings")
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
@@ -29,7 +29,7 @@ public class AttendanceController {
     /**
      * 모임 참여 신청
      */
-    @PostMapping("/meetings/{meetingId}/attendance")
+    @PostMapping("/{meetingId}/attendance")
     public ResponseEntity<CommonResponse<Void>> registerAttendance(
         @AuthenticationPrincipal AuthUser authUser,
         @PathVariable Long meetingId
@@ -43,7 +43,7 @@ public class AttendanceController {
     /**
      * 모임 참여 취소
      */
-    @DeleteMapping("/meetings/{meetingId}/attendance")
+    @DeleteMapping("/{meetingId}/attendance")
     public ResponseEntity<CommonResponse<Void>> cancelAttendance(
         @AuthenticationPrincipal AuthUser authUser,
         @PathVariable Long meetingId
@@ -57,7 +57,7 @@ public class AttendanceController {
     /**
      * 참여 중인 모임 목록 조회
      */
-    @GetMapping("/meetings/attendance-meetings")
+    @GetMapping("/attendance-meetings")
     public ResponseEntity<CommonResponse<AttendanceGetMeetingListResponse>> getAttendingMeetingList(
         @AuthenticationPrincipal AuthUser authUser
     ) {

@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/meetings")
 public class MeetingController {
 
     private final MeetingService meetingService;
@@ -50,7 +50,7 @@ public class MeetingController {
     /**
      * 모임 생성
      */
-    @PostMapping("/meetings")
+    @PostMapping
     public ResponseEntity<CommonResponse<MeetingCreateResponse>> createMeeting(
             @AuthenticationPrincipal AuthUser user,
             @Valid @RequestBody MeetingCreateRequest request
@@ -64,7 +64,7 @@ public class MeetingController {
     /**
      * 모임 전체 조회
      */
-    @GetMapping("/meetings")
+    @GetMapping
     public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryDto>>> getMeetings(
             @RequestParam(required = false) String category,
             @PageableDefault(size = 6) Pageable pageable
@@ -78,7 +78,7 @@ public class MeetingController {
     /**
      * 모임 단건 조회
      */
-    @GetMapping("/meetings/{meetingId}")
+    @GetMapping("/{meetingId}")
     public ResponseEntity<CommonResponse<MeetingDetailResponse>> getMeetingDetail(
             @PathVariable Long meetingId
     ) {
@@ -91,7 +91,7 @@ public class MeetingController {
     /**
      * 모임 삭제
      */
-    @DeleteMapping("/meetings/{meetingId}")
+    @DeleteMapping("/{meetingId}")
     public ResponseEntity<CommonResponse<Void>> deleteMeeting(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long meetingId
@@ -105,7 +105,7 @@ public class MeetingController {
     /**
      * 모임 수정
      */
-    @PatchMapping("/meetings/{meetingId}")
+    @PatchMapping("/{meetingId}")
     public ResponseEntity<CommonResponse<MeetingUpdateResponse>> updateMeeting(
             @AuthenticationPrincipal AuthUser user,
             @PathVariable Long meetingId,
@@ -121,7 +121,7 @@ public class MeetingController {
     /**
      * 주최한 모임 목록 조회 (로그인한 유저 기준)
      */
-    @GetMapping("/meetings/hosted-meetings")
+    @GetMapping("/hosted-meetings")
     public ResponseEntity<CommonResponse<PageResponse<HostedMeetingResponse>>> getMyHostedMeetings(
         @AuthenticationPrincipal AuthUser authUser,
         @PageableDefault(size = 6) Pageable pageable
@@ -135,7 +135,7 @@ public class MeetingController {
     /**
      * 주최한 모임 목록 조회 (입력받은 유저 기준)
      */
-    @GetMapping("/meetings/hosted-meetings/users/{userId}")
+    @GetMapping("/hosted-meetings/users/{userId}")
     public ResponseEntity<CommonResponse<PageResponse<HostedMeetingResponse>>> getOthersHostedMeetings(
         @PathVariable Long userId,
         @PageableDefault(size = 6) Pageable pageable
@@ -149,7 +149,7 @@ public class MeetingController {
     /**
      * 모임 참여자 목록 조회
      */
-    @GetMapping("/meetings/{meetingId}/attendees")
+    @GetMapping("/{meetingId}/attendees")
     public ResponseEntity<CommonResponse<MeetingMemberResponse>> getMeetingMembers(
         @PathVariable Long meetingId
     ) {
@@ -162,7 +162,7 @@ public class MeetingController {
     /**
      * 모임 검색
      */
-    @GetMapping("/meetings/search")
+    @GetMapping("/search")
     public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryDto>>> searchMeetings(
             @ModelAttribute MeetingSearchRequest searchRequest,
             @PageableDefault(size = 6) Pageable pageable
