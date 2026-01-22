@@ -3,10 +3,13 @@ package com.example.burnchuck.domain.meeting.repository;
 import static com.example.burnchuck.common.entity.QCategory.category1;
 import static com.example.burnchuck.common.entity.QMeeting.meeting;
 import static com.example.burnchuck.common.entity.QMeetingLike.meetingLike;
+import static com.example.burnchuck.common.entity.QNotification.notification;
 import static com.example.burnchuck.common.entity.QUserMeeting.userMeeting;
 
+import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
+import com.example.burnchuck.common.enums.NotificationType;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
@@ -16,6 +19,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -213,6 +217,24 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 );
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public List<Meeting> findActivateMeetingsForNotification(LocalDateTime startDate, LocalDateTime endDate) {
+
+        return queryFactory
+            .selectFrom(meeting)
+            .leftJoin(notification).on(
+                notification.meeting.id.eq(meeting.id),
+                notification.type.eq(NotificationType.COMMENT_REQUESTED)
+            )
+            .where(
+                meeting.status.eq(MeetingStatus.COMPLETED),
+                meeting.isDeleted.isFalse(),
+                notification.id.isNull(),
+                meeting.meetingDateTime.between(startDate, endDate)
+            )
+            .fetch();
     }
 
     private BooleanExpression categoryEq(String categoryName) {

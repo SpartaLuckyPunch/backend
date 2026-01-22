@@ -7,6 +7,8 @@ import com.example.burnchuck.domain.scheduler.dto.MeetingCreatedEvent;
 import com.example.burnchuck.domain.scheduler.dto.MeetingDeletedEvent;
 import com.example.burnchuck.domain.scheduler.dto.MeetingUpdatedEvent;
 import com.example.burnchuck.domain.scheduler.service.SchedulingService;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,12 +34,20 @@ public class ScheduleEventHandler {
     @EventListener(ApplicationReadyEvent.class)
     public void restoreSchedules() {
 
-        List<Meeting> meetingList = meetingRepository.findActivateMeetingByStatusNot(MeetingStatus.COMPLETED);
+        List<Meeting> meetingList = meetingRepository.findActivateMeetingsForSchedules(MeetingStatus.COMPLETED);
 
         meetingList.forEach(meeting -> {
             schedulingService.scheduleMeetingStatusComplete(meeting);
             schedulingService.scheduleNotification(meeting);
         });
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime startDate = today.minusDays(1).atStartOfDay();
+        LocalDateTime endDate = today.plusDays(1).atStartOfDay();
+
+        List<Meeting> requireNotificationList = meetingRepository.findActivateMeetingsForNotification(startDate, endDate);
+
+        requireNotificationList.forEach(schedulingService::scheduleNotification);
     }
 
     /**
