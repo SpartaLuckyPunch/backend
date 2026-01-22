@@ -2,13 +2,16 @@ package com.example.burnchuck.common.exception;
 
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.enums.ErrorCode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
+@Slf4j(topic = "GlobalExceptionHandler")
 public class GlobalExceptionHandler {
 
     // 커스텀 예외 처리
@@ -18,6 +21,8 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = e.getErrorCode();
 
         CommonResponse<Void> response = CommonResponse.exception(errorCode.getMessage());
+
+        log.warn("CustomException 발생 : {}", errorCode.getMessage());
 
         return ResponseEntity.status(errorCode.getStatus()).body(response);
     }
@@ -30,6 +35,30 @@ public class GlobalExceptionHandler {
 
         CommonResponse<Void> response = CommonResponse.exception(message);
 
+        log.warn("MethodArgumentNotValidException 발생 : {}", message);
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    // HTTP 요청 본문(Body)을 자바 객체로 변환하는 과정이 실패했을 때(ex: JSON 파싱 오류, 요청 본문 누락)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<CommonResponse<Void>> httpMessageNotReadableException(HttpMessageNotReadableException e) {
+
+        CommonResponse<Void> response = CommonResponse.exception("요청 본문 형식이 올바르지 않습니다");
+
+        log.warn("HttpMessageNotReadableException 발생 : {}", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    // RuntimeException을 상속받는 모든 예외 처리
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<CommonResponse<Void>> handleRuntimeException(RuntimeException e) {
+
+        CommonResponse<Void> response = CommonResponse.exception("요청 본문 형식이 올바르지 않습니다");
+
+        log.error("기타 예외 발생", e);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }
