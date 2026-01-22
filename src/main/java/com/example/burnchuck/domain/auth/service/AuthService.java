@@ -49,11 +49,11 @@ public class AuthService {
         Address address = addressRepository.findAddressByAddressInfo(request.getProvince(), request.getCity(), request.getDistrict());
 
         User user = new User(
-                email, encodedPassword, nickname,
-                request.getBirthDate(),
-                gender.isValue(),
-                address,
-                UserRole.USER
+            email, encodedPassword, nickname,
+            request.getBirthDate(),
+            gender.isValue(),
+            address,
+            UserRole.USER
         );
 
         userRepository.save(user);
