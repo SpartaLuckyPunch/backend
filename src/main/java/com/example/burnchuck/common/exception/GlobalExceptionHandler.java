@@ -119,7 +119,7 @@ public class GlobalExceptionHandler {
 
         CommonResponse<Void> response = CommonResponse.exception("외부 서비스 요청이 실패했습니다.");
 
-        log.warn("HttpClientErrorException 발생", e);
+        log.error("HttpClientErrorException 발생", e);
 
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(response);
     }
