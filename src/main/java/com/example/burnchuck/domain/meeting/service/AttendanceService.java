@@ -38,7 +38,7 @@ public class AttendanceService {
 
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
-        if (meeting.getStatus() != MeetingStatus.OPEN) {
+        if (!meeting.isOpen()) {
             throw new CustomException(ErrorCode.ATTENDANCE_CANNOT_REGISTER);
         }
 
@@ -72,7 +72,7 @@ public class AttendanceService {
 
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
-        if (meeting.getStatus() == MeetingStatus.COMPLETED) {
+        if (meeting.isCompleted()) {
             throw new CustomException(ErrorCode.ATTENDANCE_CANNOT_CANCEL_WHEN_MEETING_CLOSED);
         }
 
@@ -84,7 +84,7 @@ public class AttendanceService {
 
         userMeetingRepository.delete(userMeeting);
 
-        if (meeting.getStatus() == MeetingStatus.CLOSED) {
+        if (meeting.isClosed()) {
             meeting.updateStatus(MeetingStatus.OPEN);
         }
 
