@@ -1,28 +1,28 @@
 package com.example.burnchuck.domain.meeting.repository;
 
-import com.example.burnchuck.common.entity.QCategory;
-import com.example.burnchuck.common.entity.QMeeting;
-import com.example.burnchuck.common.entity.QMeetingLike;
-import com.example.burnchuck.common.entity.QUserMeeting;
+import static com.example.burnchuck.common.entity.QCategory.category1;
+import static com.example.burnchuck.common.entity.QMeeting.meeting;
+import static com.example.burnchuck.common.entity.QMeetingLike.meetingLike;
+import static com.example.burnchuck.common.entity.QUserMeeting.userMeeting;
+
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
-import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
-import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
-
-import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
@@ -37,10 +37,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
             String category,
             Pageable pageable
     ) {
-
-        QMeeting meeting = QMeeting.meeting;
-        QUserMeeting userMeeting = QUserMeeting.userMeeting;
-        QCategory category1 = QCategory.category1;
 
         List<MeetingSummaryResponse> content = queryFactory
                 .select(Projections.constructor(
@@ -90,10 +86,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     @Override
     public Optional<MeetingDetailResponse> findMeetingDetail(Long meetingId) {
 
-        QMeeting meeting = QMeeting.meeting;
-        QUserMeeting userMeeting = QUserMeeting.userMeeting;
-        QMeetingLike meetingLike = QMeetingLike.meetingLike;
-
         MeetingDetailResponse result = queryFactory
                 .select(Projections.constructor(
                         MeetingDetailResponse.class,
@@ -130,8 +122,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
             Long userId,
             Pageable pageable
     ) {
-        QMeeting meeting = QMeeting.meeting;
-        QUserMeeting userMeeting = QUserMeeting.userMeeting;
 
         List<MeetingSummaryWithStatusResponse> content = queryFactory
                 .select(Projections.constructor(
@@ -177,11 +167,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     @Override
     public Page<MeetingSummaryResponse> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
 
-        QMeeting meeting = QMeeting.meeting;
-        QCategory qCategory = QCategory.category1;
-        QUserMeeting userMeeting = QUserMeeting.userMeeting;
-        QMeetingLike meetingLike = QMeetingLike.meetingLike;
-
         OrderSpecifier<?> orderSpecifier =
             switch (request.getOrder()) {
 
@@ -203,7 +188,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                         userMeeting.id.countDistinct().intValue()
                 ))
                 .from(meeting)
-                .leftJoin(meeting.category, qCategory)
+                .leftJoin(meeting.category, category1)
                 .leftJoin(userMeeting).on(userMeeting.meeting.eq(meeting))
                 .leftJoin(meetingLike).on(meetingLike.meeting.eq(meeting))
                 .where(
@@ -220,7 +205,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
         JPAQuery<Long> countQuery = queryFactory
                 .select(meeting.count())
                 .from(meeting)
-                .leftJoin(meeting.category, qCategory)
+                .leftJoin(meeting.category, category1)
                 .where(
                         keywordContains(request.getKeyword()),
                         categoryEq(request.getCategory()),
@@ -236,12 +221,12 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
             return null;
         }
 
-        return QCategory.category1.category.eq(categoryName);
+        return category1.category.eq(categoryName);
     }
 
     // 키워드 검색
     private BooleanExpression keywordContains(String keyword) {
         return (keyword != null && !keyword.isBlank())
-                ? QMeeting.meeting.title.containsIgnoreCase(keyword) : null;
+                ? meeting.title.containsIgnoreCase(keyword) : null;
     }
 }
