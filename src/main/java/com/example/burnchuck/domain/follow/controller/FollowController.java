@@ -7,10 +7,10 @@ import static com.example.burnchuck.common.enums.SuccessMessage.FOLLOW_GET_FOLLO
 import static com.example.burnchuck.common.enums.SuccessMessage.FOLLOW_GET_SUCCESS;
 
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.domain.auth.model.dto.AuthUser;
-import com.example.burnchuck.domain.follow.model.response.FollowCountResponse;
-import com.example.burnchuck.domain.follow.model.response.FollowListResponse;
-import com.example.burnchuck.domain.follow.model.response.FollowResponse;
+import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.domain.follow.dto.response.FollowCountResponse;
+import com.example.burnchuck.domain.follow.dto.response.FollowListResponse;
+import com.example.burnchuck.domain.follow.dto.response.FollowResponse;
 import com.example.burnchuck.domain.follow.service.FollowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

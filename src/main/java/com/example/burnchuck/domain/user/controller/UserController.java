@@ -3,10 +3,10 @@ package com.example.burnchuck.domain.user.controller;
 import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.domain.auth.model.dto.AuthUser;
-import com.example.burnchuck.domain.user.model.request.*;
-import com.example.burnchuck.domain.user.model.response.UserGetProfileReponse;
-import com.example.burnchuck.domain.user.model.response.UserUpdateProfileResponse;
+import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.domain.user.dto.request.*;
+import com.example.burnchuck.domain.user.dto.response.UserGetProfileReponse;
+import com.example.burnchuck.domain.user.dto.response.UserUpdateProfileResponse;
 import com.example.burnchuck.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

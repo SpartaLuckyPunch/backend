@@ -1,8 +1,8 @@
 package com.example.burnchuck.common.entity;
 
 import com.example.burnchuck.common.enums.MeetingStatus;
-import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
-import com.example.burnchuck.domain.meeting.model.request.MeetingUpdateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -5,12 +5,12 @@ import com.example.burnchuck.common.entity.Review;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
-import com.example.burnchuck.domain.auth.model.dto.AuthUser;
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
 import com.example.burnchuck.domain.review.repository.ReviewRepository;
-import com.example.burnchuck.domain.user.model.request.*;
-import com.example.burnchuck.domain.user.model.response.*;
+import com.example.burnchuck.domain.user.dto.request.*;
+import com.example.burnchuck.domain.user.dto.response.*;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 

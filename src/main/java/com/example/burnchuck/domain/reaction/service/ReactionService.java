@@ -1,7 +1,7 @@
 package com.example.burnchuck.domain.reaction.service;
 
 import com.example.burnchuck.domain.reaction.repository.ReactionRepository;
-import com.example.burnchuck.domain.review.model.response.ReactionResponse;
+import com.example.burnchuck.domain.review.dto.response.ReactionResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

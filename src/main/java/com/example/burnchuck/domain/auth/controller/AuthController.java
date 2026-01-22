@@ -4,8 +4,8 @@ import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_LOGIN_SUCCE
 import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_SIGNUP_SUCCESS;
 
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.domain.auth.model.request.*;
-import com.example.burnchuck.domain.auth.model.response.*;
+import com.example.burnchuck.domain.auth.dto.request.*;
+import com.example.burnchuck.domain.auth.dto.response.*;
 import com.example.burnchuck.domain.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

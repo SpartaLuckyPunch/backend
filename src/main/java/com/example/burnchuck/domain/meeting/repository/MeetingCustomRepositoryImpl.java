@@ -6,10 +6,10 @@ import com.example.burnchuck.common.entity.QMeetingLike;
 import com.example.burnchuck.common.entity.QUserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
-import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
-import com.example.burnchuck.domain.meeting.model.request.MeetingSearchRequest;
-import com.example.burnchuck.domain.meeting.model.response.MeetingSummaryWithStatusResponse;
-import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -33,7 +33,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      * 모임 전체 조회
      */
     @Override
-    public Page<MeetingSummaryDto> findMeetingList(
+    public Page<MeetingSummaryResponse> findMeetingList(
             String category,
             Pageable pageable
     ) {
@@ -42,9 +42,9 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
         QUserMeeting userMeeting = QUserMeeting.userMeeting;
         QCategory category1 = QCategory.category1;
 
-        List<MeetingSummaryDto> content = queryFactory
+        List<MeetingSummaryResponse> content = queryFactory
                 .select(Projections.constructor(
-                        MeetingSummaryDto.class,
+                        MeetingSummaryResponse.class,
                         meeting.id,
                         meeting.title,
                         meeting.imgUrl,
@@ -177,7 +177,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      * 모임 검색
      */
     @Override
-    public Page<MeetingSummaryDto> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
+    public Page<MeetingSummaryResponse> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
 
         QMeeting meeting = QMeeting.meeting;
         QCategory qCategory = QCategory.category1;
@@ -194,8 +194,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
             };
 
         // 2. 데이터 조회 쿼리
-        List<MeetingSummaryDto> content = queryFactory
-                .select(Projections.constructor(MeetingSummaryDto.class,
+        List<MeetingSummaryResponse> content = queryFactory
+                .select(Projections.constructor(MeetingSummaryResponse.class,
                         meeting.id,
                         meeting.title,
                         meeting.imgUrl,

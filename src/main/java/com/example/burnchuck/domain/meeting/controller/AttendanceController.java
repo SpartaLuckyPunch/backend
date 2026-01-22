@@ -5,8 +5,8 @@ import static com.example.burnchuck.common.enums.SuccessMessage.ATTENDANCE_GET_M
 import static com.example.burnchuck.common.enums.SuccessMessage.ATTENDANCE_REGISTER_SUCCESS;
 
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.domain.auth.model.dto.AuthUser;
-import com.example.burnchuck.domain.meeting.model.response.AttendanceGetMeetingListResponse;
+import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.domain.meeting.dto.response.AttendanceGetMeetingListResponse;
 import com.example.burnchuck.domain.meeting.service.AttendanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

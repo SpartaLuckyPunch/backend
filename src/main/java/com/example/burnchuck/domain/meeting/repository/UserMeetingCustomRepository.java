@@ -2,7 +2,7 @@ package com.example.burnchuck.domain.meeting.repository;
 
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
-import com.example.burnchuck.domain.meeting.model.response.MeetingSummaryWithStatusResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import java.util.List;
 
 public interface UserMeetingCustomRepository {

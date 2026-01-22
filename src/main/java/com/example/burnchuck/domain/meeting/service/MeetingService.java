@@ -10,18 +10,18 @@ import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.exception.CustomException;
-import com.example.burnchuck.domain.auth.model.dto.AuthUser;
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
-import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
-import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
-import com.example.burnchuck.domain.meeting.model.request.MeetingSearchRequest;
-import com.example.burnchuck.domain.meeting.model.request.MeetingUpdateRequest;
-import com.example.burnchuck.domain.meeting.model.response.AttendeeResponse;
-import com.example.burnchuck.domain.meeting.model.response.MeetingSummaryWithStatusResponse;
-import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
-import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
-import com.example.burnchuck.domain.meeting.model.response.MeetingMemberResponse;
-import com.example.burnchuck.domain.meeting.model.response.MeetingUpdateResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
+import com.example.burnchuck.domain.meeting.dto.response.AttendeeResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
@@ -96,7 +96,7 @@ public class MeetingService {
      * 모임 조회
      */
     @Transactional(readOnly = true)
-    public Page<MeetingSummaryDto> getMeetingPage(
+    public Page<MeetingSummaryResponse> getMeetingPage(
             String category,
             Pageable pageable
     ) {
@@ -238,7 +238,7 @@ public class MeetingService {
      * 모임 검색
      */
     @Transactional(readOnly = true)
-    public Page<MeetingSummaryDto> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
+    public Page<MeetingSummaryResponse> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
 
         return meetingRepository.searchMeetings(request, pageable);
     }

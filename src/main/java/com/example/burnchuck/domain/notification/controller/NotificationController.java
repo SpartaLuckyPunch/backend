@@ -4,9 +4,9 @@ import static com.example.burnchuck.common.enums.SuccessMessage.NOTIFICATION_GET
 import static com.example.burnchuck.common.enums.SuccessMessage.NOTIFICATION_GET_ONE_SUCCESS;
 
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.domain.auth.model.dto.AuthUser;
-import com.example.burnchuck.domain.notification.model.response.NotificationGetListResponse;
-import com.example.burnchuck.domain.notification.model.response.NotificationResponse;
+import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.domain.notification.dto.response.NotificationGetListResponse;
+import com.example.burnchuck.domain.notification.dto.response.NotificationResponse;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

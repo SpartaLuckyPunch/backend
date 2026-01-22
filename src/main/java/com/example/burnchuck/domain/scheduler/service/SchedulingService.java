@@ -7,7 +7,7 @@ import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
-import com.example.burnchuck.domain.scheduler.model.dto.SchedulingTask;
+import com.example.burnchuck.domain.scheduler.dto.SchedulingTask;
 import com.example.burnchuck.domain.scheduler.repository.SchedulingRepository;
 import java.time.Instant;
 import java.time.LocalDateTime;

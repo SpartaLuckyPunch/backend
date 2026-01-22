@@ -1,9 +1,9 @@
 package com.example.burnchuck.domain.meetingLike.controller;
 
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.domain.auth.model.dto.AuthUser;
-import com.example.burnchuck.domain.meetingLike.model.response.MeetingLikeCountResponse;
-import com.example.burnchuck.domain.meetingLike.model.response.MeetingLikeResponse;
+import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.domain.meetingLike.dto.response.MeetingLikeCountResponse;
+import com.example.burnchuck.domain.meetingLike.dto.response.MeetingLikeResponse;
 import com.example.burnchuck.domain.meetingLike.service.MeetingLikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
