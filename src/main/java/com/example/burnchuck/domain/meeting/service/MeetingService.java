@@ -189,12 +189,12 @@ public class MeetingService {
         }
 
         UserMeeting host = userMeetings.stream()
-            .filter(userMeeting -> userMeeting.getMeetingRole() == MeetingRole.HOST)
+            .filter(userMeeting -> userMeeting.isHost())
             .findFirst()
             .orElseThrow(() -> new CustomException(HOST_NOT_FOUND));
 
         List<AttendeeResponse> attendees = userMeetings.stream()
-            .filter(userMeeting -> userMeeting.getMeetingRole() == MeetingRole.PARTICIPANT)
+            .filter(userMeeting -> !userMeeting.isHost())
             .map(userMeeting -> new AttendeeResponse(
                 userMeeting.getUser().getId(),
                 userMeeting.getUser().getProfileImgUrl(),

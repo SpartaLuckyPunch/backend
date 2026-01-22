@@ -78,7 +78,7 @@ public class AttendanceService {
 
         UserMeeting userMeeting = userMeetingRepository.findUserMeeting(user.getId(), meeting.getId());
 
-        if (userMeeting.getMeetingRole() == MeetingRole.HOST) {
+        if (userMeeting.isHost()) {
             throw new CustomException(ErrorCode.ATTENDANCE_HOST_CANNOT_CANCEL);
         }
 
