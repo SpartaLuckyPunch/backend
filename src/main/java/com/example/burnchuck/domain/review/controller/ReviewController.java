@@ -5,10 +5,10 @@ import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_GET_LIST_
 import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_GET_ONE_SUCCESS;
 
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.domain.auth.model.dto.AuthUser;
-import com.example.burnchuck.domain.review.model.request.ReviewCreateRequest;
-import com.example.burnchuck.domain.review.model.response.ReviewDetailResponse;
-import com.example.burnchuck.domain.review.model.response.ReviewGetListResponse;
+import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.domain.review.dto.request.ReviewCreateRequest;
+import com.example.burnchuck.domain.review.dto.response.ReviewDetailResponse;
+import com.example.burnchuck.domain.review.dto.response.ReviewGetListResponse;
 import com.example.burnchuck.domain.review.service.ReviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +52,7 @@ public class ReviewController {
     /**
      * 후기 목록조회
      */
-    @GetMapping("/users/{userId}/reviews")
+    @GetMapping("/reviews/users/{userId}")
     public ResponseEntity<CommonResponse<ReviewGetListResponse>> getReviewList(
             @PathVariable Long userId,
             @PageableDefault(size = 10, sort = "createdDatetime", direction = Sort.Direction.DESC) Pageable pageable

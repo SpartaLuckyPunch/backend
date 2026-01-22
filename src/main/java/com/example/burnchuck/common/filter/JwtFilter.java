@@ -5,7 +5,7 @@ import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.jwt.JwtAuthenticationToken;
 import com.example.burnchuck.common.utils.JwtUtil;
-import com.example.burnchuck.domain.auth.model.dto.AuthUser;
+import com.example.burnchuck.common.dto.AuthUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

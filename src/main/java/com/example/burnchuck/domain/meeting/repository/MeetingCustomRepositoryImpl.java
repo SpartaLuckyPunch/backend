@@ -6,10 +6,10 @@ import com.example.burnchuck.common.entity.QMeetingLike;
 import com.example.burnchuck.common.entity.QUserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
-import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
-import com.example.burnchuck.domain.meeting.model.request.MeetingSearchRequest;
-import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
-import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -33,7 +33,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      * 모임 전체 조회
      */
     @Override
-    public Page<MeetingSummaryDto> findMeetingList(
+    public Page<MeetingSummaryResponse> findMeetingList(
             String category,
             Pageable pageable
     ) {
@@ -42,9 +42,9 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
         QUserMeeting userMeeting = QUserMeeting.userMeeting;
         QCategory category1 = QCategory.category1;
 
-        List<MeetingSummaryDto> content = queryFactory
+        List<MeetingSummaryResponse> content = queryFactory
                 .select(Projections.constructor(
-                        MeetingSummaryDto.class,
+                        MeetingSummaryResponse.class,
                         meeting.id,
                         meeting.title,
                         meeting.imgUrl,
@@ -69,8 +69,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // 전체 개수 조회 (페이징용)
-        // total에서 NPE 에러가 날 수 있으므로 Optional.ofNullable 사용
         Long total = Optional.ofNullable(
                 queryFactory
                         .select(meeting.id.countDistinct())
@@ -128,16 +126,16 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     /**
      * 내가 주최한 모임 조회
      */
-    public Page<HostedMeetingResponse> findHostedMeetings(
+    public Page<MeetingSummaryWithStatusResponse> findHostedMeetings(
             Long userId,
             Pageable pageable
     ) {
         QMeeting meeting = QMeeting.meeting;
         QUserMeeting userMeeting = QUserMeeting.userMeeting;
 
-        List<HostedMeetingResponse> content = queryFactory
+        List<MeetingSummaryWithStatusResponse> content = queryFactory
                 .select(Projections.constructor(
-                        HostedMeetingResponse.class,
+                        MeetingSummaryWithStatusResponse.class,
                         meeting.id,
                         meeting.title,
                         meeting.imgUrl,
@@ -177,14 +175,13 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      * 모임 검색
      */
     @Override
-    public Page<MeetingSummaryDto> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
+    public Page<MeetingSummaryResponse> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
 
         QMeeting meeting = QMeeting.meeting;
         QCategory qCategory = QCategory.category1;
         QUserMeeting userMeeting = QUserMeeting.userMeeting;
         QMeetingLike meetingLike = QMeetingLike.meetingLike;
 
-        // 1. 정렬 조건 설정 (인기순일 때 좋아요 개수 기준으로)
         OrderSpecifier<?> orderSpecifier =
             switch (request.getOrder()) {
 
@@ -193,9 +190,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 default -> meeting.createdDatetime.desc();
             };
 
-        // 2. 데이터 조회 쿼리
-        List<MeetingSummaryDto> content = queryFactory
-                .select(Projections.constructor(MeetingSummaryDto.class,
+        List<MeetingSummaryResponse> content = queryFactory
+                .select(Projections.constructor(MeetingSummaryResponse.class,
                         meeting.id,
                         meeting.title,
                         meeting.imgUrl,
@@ -221,7 +217,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // 3. 카운트 쿼리
         JPAQuery<Long> countQuery = queryFactory
                 .select(meeting.count())
                 .from(meeting)

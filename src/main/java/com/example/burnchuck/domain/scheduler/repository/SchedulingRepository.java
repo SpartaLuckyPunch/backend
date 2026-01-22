@@ -27,7 +27,6 @@ public class SchedulingRepository {
      */
     public void cancel(Long targetId) {
 
-        // 1. Meeting 상태 변경 task 취소
         String changeStatusKey = SCHEDULED_TASK_PREFIX + MEETING_CHANGE_STATUS + targetId;
 
         ScheduledFuture<?> changeStatusTask = repository.get(changeStatusKey);
@@ -37,7 +36,6 @@ public class SchedulingRepository {
             repository.remove(changeStatusKey);
         }
 
-        // 2. 알림 생성 task 취소
         String notificationKey = SCHEDULED_TASK_PREFIX + NOTIFICATION_REVIEW_REQUEST + targetId;
 
         ScheduledFuture<?> notificationTask = repository.get(notificationKey);

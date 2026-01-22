@@ -1,7 +1,9 @@
 package com.example.burnchuck.domain.category.controller;
 
+import static com.example.burnchuck.common.enums.SuccessMessage.CATEGORY_GET_SUCCESS;
+
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.domain.category.model.response.CategoryListResponse;
+import com.example.burnchuck.domain.category.dto.response.CategoryListResponse;
 import com.example.burnchuck.domain.category.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -9,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import static com.example.burnchuck.common.enums.SuccessMessage.CATEGORY_GET_SUCCESS;
 
 @RestController
 @RequiredArgsConstructor

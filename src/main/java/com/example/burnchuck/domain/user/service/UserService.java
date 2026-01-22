@@ -5,12 +5,12 @@ import com.example.burnchuck.common.entity.Review;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
-import com.example.burnchuck.domain.auth.model.dto.AuthUser;
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
 import com.example.burnchuck.domain.review.repository.ReviewRepository;
-import com.example.burnchuck.domain.user.model.request.*;
-import com.example.burnchuck.domain.user.model.response.*;
+import com.example.burnchuck.domain.user.dto.request.*;
+import com.example.burnchuck.domain.user.dto.response.*;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 
@@ -40,10 +40,8 @@ public class UserService {
     @Transactional
     public UserUpdateProfileResponse updateProfile(AuthUser authUser, UserUpdateProfileRequest request) {
 
-        // 1. 로그인한 유저 정보로 객체 생성
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        // 2. 닉네임 변경하는 경우, 새 닉네임의 중복 여부 확인
         String currentNickname = user.getNickname();
         String newNickname = request.getNickname();
 
@@ -54,14 +52,12 @@ public class UserService {
             throw new CustomException(ErrorCode.NICKNAME_EXIST);
         }
 
-        // 3. 주소 조회 후 객체 생성
         Address newAddress = addressRepository.findAddressByAddressInfo(
             request.getProvince(),
             request.getCity(),
             request.getDistrict()
         );
 
-        // 4. 정보 업데이트
         user.updateProfile(newNickname, newAddress);
         userRepository.saveAndFlush(user);
 
@@ -77,25 +73,20 @@ public class UserService {
         String oldPassword = request.getOldPassword();
         String newPassword = request.getNewPassword();
 
-        // 1. 현재 비밀번호, 새 비밀번호 일치 여부 확인
         if (Objects.equals(oldPassword, newPassword)) {
             throw new CustomException(ErrorCode.SAME_PASSWORD);
         }
 
-        // 2. 로그인한 유저 정보로 객체 생성
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        // 3. 현재 비밀번호 일치 여부 확인
         boolean matches = passwordEncoder.matches(oldPassword, user.getPassword());
 
         if (!matches) {
             throw new CustomException(ErrorCode.INCORRECT_PASSWORD);
         }
 
-        // 4. 새 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(newPassword);
 
-        // 5. 비밀번호 변경 및 저장
         user.updatePassword(encodedPassword);
         userRepository.saveAndFlush(user);
     }
@@ -106,14 +97,11 @@ public class UserService {
     @Transactional
     public void deleteUser(AuthUser authUser) {
 
-        // 1. 로그인한 유저 정보로 객체 생성
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        // 2. 회원 논리 삭제
         user.delete();
         userRepository.saveAndFlush(user);
 
-        // 3. 좋아요, 팔로우 삭제
         meetingLikeRepository.deleteByUserId(user.getId());
 
         followRepository.deleteByFollowerId(user.getId());
@@ -126,14 +114,11 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserGetProfileReponse getProfile(Long userId) {
 
-        // 1. userId를 통해 유저 객체 생성
         User user = userRepository.findActivateUserById(userId);
 
-        // 2. 해당 유저의 팔로잉, 팔로워 수 조회
         Long followings = followRepository.countByFollower(user);
         Long followers = followRepository.countByFollowee(user);
 
-        // 3. 해당 유저의 평균 별점 조회
         List<Review> reviewList = reviewRepository.findAllByReviewee(user);
 
         double avgRates = reviewList.stream()
