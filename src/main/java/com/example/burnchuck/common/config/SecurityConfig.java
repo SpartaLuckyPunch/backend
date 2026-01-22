@@ -1,5 +1,6 @@
 package com.example.burnchuck.common.config;
 
+import com.example.burnchuck.common.enums.UserRole;
 import com.example.burnchuck.common.filter.JwtFilter;
 import com.example.burnchuck.common.jwt.JwtAccessDeniedHandler;
 import com.example.burnchuck.common.jwt.JwtAuthenticationEntryPoint;
@@ -47,7 +48,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(request -> request.getRequestURI().startsWith("/api/auth")).permitAll()
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/admin/**").hasAuthority(UserRole.Authority.ADMIN)
                         .anyRequest().authenticated()
                 )
                 .build();
