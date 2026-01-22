@@ -33,7 +33,6 @@ public class UserService {
     private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
 
-
     /**
      * 내 정보 수정(닉네임, 주소)
      * 고도화 작업 시, 프로필 이미지 수정 항목 추가 예정
@@ -54,9 +53,9 @@ public class UserService {
         }
 
         Address newAddress = addressRepository.findAddressByAddressInfo(
-                request.getProvince(),
-                request.getCity(),
-                request.getDistrict()
+            request.getProvince(),
+            request.getCity(),
+            request.getDistrict()
         );
 
         user.updateProfile(newNickname, newAddress);
@@ -123,17 +122,16 @@ public class UserService {
         List<Review> reviewList = reviewRepository.findAllByReviewee(user);
 
         double avgRates = reviewList.stream()
-                .mapToInt(Review::getRating)
-                .average()
-                .orElse(0.0);
+            .mapToInt(Review::getRating)
+            .average()
+            .orElse(0.0);
 
         return new UserGetProfileReponse(
-                user.getProfileImgUrl(),
-                user.getNickname(),
-                followings,
-                followers,
-                avgRates
+            user.getProfileImgUrl(),
+            user.getNickname(),
+            followings,
+            followers,
+            avgRates
         );
-
     }
 }
