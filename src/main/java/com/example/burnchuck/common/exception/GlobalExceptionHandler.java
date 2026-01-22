@@ -11,6 +11,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 @Slf4j(topic = "GlobalExceptionHandler")
@@ -62,6 +63,18 @@ public class GlobalExceptionHandler {
         log.warn("HttpRequestMethodNotSupportedException 발생 : {}", e.getMessage());
 
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(response);
+    }
+
+    // 요청 데이터의 타입과 실제 매개변수의 타입이 일치하지 않을 때
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<CommonResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+
+        String message = String.format("파라미터 '%s'의 값이 올바르지 않습니다.", e.getName());
+        CommonResponse<Void> response = CommonResponse.exception(message);
+
+        log.warn("MethodArgumentTypeMismatchException 발생 : {}", message);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     // ServletException을 상속받는 모든 예외 처리(요청 형식이 잘못되었을 때)
