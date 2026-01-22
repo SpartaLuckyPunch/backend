@@ -34,7 +34,6 @@ public class UserService {
     private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final String adminKey = "비밀키123";
 
 
     /**

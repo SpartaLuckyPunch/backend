@@ -37,14 +37,14 @@ public class JwtUtil {
     }
 
     // 토큰 생성
-    public String generateToken(Long id, String email, String nickname, UserRole role) {
+    public String generateToken(Long id, String email, String nickname, UserRole userRole) {
         Date now = new Date();
 
         return BEARER_PREFIX + Jwts.builder()
                 .claim("id", id)
                 .claim("email", email)
                 .claim("nickname", nickname)
-                .claim("role", role.name())
+                .claim("role", userRole.name())
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + TOKEN_TIME))
                 .signWith(key, Jwts.SIG.HS256)
