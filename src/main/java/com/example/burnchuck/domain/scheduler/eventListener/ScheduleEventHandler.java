@@ -1,7 +1,6 @@
 package com.example.burnchuck.domain.scheduler.eventListener;
 
 import com.example.burnchuck.common.entity.Meeting;
-import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.scheduler.dto.MeetingCreatedEvent;
 import com.example.burnchuck.domain.scheduler.dto.MeetingDeletedEvent;
@@ -34,7 +33,7 @@ public class ScheduleEventHandler {
     @EventListener(ApplicationReadyEvent.class)
     public void restoreSchedules() {
 
-        List<Meeting> meetingList = meetingRepository.findActivateMeetingsForSchedules(MeetingStatus.COMPLETED);
+        List<Meeting> meetingList = meetingRepository.findActivateMeetingsForSchedules();
 
         meetingList.forEach(meeting -> {
             schedulingService.scheduleMeetingStatusComplete(meeting);
