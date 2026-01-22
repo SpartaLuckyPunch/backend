@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -47,6 +48,17 @@ public class GlobalExceptionHandler {
         CommonResponse<Void> response = CommonResponse.exception("요청 본문 형식이 올바르지 않습니다");
 
         log.warn("HttpMessageNotReadableException 발생 : {}", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    // 지원하지 않는 HTTP 메서드로 요청했을 때
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<CommonResponse<Void>> httpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
+
+        CommonResponse<Void> response = CommonResponse.exception("지원하지 않는 HTTP 메서드입니다.");
+
+        log.warn("HttpRequestMethodNotSupportedException 발생 : {}", e.getMessage());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
