@@ -186,6 +186,17 @@ public class MeetingService {
     }
 
     /**
+     * 주최한 모임 목록 조회 (입력받은 유저 기준)
+     */
+    @Transactional(readOnly = true)
+    public Page<HostedMeetingResponse> getOthersHostedMeetings(Long userId, Pageable pageable) {
+
+        User user = userRepository.findActivateUserById(userId);
+
+        return meetingRepository.findHostedMeetings(user.getId(), pageable);
+    }
+
+    /**
      * 모임 참여자 목록 조회
      */
     @Transactional(readOnly = true)

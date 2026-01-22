@@ -133,6 +133,20 @@ public class MeetingController {
     }
 
     /**
+     * 주최한 모임 목록 조회 (입력받은 유저 기준)
+     */
+    @GetMapping("/meetings/hosted-meetings/users/{userId}")
+    public ResponseEntity<CommonResponse<PageResponse<HostedMeetingResponse>>> getOthersHostedMeetings(
+        @PathVariable Long userId,
+        @PageableDefault(size = 6) Pageable pageable
+    ) {
+        Page<HostedMeetingResponse> page = meetingService.getOthersHostedMeetings(userId, pageable);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.success(MEETING_GET_HOSTED_LIST_SUCCESS, PageResponse.from(page)));
+    }
+
+    /**
      * 모임 참여자 목록 조회
      */
     @GetMapping("/meetings/{meetingId}/attendees")
