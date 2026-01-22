@@ -3,6 +3,7 @@ package com.example.burnchuck.domain.auth.service;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
+import com.example.burnchuck.common.enums.UserRole;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.JwtUtil;
 import com.example.burnchuck.domain.auth.dto.request.*;
@@ -48,15 +49,16 @@ public class AuthService {
         Address address = addressRepository.findAddressByAddressInfo(request.getProvince(), request.getCity(), request.getDistrict());
 
         User user = new User(
-            email, encodedPassword, nickname,
-            request.getBirthDate(),
-            gender.isValue(),
-            address
+                email, encodedPassword, nickname,
+                request.getBirthDate(),
+                gender.isValue(),
+                address,
+                UserRole.USER
         );
 
         userRepository.save(user);
 
-        String token = jwtUtil.generateToken(user.getId(), email, nickname);
+        String token = jwtUtil.generateToken(user.getId(), email, nickname, user.getRole());
 
         return new AuthSignupResponse(token);
     }
@@ -75,7 +77,7 @@ public class AuthService {
             throw new CustomException(ErrorCode.INCORRECT_PASSWORD);
         }
 
-        String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getNickname());
+        String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getNickname(), user.getRole());
 
         return new AuthLoginResponse(token);
     }

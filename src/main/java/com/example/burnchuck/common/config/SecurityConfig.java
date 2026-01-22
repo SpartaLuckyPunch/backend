@@ -34,21 +34,23 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         return http
-            .csrf(AbstractHttpConfigurer::disable)
-            .httpBasic(AbstractHttpConfigurer::disable)
-            .formLogin(AbstractHttpConfigurer::disable)
-            .addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class)
+                .csrf(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class)
 
-            .exceptionHandling(ex -> ex
-                .authenticationEntryPoint(authenticationEntryPoint)
-                .accessDeniedHandler(accessDeniedHandler)
-            )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
+                )
 
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(request -> request.getRequestURI().startsWith("/api/auth")).permitAll()
-                .requestMatchers("/error").permitAll()
-                .anyRequest().authenticated()
-            )
-            .build();
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(request -> request.getRequestURI().startsWith("/api/auth")).permitAll()
+                        .requestMatchers("/api/users/admin/signup").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                        .anyRequest().authenticated()
+                )
+                .build();
     }
 }

@@ -4,6 +4,9 @@ import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.domain.auth.dto.request.AdminSignupRequest;
+import com.example.burnchuck.domain.auth.dto.request.AuthSignupRequest;
+import com.example.burnchuck.domain.auth.dto.response.AuthSignupResponse;
 import com.example.burnchuck.domain.user.dto.request.*;
 import com.example.burnchuck.domain.user.dto.response.UserGetProfileReponse;
 import com.example.burnchuck.domain.user.dto.response.UserUpdateProfileResponse;
@@ -13,14 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,18 +27,18 @@ public class UserController {
 
     /**
      * 내 정보 수정(닉네임, 주소)
-     *
+     * <p>
      * 고도화 작업 시, 프로필 이미지 수정 항목 추가 예정
      */
     @PatchMapping
     public ResponseEntity<CommonResponse<UserUpdateProfileResponse>> updateProfile(
-        @AuthenticationPrincipal AuthUser authUser,
-        @Valid @RequestBody UserUpdateProfileRequest request
+            @AuthenticationPrincipal AuthUser authUser,
+            @Valid @RequestBody UserUpdateProfileRequest request
     ) {
         UserUpdateProfileResponse response = userService.updateProfile(authUser, request);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(CommonResponse.success(USER_UPDATE_PROFILE_SUCCESS, response));
+                .body(CommonResponse.success(USER_UPDATE_PROFILE_SUCCESS, response));
     }
 
     /**
@@ -50,13 +46,13 @@ public class UserController {
      */
     @PutMapping("/password")
     public ResponseEntity<CommonResponse<Void>> updatePassword(
-        @AuthenticationPrincipal AuthUser authUser,
-        @Valid @RequestBody UserUpdatePasswordRequest request
+            @AuthenticationPrincipal AuthUser authUser,
+            @Valid @RequestBody UserUpdatePasswordRequest request
     ) {
         userService.updatePassword(authUser, request);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(CommonResponse.successNodata(USER_UPDATE_PASSWORD_SUCCESS));
+                .body(CommonResponse.successNodata(USER_UPDATE_PASSWORD_SUCCESS));
     }
 
     /**
@@ -64,12 +60,12 @@ public class UserController {
      */
     @DeleteMapping
     public ResponseEntity<CommonResponse<Void>> deleteUser(
-        @AuthenticationPrincipal AuthUser authUser
+            @AuthenticationPrincipal AuthUser authUser
     ) {
         userService.deleteUser(authUser);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(CommonResponse.successNodata(USER_DELETE_SUCCESS));
+                .body(CommonResponse.successNodata(USER_DELETE_SUCCESS));
     }
 
     /**
@@ -77,11 +73,24 @@ public class UserController {
      */
     @GetMapping("/{userId}")
     public ResponseEntity<CommonResponse<UserGetProfileReponse>> getProfile(
-        @PathVariable Long userId
-    ){
+            @PathVariable Long userId
+    ) {
         UserGetProfileReponse response = userService.getProfile(userId);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(CommonResponse.success(USER_GET_PROFILE_SUCCESS, response));
+                .body(CommonResponse.success(USER_GET_PROFILE_SUCCESS, response));
+    }
+
+    /**
+     * 관리자 회원가입
+     */
+    @PostMapping("/admin/signup")
+    public ResponseEntity<CommonResponse<AuthSignupResponse>> signupAdmin(
+            @Valid @RequestBody AdminSignupRequest request
+    ) {
+        AuthSignupResponse response = userService.signupAdmin(request);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(ADMIN_SIGNUP_SUCCESS, response));
     }
 }

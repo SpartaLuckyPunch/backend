@@ -4,8 +4,13 @@ import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Review;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
+import com.example.burnchuck.common.enums.Gender;
+import com.example.burnchuck.common.enums.UserRole;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.common.utils.JwtUtil;
+import com.example.burnchuck.domain.auth.dto.request.AdminSignupRequest;
+import com.example.burnchuck.domain.auth.dto.response.AuthSignupResponse;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
 import com.example.burnchuck.domain.review.repository.ReviewRepository;
@@ -16,6 +21,7 @@ import com.example.burnchuck.domain.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.Objects;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,10 +37,13 @@ public class UserService {
     private final MeetingLikeRepository meetingLikeRepository;
     private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final String adminKey = "비밀키123";
+
 
     /**
      * 내 정보 수정(닉네임, 주소)
-     *
+     * <p>
      * 고도화 작업 시, 프로필 이미지 수정 항목 추가 예정
      */
     @Transactional
@@ -53,9 +62,9 @@ public class UserService {
         }
 
         Address newAddress = addressRepository.findAddressByAddressInfo(
-            request.getProvince(),
-            request.getCity(),
-            request.getDistrict()
+                request.getProvince(),
+                request.getCity(),
+                request.getDistrict()
         );
 
         user.updateProfile(newNickname, newAddress);
@@ -122,16 +131,62 @@ public class UserService {
         List<Review> reviewList = reviewRepository.findAllByReviewee(user);
 
         double avgRates = reviewList.stream()
-            .mapToInt(Review::getRating)
-            .average()
-            .orElse(0.0);
+                .mapToInt(Review::getRating)
+                .average()
+                .orElse(0.0);
 
         return new UserGetProfileReponse(
-            user.getProfileImgUrl(),
-            user.getNickname(),
-            followings,
-            followers,
-            avgRates
+                user.getProfileImgUrl(),
+                user.getNickname(),
+                followings,
+                followers,
+                avgRates
         );
+
+    }
+
+    /**
+     * 관리자 회원가입
+     */
+    @Transactional
+    public AuthSignupResponse signupAdmin(AdminSignupRequest request) {
+
+        if (!adminKey.equals(request.getAdminKey())) {
+            throw new CustomException(ErrorCode.INVALID_ADMIN_KEY);
+        }
+
+        String email = request.getEmail();
+        String nickname = request.getNickname();
+
+        if (userRepository.existsByEmail(email)) {
+            throw new CustomException(ErrorCode.EMAIL_EXIST);
+        }
+
+        if (userRepository.existsByNickname(nickname)) {
+            throw new CustomException(ErrorCode.NICKNAME_EXIST);
+        }
+
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        Gender gender = Gender.findEnum(request.getGender());
+        Address address = addressRepository.findAddressByAddressInfo(
+                request.getProvince(), request.getCity(), request.getDistrict()
+        );
+
+
+        User user = new User(
+                email, encodedPassword, nickname,
+                request.getBirthDate(),
+                gender.isValue(),
+                address,
+                UserRole.ADMIN
+        );
+
+        userRepository.save(user);
+
+        String token = jwtUtil.generateToken(user.getId(), email, nickname, user.getRole());
+
+        return new AuthSignupResponse(token);
+
+
     }
 }
