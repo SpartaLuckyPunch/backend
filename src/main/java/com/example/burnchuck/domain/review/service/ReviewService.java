@@ -2,6 +2,7 @@ package com.example.burnchuck.domain.review.service;
 
 import static com.example.burnchuck.common.enums.ErrorCode.SELF_REVIEW_NOT_ALLOWED;
 
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.Reaction;
 import com.example.burnchuck.common.entity.Review;
@@ -9,7 +10,6 @@ import com.example.burnchuck.common.entity.ReviewReaction;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
-import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.reaction.repository.ReactionRepository;
 import com.example.burnchuck.domain.review.dto.request.ReviewCreateRequest;
@@ -67,11 +67,18 @@ public class ReviewService {
         );
         reviewRepository.save(review);
 
-        if (request.getReactionList() != null) {
-            for (Long reactionId : request.getReactionList()) {
-                Reaction reaction = reactionRepository.findReactionById(reactionId);
-                reviewReactionRepository.save(new ReviewReaction(review, reaction));
-            }
+        List<Long> requestReactionList = request.getReactionList();
+
+        if (requestReactionList != null) {
+
+            List<Reaction> reactionList = reactionRepository.findAll();
+
+            List<ReviewReaction> chosenReactionList = reactionList.stream()
+                .filter(reaction -> requestReactionList.contains(reaction.getId()))
+                .map(reaction -> new ReviewReaction(review, reaction))
+                .toList();
+
+            reviewReactionRepository.saveAll(chosenReactionList);
         }
     }
 
