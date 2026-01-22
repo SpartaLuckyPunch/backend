@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.attendance.model.response;
+package com.example.burnchuck.domain.meeting.model.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

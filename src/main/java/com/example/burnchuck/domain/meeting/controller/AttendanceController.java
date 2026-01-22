@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.attendance.controller;
+package com.example.burnchuck.domain.meeting.controller;
 
 import static com.example.burnchuck.common.enums.SuccessMessage.ATTENDANCE_CANCEL_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.ATTENDANCE_GET_MEETING_LIST_SUCCESS;
@@ -6,9 +6,9 @@ import static com.example.burnchuck.common.enums.SuccessMessage.ATTENDANCE_REGIS
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_MEMBER_LIST_SUCCESS;
 
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.domain.attendance.model.response.AttendanceGetMeetingListResponse;
-import com.example.burnchuck.domain.attendance.model.response.MeetingMemberResponse;
-import com.example.burnchuck.domain.attendance.service.AttendanceService;
+import com.example.burnchuck.domain.meeting.model.response.AttendanceGetMeetingListResponse;
+import com.example.burnchuck.domain.meeting.model.response.MeetingMemberResponse;
+import com.example.burnchuck.domain.meeting.service.AttendanceService;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.attendance.repository;
+package com.example.burnchuck.domain.meeting.repository;
 
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.UserMeeting;

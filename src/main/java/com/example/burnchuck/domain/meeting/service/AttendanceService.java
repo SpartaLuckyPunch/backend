@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.attendance.service;
+package com.example.burnchuck.domain.meeting.service;
 
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
@@ -7,11 +7,11 @@ import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.exception.CustomException;
-import com.example.burnchuck.domain.attendance.model.response.AttendanceGetMeetingListResponse;
-import com.example.burnchuck.domain.attendance.model.response.AttendanceMeetingResponse;
-import com.example.burnchuck.domain.attendance.model.response.AttendeeResponse;
-import com.example.burnchuck.domain.attendance.model.response.MeetingMemberResponse;
-import com.example.burnchuck.domain.attendance.repository.UserMeetingRepository;
+import com.example.burnchuck.domain.meeting.model.response.AttendanceGetMeetingListResponse;
+import com.example.burnchuck.domain.meeting.model.response.AttendanceMeetingResponse;
+import com.example.burnchuck.domain.meeting.model.response.AttendeeResponse;
+import com.example.burnchuck.domain.meeting.model.response.MeetingMemberResponse;
+import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;

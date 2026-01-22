@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.attendance.model.response;
+package com.example.burnchuck.domain.meeting.model.response;
 
 import java.util.List;
 import lombok.Getter;

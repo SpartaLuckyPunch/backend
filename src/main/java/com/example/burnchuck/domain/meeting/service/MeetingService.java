@@ -9,7 +9,7 @@ import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.exception.CustomException;
-import com.example.burnchuck.domain.attendance.repository.UserMeetingRepository;
+import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.auth.model.dto.AuthUser;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;

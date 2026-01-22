@@ -1,8 +1,8 @@
-package com.example.burnchuck.domain.attendance.repository;
+package com.example.burnchuck.domain.meeting.repository;
 
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
-import com.example.burnchuck.domain.attendance.model.response.AttendanceMeetingResponse;
+import com.example.burnchuck.domain.meeting.model.response.AttendanceMeetingResponse;
 import java.util.List;
 
 public interface UserMeetingCustomRepository {
