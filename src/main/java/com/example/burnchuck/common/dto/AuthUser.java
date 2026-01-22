@@ -23,6 +23,6 @@ public class AuthUser {
         this.email = email;
         this.nickname = nickname;
         this.userRole = userRole;
-        this.authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        this.authorities = List.of(new SimpleGrantedAuthority(userRole.getUserRole()));
     }
 }

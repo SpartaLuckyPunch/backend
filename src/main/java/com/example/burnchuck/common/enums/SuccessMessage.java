@@ -9,9 +9,6 @@ public enum SuccessMessage {
     AUTH_SIGNUP_SUCCESS("유저 회원가입 성공"),
     AUTH_LOGIN_SUCCESS("로그인 성공"),
 
-    // 관리자
-    ADMIN_SIGNUP_SUCCESS("관리자 회원가입 성공"),
-
     // 유저
     USER_UPDATE_PROFILE_SUCCESS("프로필 수정 성공"),
     USER_UPDATE_PASSWORD_SUCCESS("비밀번호 변경 성공"),
