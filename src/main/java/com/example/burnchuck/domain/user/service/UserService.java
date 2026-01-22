@@ -4,13 +4,9 @@ import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Review;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
-import com.example.burnchuck.common.enums.Gender;
-import com.example.burnchuck.common.enums.UserRole;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.utils.JwtUtil;
-import com.example.burnchuck.domain.auth.dto.request.AdminSignupRequest;
-import com.example.burnchuck.domain.auth.dto.response.AuthSignupResponse;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
 import com.example.burnchuck.domain.review.repository.ReviewRepository;
@@ -142,51 +138,6 @@ public class UserService {
                 followers,
                 avgRates
         );
-
-    }
-
-    /**
-     * 관리자 회원가입
-     */
-    @Transactional
-    public AuthSignupResponse signupAdmin(AdminSignupRequest request) {
-
-        if (!adminKey.equals(request.getAdminKey())) {
-            throw new CustomException(ErrorCode.INVALID_ADMIN_KEY);
-        }
-
-        String email = request.getEmail();
-        String nickname = request.getNickname();
-
-        if (userRepository.existsByEmail(email)) {
-            throw new CustomException(ErrorCode.EMAIL_EXIST);
-        }
-
-        if (userRepository.existsByNickname(nickname)) {
-            throw new CustomException(ErrorCode.NICKNAME_EXIST);
-        }
-
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
-        Gender gender = Gender.findEnum(request.getGender());
-        Address address = addressRepository.findAddressByAddressInfo(
-                request.getProvince(), request.getCity(), request.getDistrict()
-        );
-
-
-        User user = new User(
-                email, encodedPassword, nickname,
-                request.getBirthDate(),
-                gender.isValue(),
-                address,
-                UserRole.ADMIN
-        );
-
-        userRepository.save(user);
-
-        String token = jwtUtil.generateToken(user.getId(), email, nickname, user.getRole());
-
-        return new AuthSignupResponse(token);
-
 
     }
 }

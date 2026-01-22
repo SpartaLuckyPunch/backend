@@ -4,9 +4,6 @@ import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.domain.auth.dto.request.AdminSignupRequest;
-import com.example.burnchuck.domain.auth.dto.request.AuthSignupRequest;
-import com.example.burnchuck.domain.auth.dto.response.AuthSignupResponse;
 import com.example.burnchuck.domain.user.dto.request.*;
 import com.example.burnchuck.domain.user.dto.response.UserGetProfileReponse;
 import com.example.burnchuck.domain.user.dto.response.UserUpdateProfileResponse;
@@ -81,16 +78,4 @@ public class UserController {
                 .body(CommonResponse.success(USER_GET_PROFILE_SUCCESS, response));
     }
 
-    /**
-     * 관리자 회원가입
-     */
-    @PostMapping("/admin/signup")
-    public ResponseEntity<CommonResponse<AuthSignupResponse>> signupAdmin(
-            @Valid @RequestBody AdminSignupRequest request
-    ) {
-        AuthSignupResponse response = userService.signupAdmin(request);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(ADMIN_SIGNUP_SUCCESS, response));
-    }
 }
