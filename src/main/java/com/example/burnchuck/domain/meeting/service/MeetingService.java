@@ -4,23 +4,23 @@ import static com.example.burnchuck.common.enums.ErrorCode.ACCESS_DENIED;
 import static com.example.burnchuck.common.enums.ErrorCode.HOST_NOT_FOUND;
 import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.exception.CustomException;
-import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
-import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.dto.response.AttendeeResponse;
-import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
@@ -28,13 +28,13 @@ import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -123,7 +123,7 @@ public class MeetingService {
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
         UserMeeting meetingHost = userMeetingRepository.findHostByMeeting(meeting);
-        if (!Objects.equals(user.getId(), meetingHost.getUser().getId())) {
+        if (!ObjectUtils.nullSafeEquals(user.getId(), meetingHost.getUser().getId())) {
             throw new CustomException(ACCESS_DENIED);
         }
 
@@ -147,7 +147,7 @@ public class MeetingService {
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
         UserMeeting meetingHost = userMeetingRepository.findHostByMeeting(meeting);
-        if (!Objects.equals(user.getId(), meetingHost.getUser().getId())) {
+        if (!ObjectUtils.nullSafeEquals(user.getId(), meetingHost.getUser().getId())) {
             throw new CustomException(ACCESS_DENIED);
         }
 
@@ -189,12 +189,12 @@ public class MeetingService {
         }
 
         UserMeeting host = userMeetings.stream()
-            .filter(userMeeting -> userMeeting.getMeetingRole() == MeetingRole.HOST)
+            .filter(userMeeting -> userMeeting.isHost())
             .findFirst()
             .orElseThrow(() -> new CustomException(HOST_NOT_FOUND));
 
         List<AttendeeResponse> attendees = userMeetings.stream()
-            .filter(userMeeting -> userMeeting.getMeetingRole() == MeetingRole.PARTICIPANT)
+            .filter(userMeeting -> !userMeeting.isHost())
             .map(userMeeting -> new AttendeeResponse(
                 userMeeting.getUser().getId(),
                 userMeeting.getUser().getProfileImgUrl(),
