@@ -1,6 +1,8 @@
 package com.example.burnchuck.domain.category.service;
 
 import com.example.burnchuck.common.entity.Category;
+import com.example.burnchuck.common.enums.ErrorCode;
+import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.category.dto.request.CategoryCreateRequest;
 import com.example.burnchuck.domain.category.dto.response.CategoryCreateResponse;
 import com.example.burnchuck.domain.category.dto.response.CategoryListResponse;
@@ -32,6 +34,9 @@ public class CategoryService {
      */
     @Transactional
     public CategoryCreateResponse createCategory(CategoryCreateRequest request) {
+
+        if (categoryRepository.existsByCode(request.getCode()))
+            throw new CustomException(ErrorCode.DUPLICATE_CATEGORY_CODE);
 
         Category category = new Category(request.getCode(), request.getCode());
 

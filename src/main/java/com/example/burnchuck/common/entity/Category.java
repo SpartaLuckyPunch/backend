@@ -18,7 +18,7 @@ public class Category {
     @Column(nullable = false)
     private String code;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String category;
 
     public Category(String code, String category) {

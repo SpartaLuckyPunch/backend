@@ -56,6 +56,7 @@ public enum ErrorCode {
 
     // 카테고리
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리가 존재하지 않습니다."),
+    DUPLICATE_CATEGORY_CODE(HttpStatus.BAD_REQUEST,"이미 존재하는 카테고리 코드입니다."),
 
     // 알림
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림이 존재하지 않습니다."),
