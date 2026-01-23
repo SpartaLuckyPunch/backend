@@ -29,8 +29,6 @@ public enum SuccessMessage {
 
     // 리뷰 리액션
     REVIEW_REACTION_GET_SUCCESS("후기 리액션 조회 성공"),
-
-    // 리액션 종류
     REACTION_CREATE_SUCCESS("리액션 종류 생성 성공"),
     REACTION_DELETE_SUCCESS("리액션 종류 삭제 성공"),
       

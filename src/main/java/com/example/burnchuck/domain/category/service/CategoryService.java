@@ -26,6 +26,7 @@ public class CategoryService {
 
         return CategoryListResponse.from(categories);
     }
+
     /**
      * 카테고리 생성(관리자 전용)
      */
@@ -48,6 +49,4 @@ public class CategoryService {
 
         categoryRepository.delete(category);
     }
-
-
 }
