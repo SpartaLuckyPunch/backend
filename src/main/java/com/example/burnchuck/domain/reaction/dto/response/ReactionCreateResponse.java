@@ -6,13 +6,13 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class AdminReactionCreateResponse {
+public class ReactionCreateResponse {
 
     private Long id;
     private String reaction;
 
-    public static AdminReactionCreateResponse from(Reaction reaction) {
-        return new AdminReactionCreateResponse(
+    public static ReactionCreateResponse from(Reaction reaction) {
+        return new ReactionCreateResponse(
                 reaction.getId(),
                 reaction.getReaction()
         );

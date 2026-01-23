@@ -6,14 +6,14 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class AdminCategoryCreateResponse {
+public class CategoryCreateResponse {
 
     private Long id;
     private String code;
     private String category;
 
-    public static AdminCategoryCreateResponse from(Category category) {
-        return new AdminCategoryCreateResponse(
+    public static CategoryCreateResponse from(Category category) {
+        return new CategoryCreateResponse(
                 category.getId(),
                 category.getCode(),
                 category.getCategory()

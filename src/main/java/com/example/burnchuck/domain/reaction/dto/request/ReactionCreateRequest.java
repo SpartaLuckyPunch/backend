@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class AdminReactionCreateRequest {
+public class ReactionCreateRequest {
 
     private String reaction;
 }

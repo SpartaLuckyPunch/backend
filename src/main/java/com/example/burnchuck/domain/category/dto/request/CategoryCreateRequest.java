@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class AdminCategoryCreateRequest {
+public class CategoryCreateRequest {
 
     private String code;
     private String category;
