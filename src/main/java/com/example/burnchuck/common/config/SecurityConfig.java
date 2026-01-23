@@ -41,15 +41,15 @@ public class SecurityConfig {
             .addFilterBefore(jwtFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
 
             .exceptionHandling(ex -> ex
-                    .authenticationEntryPoint(authenticationEntryPoint)
-                    .accessDeniedHandler(accessDeniedHandler)
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
             )
 
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(request -> request.getRequestURI().startsWith("/api/auth")).permitAll()
-                    .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ADMIN")
-                    .requestMatchers("/error").permitAll()
-                    .anyRequest().authenticated()
+                .requestMatchers(request -> request.getRequestURI().startsWith("/api/auth")).permitAll()
+                .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ADMIN")
+                .requestMatchers("/error").permitAll()
+                .anyRequest().authenticated()
             )
             .build();
     }
