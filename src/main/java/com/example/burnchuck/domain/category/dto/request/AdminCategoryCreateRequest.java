@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.admin.dto.request;
+package com.example.burnchuck.domain.category.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

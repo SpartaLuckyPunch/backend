@@ -1,11 +1,11 @@
-package com.example.burnchuck.domain.admin.controller;
+package com.example.burnchuck.domain.user.controller;
 
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.domain.admin.dto.request.AdminCategoryCreateRequest;
-import com.example.burnchuck.domain.admin.dto.request.AdminReactionCreateRequest;
-import com.example.burnchuck.domain.admin.dto.response.AdminCategoryCreateResponse;
-import com.example.burnchuck.domain.admin.dto.response.AdminReactionCreateResponse;
-import com.example.burnchuck.domain.admin.sevice.AdminService;
+import com.example.burnchuck.domain.category.dto.request.AdminCategoryCreateRequest;
+import com.example.burnchuck.domain.reaction.dto.request.AdminReactionCreateRequest;
+import com.example.burnchuck.domain.category.dto.response.AdminCategoryCreateResponse;
+import com.example.burnchuck.domain.reaction.dto.response.AdminReactionCreateResponse;
+import com.example.burnchuck.domain.user.service.AdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,11 +1,11 @@
-package com.example.burnchuck.domain.admin.sevice;
+package com.example.burnchuck.domain.user.service;
 
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Reaction;
-import com.example.burnchuck.domain.admin.dto.request.AdminCategoryCreateRequest;
-import com.example.burnchuck.domain.admin.dto.request.AdminReactionCreateRequest;
-import com.example.burnchuck.domain.admin.dto.response.AdminCategoryCreateResponse;
-import com.example.burnchuck.domain.admin.dto.response.AdminReactionCreateResponse;
+import com.example.burnchuck.domain.category.dto.request.AdminCategoryCreateRequest;
+import com.example.burnchuck.domain.reaction.dto.request.AdminReactionCreateRequest;
+import com.example.burnchuck.domain.category.dto.response.AdminCategoryCreateResponse;
+import com.example.burnchuck.domain.reaction.dto.response.AdminReactionCreateResponse;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.reaction.repository.ReactionRepository;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.admin.dto.response;
+package com.example.burnchuck.domain.category.dto.response;
 
 import com.example.burnchuck.common.entity.Category;
 import lombok.AllArgsConstructor;
