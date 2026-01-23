@@ -2,9 +2,6 @@ package com.example.burnchuck.common.jwt;
 
 import com.example.burnchuck.common.dto.AuthUser;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.util.List;
 
 public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 
