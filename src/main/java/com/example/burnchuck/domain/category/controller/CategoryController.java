@@ -2,6 +2,7 @@ package com.example.burnchuck.domain.category.controller;
 
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.domain.category.dto.request.CategoryCreateRequest;
+import com.example.burnchuck.domain.category.dto.response.CategoryCreateResponse;
 import com.example.burnchuck.domain.category.dto.response.CategoryListResponse;
 import com.example.burnchuck.domain.category.service.CategoryService;
 import jakarta.validation.Valid;
@@ -34,13 +35,13 @@ public class CategoryController {
      * 카테고리 생성(관리자 전용)
      */
     @PostMapping("/admin/categories")
-    public ResponseEntity<CommonResponse<Void>> createAdminCategory(
+    public ResponseEntity<CommonResponse<CategoryCreateResponse>> createAdminCategory(
             @Valid @RequestBody CategoryCreateRequest request
     ) {
-        categoryService.createCategory(request);
+        CategoryCreateResponse response = categoryService.createCategory(request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(CommonResponse.successNodata(CATEGORY_CREATE_SUCCESS));
+                .body(CommonResponse.success(CATEGORY_CREATE_SUCCESS,response));
 
     }
 

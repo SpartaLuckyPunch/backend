@@ -2,6 +2,7 @@ package com.example.burnchuck.domain.reaction.controller;
 
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.domain.reaction.dto.request.ReactionCreateRequest;
+import com.example.burnchuck.domain.reaction.dto.response.ReactionCreateResponse;
 import com.example.burnchuck.domain.reaction.service.ReactionService;
 import com.example.burnchuck.domain.review.dto.response.ReactionResponse;
 
@@ -38,13 +39,13 @@ public class ReactionController {
      * 리액션 종류 생성(관리자 전용)
      */
     @PostMapping("/admin/reactions")
-    public ResponseEntity<CommonResponse<Void>> createAdminReaction(
+    public ResponseEntity<CommonResponse<ReactionCreateResponse>> createAdminReaction(
             @Valid @RequestBody ReactionCreateRequest request
     ) {
-        reactionService.createReaction(request);
+        ReactionCreateResponse response = reactionService.createReaction(request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(CommonResponse.successNodata(REACTION_CREATE_SUCCESS));
+                .body(CommonResponse.success(REACTION_CREATE_SUCCESS, response));
     }
 
     /**

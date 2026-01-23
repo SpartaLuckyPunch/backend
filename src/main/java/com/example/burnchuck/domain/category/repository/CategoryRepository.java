@@ -10,12 +10,12 @@ import java.util.List;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
+    boolean existsByCode(String code);
+
     List<Category> findAllByOrderByIdAsc();
 
     default Category findCategoryById(Long id) {
         return findById(id)
             .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
     }
-
-    boolean existsByCode(String code);
 }
