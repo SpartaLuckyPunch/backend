@@ -29,6 +29,10 @@ public enum SuccessMessage {
 
     // 리뷰 리액션
     REVIEW_REACTION_GET_SUCCESS("후기 리액션 조회 성공"),
+
+    // 리액션 종류
+    REACTION_CREATE_SUCCESS("리액션 종류 생성 성공"),
+    REACTION_DELETE_SUCCESS("리액션 종류 삭제 성공"),
       
     // 좋아요
     LIKE_CREATE_SUCCESS("좋아요 성공"),
@@ -37,6 +41,8 @@ public enum SuccessMessage {
 
     // 카테고리
     CATEGORY_GET_SUCCESS("카테고리 조회 성공"),
+    CATEGORY_CREATE_SUCCESS("카테고리 생성 성공"),
+    CATEGORY_DELETE_SUCCESS("카테고리 삭제 성공"),
 
     // 모임
     MEETING_CREATE_SUCCESS("모임 생성 성공"),
