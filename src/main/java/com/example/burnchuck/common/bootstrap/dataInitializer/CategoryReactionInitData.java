@@ -38,7 +38,7 @@ public class CategoryReactionInitData implements ApplicationRunner {
         categoryRepository.saveAll(categoryList);
 
         List<Reaction> reactionList = List.of(
-            new Reaction("친철하고 매너가 좋아요."),
+            new Reaction("친절하고 매너가 좋아요."),
             new Reaction("시간 약속을 잘 지켜요."),
             new Reaction("분위기를 잘 살려요."),
             new Reaction("유머 감각이 있어요."),
