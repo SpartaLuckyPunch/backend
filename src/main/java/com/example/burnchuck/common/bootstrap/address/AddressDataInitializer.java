@@ -1,15 +1,14 @@
 package com.example.burnchuck.common.bootstrap.address;
 
 import com.example.burnchuck.common.bootstrap.csv.CsvReader;
-import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -17,6 +16,7 @@ public class AddressDataInitializer implements ApplicationRunner {
 
     private final AddressRepository addressRepository;
     private final CsvReader csvReader;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     @Transactional
@@ -27,19 +27,16 @@ public class AddressDataInitializer implements ApplicationRunner {
             return;
         }
 
-        List<AddressCsv> addresses =
-                csvReader.read("data/address.csv", AddressCsv.class);
+        List<AddressCsv> addresses = csvReader.read("data/address.csv", AddressCsv.class);
 
-        List<Address> entities = addresses.stream()
-                .map(dto -> new Address(
-                        dto.getProvince(),
-                        dto.getCity(),
-                        dto.getDistrict(),
-                        dto.getLatitude(),
-                        dto.getLongitude()
-                ))
-                .toList();
+        String sql = "INSERT INTO addresses (province, city, district, latitude, longitude) VALUES (?, ?, ?, ?, ?)";
 
-        addressRepository.saveAll(entities);
+        jdbcTemplate.batchUpdate(sql, addresses, addresses.size(), (ps, address) -> {
+            ps.setString(1, address.getProvince());
+            ps.setString(2, address.getCity());
+            ps.setString(3, address.getDistrict());
+            ps.setDouble(4, address.getLatitude());
+            ps.setDouble(5, address.getLongitude());
+        });
     }
 }
