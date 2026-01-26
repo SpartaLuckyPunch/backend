@@ -1,6 +1,6 @@
 spring:
   application:
-    name: name=ticketing-service
+    name: name=burn-chuck
   config:
     import: optional:file:.env[.properties]
   datasource:
