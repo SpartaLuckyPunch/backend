@@ -1,5 +1,6 @@
-package com.example.burnchuck.common.bootstrap.address;
+package com.example.burnchuck.common.bootstrap.dataInitializer;
 
+import com.example.burnchuck.common.bootstrap.csv.AddressCsv;
 import com.example.burnchuck.common.bootstrap.csv.CsvReader;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import java.util.List;

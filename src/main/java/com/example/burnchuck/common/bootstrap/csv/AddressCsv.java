@@ -1,4 +1,4 @@
-package com.example.burnchuck.common.bootstrap.address;
+package com.example.burnchuck.common.bootstrap.csv;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
