@@ -11,11 +11,14 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
     defer-datasource-initialization: true
+  swagger-ui:
+    tags-sorter: none
+    operations-sorter: none
 jwt:
   secret:
     key: ${JWT_SECRET_KEY}

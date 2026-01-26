@@ -4,6 +4,8 @@ import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.enums.ErrorCode;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
+
+import jakarta.servlet.ServletException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -79,16 +81,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-//    // ServletException을 상속받는 모든 예외 처리(요청 형식이 잘못되었을 때)
-//    @ExceptionHandler(ServletException.class)
-//    public ResponseEntity<CommonResponse<Void>> exception(ServletException e) {
-//
-//        CommonResponse<Void> response = CommonResponse.exception("요청 형식이 올바르지 않습니다.");
-//
-//        log.warn("ServletException 발생 : {}", e.getMessage());
-//
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//    }
+    // ServletException을 상속받는 모든 예외 처리(요청 형식이 잘못되었을 때)
+    @ExceptionHandler(ServletException.class)
+    public ResponseEntity<CommonResponse<Void>> exception(ServletException e) {
+
+        CommonResponse<Void> response = CommonResponse.exception("요청 형식이 올바르지 않습니다.");
+
+        log.warn("ServletException 발생 : {}", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 
     // 파일 업로드 / 다운로드 중 예외 발생
     @ExceptionHandler(IOException.class)

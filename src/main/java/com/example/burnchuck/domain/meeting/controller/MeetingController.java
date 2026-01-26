@@ -21,6 +21,8 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -43,6 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/meetings")
+@Tag(name = "Meeting")
 public class MeetingController {
 
     private final MeetingService meetingService;
@@ -50,6 +53,12 @@ public class MeetingController {
     /**
      * 모임 생성
      */
+    @Operation(
+            summary = "모임 생성",
+            description = """
+                    번개 모임을 생성합니다.
+                    """
+    )
     @PostMapping
     public ResponseEntity<CommonResponse<MeetingCreateResponse>> createMeeting(
             @AuthenticationPrincipal AuthUser user,
@@ -64,6 +73,12 @@ public class MeetingController {
     /**
      * 모임 전체 조회
      */
+    @Operation(
+            summary = "모임 전체 조회",
+            description = """
+                    현재 모집 중인 번개 모임을 모두 조회합니다.
+                    """
+    )
     @GetMapping
     public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> getMeetings(
             @RequestParam(required = false) String category,
@@ -78,6 +93,12 @@ public class MeetingController {
     /**
      * 모임 단건 조회
      */
+    @Operation(
+            summary = "모임 단건 조회",
+            description = """
+                    특정 모임을 조회합니다.
+                    """
+    )
     @GetMapping("/{meetingId}")
     public ResponseEntity<CommonResponse<MeetingDetailResponse>> getMeetingDetail(
             @PathVariable Long meetingId
@@ -91,6 +112,12 @@ public class MeetingController {
     /**
      * 모임 삭제
      */
+    @Operation(
+            summary = "모임 삭제",
+            description = """
+                    번개 모임을 삭제합니다.
+                    """
+    )
     @DeleteMapping("/{meetingId}")
     public ResponseEntity<CommonResponse<Void>> deleteMeeting(
             @AuthenticationPrincipal AuthUser authUser,
@@ -105,6 +132,12 @@ public class MeetingController {
     /**
      * 모임 수정
      */
+    @Operation(
+            summary = "모임 수정",
+            description = """
+                    번개 모임의 정보를 수정합니다.
+                    """
+    )
     @PatchMapping("/{meetingId}")
     public ResponseEntity<CommonResponse<MeetingUpdateResponse>> updateMeeting(
             @AuthenticationPrincipal AuthUser user,
@@ -121,6 +154,12 @@ public class MeetingController {
     /**
      * 주최한 모임 목록 조회 (로그인한 유저 기준)
      */
+    @Operation(
+            summary = "주최한 모임 목록 조회 (로그인한 유저 기준)",
+            description = """
+                    로그인한 유저가 주최한 모임 목록을 조회합니다.
+                    """
+    )
     @GetMapping("/hosted-meetings")
     public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryWithStatusResponse>>> getMyHostedMeetings(
         @AuthenticationPrincipal AuthUser authUser,
@@ -135,6 +174,12 @@ public class MeetingController {
     /**
      * 주최한 모임 목록 조회 (입력받은 유저 기준)
      */
+    @Operation(
+            summary = "주최한 모임 목록 조회 (입력받은 유저 기준)",
+            description = """
+                    특정 사용자가 주최한 모임 목록을 조회합니다.
+                    """
+    )
     @GetMapping("/hosted-meetings/users/{userId}")
     public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryWithStatusResponse>>> getOthersHostedMeetings(
         @PathVariable Long userId,
@@ -149,6 +194,12 @@ public class MeetingController {
     /**
      * 모임 참여자 목록 조회
      */
+    @Operation(
+            summary = "모임 참여자 목록 조회",
+            description = """
+                    특정 모임에 참여하는 사람들을 조회합니다.
+                    """
+    )
     @GetMapping("/{meetingId}/attendees")
     public ResponseEntity<CommonResponse<MeetingMemberResponse>> getMeetingMembers(
         @PathVariable Long meetingId
@@ -162,6 +213,12 @@ public class MeetingController {
     /**
      * 모임 검색
      */
+    @Operation(
+            summary = "모임 검색",
+            description = """
+                    원하는 필터에 맞게 모임을 검색합니다.
+                    """
+    )
     @GetMapping("/search")
     public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> searchMeetings(
             @ModelAttribute MeetingSearchRequest searchRequest,
