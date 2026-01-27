@@ -53,6 +53,9 @@ dependencies {
 
     // CSV
     implementation 'com.opencsv:opencsv:5.9'
+
+    // Spatial
+    implementation 'org.hibernate.orm:hibernate-spatial:6.6.39.Final'
 }
 
 tasks.named('test') {
