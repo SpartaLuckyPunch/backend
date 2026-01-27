@@ -30,6 +30,9 @@ import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -72,7 +75,9 @@ public class MeetingService {
 
         Category category = categoryRepository.findCategoryById(request.getCategoryId());
 
-        Meeting meeting = new Meeting(request, category);
+        Point point = getPoint(request.getLatitude(), request.getLongitude());
+
+        Meeting meeting = new Meeting(request, category, point);
 
         meetingRepository.save(meeting);
 
@@ -129,7 +134,9 @@ public class MeetingService {
 
         Category category = categoryRepository.findCategoryById(request.getCategoryId());
 
-        meeting.updateMeeting(request, category);
+        Point point = getPoint(request.getLatitude(), request.getLongitude());
+
+        meeting.updateMeeting(request, category, point);
 
         eventPublisherService.publishMeetingUpdatedEvent(meeting);
 
@@ -217,6 +224,19 @@ public class MeetingService {
     public Page<MeetingSummaryResponse> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
 
         return meetingRepository.searchMeetings(request, pageable);
+    }
+
+    /**
+     * 위도, 경도 값을 Point 객체로 변환
+     */
+    private Point getPoint(Double longitude, Double latitude) {
+        Point point = null;
+        try {
+            point = (Point) new WKTReader().read(String.format("POINT(%s %s)", longitude, latitude));
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        return point;
     }
 }
 
