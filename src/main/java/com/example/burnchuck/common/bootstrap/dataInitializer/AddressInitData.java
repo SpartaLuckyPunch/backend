@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
-public class AddressDataInitializer implements ApplicationRunner {
+public class AddressInitData implements ApplicationRunner {
 
     private final AddressRepository addressRepository;
     private final CsvReader csvReader;
