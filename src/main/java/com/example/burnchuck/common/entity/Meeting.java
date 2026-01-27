@@ -3,12 +3,22 @@ package com.example.burnchuck.common.entity;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
+import org.locationtech.jts.geom.Point;
 
 @Entity
 @Table(name = "meetings")
@@ -39,6 +49,9 @@ public class Meeting extends BaseEntity {
     private Double longitude;
 
     @Column(nullable = false)
+    private Point point;
+
+    @Column(nullable = false)
     private int maxAttendees;
 
     @Column(nullable = false)
@@ -55,13 +68,14 @@ public class Meeting extends BaseEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    public Meeting(MeetingCreateRequest request, Category category) {
+    public Meeting(MeetingCreateRequest request, Category category, Point point) {
         this.title = request.getTitle();
         this.description = request.getDescription();
         this.imgUrl = request.getImgUrl();
         this.location = request.getLocation();
         this.latitude = request.getLatitude();
         this.longitude = request.getLongitude();
+        this.point = point;
         this.maxAttendees = request.getMaxAttendees();
         this.meetingDateTime = request.getMeetingDateTime();
         this.views = 0L;
@@ -69,13 +83,14 @@ public class Meeting extends BaseEntity {
         this.category = category;
     }
 
-    public void updateMeeting(MeetingUpdateRequest request, Category category) {
+    public void updateMeeting(MeetingUpdateRequest request, Category category, Point point) {
         this.title = request.getTitle();
         this.description = request.getDescription();
         this.imgUrl = request.getImgUrl();
         this.location = request.getLocation();
         this.latitude = request.getLatitude();
         this.longitude = request.getLongitude();
+        this.point = point;
         this.maxAttendees = request.getMaxAttendees();
         this.meetingDateTime = request.getMeetingDateTime();
         this.category = category;
