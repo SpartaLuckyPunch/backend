@@ -1,7 +1,7 @@
 package com.example.burnchuck.domain.category.service;
 
 import com.example.burnchuck.common.entity.Category;
-import com.example.burnchuck.domain.category.model.response.CategoryListResponse;
+import com.example.burnchuck.domain.category.dto.response.CategoryListResponse;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

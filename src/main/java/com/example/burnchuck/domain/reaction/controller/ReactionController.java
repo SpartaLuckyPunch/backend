@@ -4,8 +4,11 @@ import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_REACTION_
 
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.domain.reaction.service.ReactionService;
-import com.example.burnchuck.domain.review.model.response.ReactionResponse;
+import com.example.burnchuck.domain.review.dto.response.ReactionResponse;
 import java.util.List;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/reactions")
+@Tag(name = "Reaction")
 public class ReactionController {
 
     private final ReactionService reactionService;
@@ -23,10 +27,15 @@ public class ReactionController {
     /**
      * 전체 후기 리액션 조회
      */
+    @Operation(
+            summary = "전체 후기 리액션 조회",
+            description = """
+                    모든 객관식 반응을 조회합니다.
+                    """
+    )
     @GetMapping
     public ResponseEntity<CommonResponse<List<ReactionResponse>>> getReviewReactionList() {
 
-        // 서비스에서 전체 목록을 가져옴
         List<ReactionResponse> response = reactionService.getReviewReactionList();
 
         return ResponseEntity.status(HttpStatus.OK)

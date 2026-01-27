@@ -4,7 +4,7 @@ import com.example.burnchuck.common.entity.Notification;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
-import com.example.burnchuck.domain.notification.model.response.NotificationResponse;
+import com.example.burnchuck.domain.notification.dto.response.NotificationResponse;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,7 +13,7 @@ import org.springframework.data.repository.query.Param;
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
     @Query("""
-        SELECT new com.example.burnchuck.domain.notification.model.response.NotificationResponse(
+        SELECT new com.example.burnchuck.domain.notification.dto.response.NotificationResponse(
                 n.id,
                 n.type,
                 n.description,

@@ -1,6 +1,8 @@
 package com.example.burnchuck.common.entity;
 
+import com.example.burnchuck.common.enums.UserRole;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,7 +11,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "users")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
 
     @Id
@@ -39,13 +41,18 @@ public class User extends BaseEntity {
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
-    public User(String email, String password, String nickname, LocalDate birth, boolean gender, Address address) {
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role;
+
+    public User(String email, String password, String nickname, LocalDate birth, boolean gender, Address address, UserRole role) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.birth = birth;
         this.gender = gender;
         this.address = address;
+        this.role = role;
     }
 
     public void uploadProfileImg(String profileImgUrl) {

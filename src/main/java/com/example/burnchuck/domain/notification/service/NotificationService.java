@@ -6,11 +6,11 @@ import com.example.burnchuck.common.entity.Notification;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.NotificationType;
-import com.example.burnchuck.domain.attendance.repository.UserMeetingRepository;
-import com.example.burnchuck.domain.auth.model.dto.AuthUser;
+import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
-import com.example.burnchuck.domain.notification.model.response.NotificationGetListResponse;
-import com.example.burnchuck.domain.notification.model.response.NotificationResponse;
+import com.example.burnchuck.domain.notification.dto.response.NotificationGetListResponse;
+import com.example.burnchuck.domain.notification.dto.response.NotificationResponse;
 import com.example.burnchuck.domain.notification.repository.NotificationRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.ArrayList;
@@ -37,15 +37,10 @@ public class NotificationService {
 
         NotificationType notificationType = NotificationType.NEW_FOLLOWING_POST;
 
-        // 1. 모임을 생성한 유저의 팔로워 목록 조회
         List<Follow> followerList = followRepository.findAllByFollowee(user);
 
-        // 2. 생성한 meeting 내용에 맞게 알림 설명글 수정
-        String description = notificationType.getDescription();
-        description = description.replace("{nickname}", user.getNickname());
-        description = description.replace("{title}", meeting.getTitle());
+        String description = notificationType.getDescription(notificationType, meeting.getTitle(), user.getNickname());
 
-        // 3. 팔로워 리스트 순회하며 대상 유저를 넣어 알림 객체 생성
         List<Notification> notificationList = new ArrayList<>();
 
         for (Follow follow : followerList) {
@@ -60,7 +55,6 @@ public class NotificationService {
             notificationList.add(notification);
         }
 
-        // 4. 알림 저장
         notificationRepository.saveAll(notificationList);
     }
 
@@ -69,26 +63,12 @@ public class NotificationService {
      * 모임의 유저가 탈퇴했을 때 -> 해당 모임의 주최자에게 알림 발송
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void notifyMeetingMember(boolean join, Meeting meeting, User participant) {
+    public void notifyMeetingMember(NotificationType notificationType, Meeting meeting, User attendee) {
 
-        // 1. 유저 추가 / 탈퇴 구분
-        NotificationType notificationType;
+        String description = notificationType.getDescription(notificationType, meeting.getTitle(), attendee.getNickname());
 
-        if (join) {
-            notificationType = NotificationType.MEETING_MEMBER_JOIN;
-        } else {
-            notificationType = NotificationType.MEETING_MEMBER_LEFT;
-        }
-
-        // 2. 상황에 맞게 알림 설명글 수정
-        String description = notificationType.getDescription();
-        description = description.replace("{title}", meeting.getTitle());
-        description = description.replace("{nickname}", participant.getNickname());
-
-        // 3. Meeting의 HOST 조회
         UserMeeting host = userMeetingRepository.findHostByMeeting(meeting);
 
-        // 4. Notification 객체 생성 및 저장
         Notification notification = new Notification(
             notificationType,
             description,
@@ -107,14 +87,10 @@ public class NotificationService {
 
         NotificationType notificationType = NotificationType.COMMENT_REQUESTED;
 
-        // 1. 해당 모임의 참석자 조회
         List<UserMeeting> userMeetingList = userMeetingRepository.findMeetingMembers(meeting.getId());
 
-        // 2. 상황에 맞게 알림 설명글 수정
-        String description = notificationType.getDescription();
-        description = description.replace("{title}", meeting.getTitle());
+        String description = notificationType.getDescription(notificationType, meeting.getTitle(), null);
 
-        // 3. 리스트 순회하며 알림 생성
         List<Notification> notificationList = new ArrayList<>();
 
         for (UserMeeting userMeeting : userMeetingList) {
@@ -129,7 +105,6 @@ public class NotificationService {
             notificationList.add(notification);
         }
 
-        // 4. 알림 저장
         notificationRepository.saveAll(notificationList);
     }
 
@@ -139,10 +114,8 @@ public class NotificationService {
     @Transactional(readOnly = true)
     public NotificationGetListResponse getNotificationList(AuthUser authUser) {
 
-        // 1. 로그인한 유저 정보로 객체 생성
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        // 2. 유저 기준 알림 목록 조회
         List<NotificationResponse> notificaionList = notificationRepository.findAllNotificationsByUser(user);
 
         return new NotificationGetListResponse(notificaionList);
@@ -154,10 +127,8 @@ public class NotificationService {
     @Transactional
     public NotificationResponse readNotification(Long notificationId) {
 
-        // 1. 알림 객체 생성
         Notification notification = notificationRepository.findNotificationById(notificationId);
 
-        // 2. 알림 읽음 처리
         notification.read();
 
         return NotificationResponse.from(notification);

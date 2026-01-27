@@ -7,7 +7,7 @@ import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
-import com.example.burnchuck.domain.scheduler.model.dto.SchedulingTask;
+import com.example.burnchuck.domain.scheduler.dto.SchedulingTask;
 import com.example.burnchuck.domain.scheduler.repository.SchedulingRepository;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -55,10 +55,7 @@ public class SchedulingService {
             meeting.getId(),
             MEETING_CHANGE_STATUS,
             e -> {
-                // 영속성 컨텍스트에 올리기 위해 다시 조회
                 Meeting targetMeeting = meetingRepository.findActivateMeetingById(meeting.getId());
-
-                // 상태 변경
                 targetMeeting.updateStatus(MeetingStatus.COMPLETED);
             },
             meeting.getMeetingDateTime().minusMinutes(10)
@@ -75,10 +72,7 @@ public class SchedulingService {
             meeting.getId(),
             NOTIFICATION_REVIEW_REQUEST,
             e -> {
-                // 영속성 컨텍스트에 올리기 위해 다시 조회
                 Meeting targetMeeting = meetingRepository.findActivateMeetingById(meeting.getId());
-
-                // 알림 생성
                 notificationService.notifyCommentRequest(targetMeeting);
             },
             meeting.getMeetingDateTime().plusHours(3)

@@ -1,28 +1,32 @@
 package com.example.burnchuck.domain.meeting.repository;
 
-import com.example.burnchuck.common.entity.QCategory;
-import com.example.burnchuck.common.entity.QMeeting;
-import com.example.burnchuck.common.entity.QMeetingLike;
-import com.example.burnchuck.common.entity.QUserMeeting;
+import static com.example.burnchuck.common.entity.QCategory.category1;
+import static com.example.burnchuck.common.entity.QMeeting.meeting;
+import static com.example.burnchuck.common.entity.QMeetingLike.meetingLike;
+import static com.example.burnchuck.common.entity.QNotification.notification;
+import static com.example.burnchuck.common.entity.QUserMeeting.userMeeting;
+
+import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
-import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
-import com.example.burnchuck.domain.meeting.model.request.MeetingSearchRequest;
-import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
-import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
+import com.example.burnchuck.common.enums.NotificationType;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
-
-import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
@@ -33,18 +37,14 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      * 모임 전체 조회
      */
     @Override
-    public Page<MeetingSummaryDto> findMeetingList(
+    public Page<MeetingSummaryResponse> findMeetingList(
             String category,
             Pageable pageable
     ) {
 
-        QMeeting meeting = QMeeting.meeting;
-        QUserMeeting userMeeting = QUserMeeting.userMeeting;
-        QCategory category1 = QCategory.category1;
-
-        List<MeetingSummaryDto> content = queryFactory
+        List<MeetingSummaryResponse> content = queryFactory
                 .select(Projections.constructor(
-                        MeetingSummaryDto.class,
+                        MeetingSummaryResponse.class,
                         meeting.id,
                         meeting.title,
                         meeting.imgUrl,
@@ -69,8 +69,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // 전체 개수 조회 (페이징용)
-        // total에서 NPE 에러가 날 수 있으므로 Optional.ofNullable 사용
         Long total = Optional.ofNullable(
                 queryFactory
                         .select(meeting.id.countDistinct())
@@ -91,10 +89,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      */
     @Override
     public Optional<MeetingDetailResponse> findMeetingDetail(Long meetingId) {
-
-        QMeeting meeting = QMeeting.meeting;
-        QUserMeeting userMeeting = QUserMeeting.userMeeting;
-        QMeetingLike meetingLike = QMeetingLike.meetingLike;
 
         MeetingDetailResponse result = queryFactory
                 .select(Projections.constructor(
@@ -128,16 +122,14 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     /**
      * 내가 주최한 모임 조회
      */
-    public Page<HostedMeetingResponse> findHostedMeetings(
+    public Page<MeetingSummaryWithStatusResponse> findHostedMeetings(
             Long userId,
             Pageable pageable
     ) {
-        QMeeting meeting = QMeeting.meeting;
-        QUserMeeting userMeeting = QUserMeeting.userMeeting;
 
-        List<HostedMeetingResponse> content = queryFactory
+        List<MeetingSummaryWithStatusResponse> content = queryFactory
                 .select(Projections.constructor(
-                        HostedMeetingResponse.class,
+                        MeetingSummaryWithStatusResponse.class,
                         meeting.id,
                         meeting.title,
                         meeting.imgUrl,
@@ -177,14 +169,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      * 모임 검색
      */
     @Override
-    public Page<MeetingSummaryDto> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
+    public Page<MeetingSummaryResponse> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
 
-        QMeeting meeting = QMeeting.meeting;
-        QCategory qCategory = QCategory.category1;
-        QUserMeeting userMeeting = QUserMeeting.userMeeting;
-        QMeetingLike meetingLike = QMeetingLike.meetingLike;
-
-        // 1. 정렬 조건 설정 (인기순일 때 좋아요 개수 기준으로)
         OrderSpecifier<?> orderSpecifier =
             switch (request.getOrder()) {
 
@@ -193,9 +179,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 default -> meeting.createdDatetime.desc();
             };
 
-        // 2. 데이터 조회 쿼리
-        List<MeetingSummaryDto> content = queryFactory
-                .select(Projections.constructor(MeetingSummaryDto.class,
+        List<MeetingSummaryResponse> content = queryFactory
+                .select(Projections.constructor(MeetingSummaryResponse.class,
                         meeting.id,
                         meeting.title,
                         meeting.imgUrl,
@@ -207,7 +192,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                         userMeeting.id.countDistinct().intValue()
                 ))
                 .from(meeting)
-                .leftJoin(meeting.category, qCategory)
+                .leftJoin(meeting.category, category1)
                 .leftJoin(userMeeting).on(userMeeting.meeting.eq(meeting))
                 .leftJoin(meetingLike).on(meetingLike.meeting.eq(meeting))
                 .where(
@@ -221,11 +206,10 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // 3. 카운트 쿼리
         JPAQuery<Long> countQuery = queryFactory
                 .select(meeting.count())
                 .from(meeting)
-                .leftJoin(meeting.category, qCategory)
+                .leftJoin(meeting.category, category1)
                 .where(
                         keywordContains(request.getKeyword()),
                         categoryEq(request.getCategory()),
@@ -235,18 +219,36 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
+    @Override
+    public List<Meeting> findActivateMeetingsForNotification(LocalDateTime startDate, LocalDateTime endDate) {
+
+        return queryFactory
+            .selectFrom(meeting)
+            .leftJoin(notification).on(
+                notification.meeting.id.eq(meeting.id),
+                notification.type.eq(NotificationType.COMMENT_REQUESTED)
+            )
+            .where(
+                meeting.status.eq(MeetingStatus.COMPLETED),
+                meeting.isDeleted.isFalse(),
+                notification.id.isNull(),
+                meeting.meetingDateTime.between(startDate, endDate)
+            )
+            .fetch();
+    }
+
     private BooleanExpression categoryEq(String categoryName) {
 
         if (categoryName == null) {
             return null;
         }
 
-        return QCategory.category1.category.eq(categoryName);
+        return category1.category.eq(categoryName);
     }
 
     // 키워드 검색
     private BooleanExpression keywordContains(String keyword) {
         return (keyword != null && !keyword.isBlank())
-                ? QMeeting.meeting.title.containsIgnoreCase(keyword) : null;
+                ? meeting.title.containsIgnoreCase(keyword) : null;
     }
 }

@@ -1,11 +1,13 @@
 package com.example.burnchuck.common.filter;
 
 import com.example.burnchuck.common.dto.CommonResponse;
+import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
+import com.example.burnchuck.common.enums.UserRole;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.jwt.JwtAuthenticationToken;
 import com.example.burnchuck.common.utils.JwtUtil;
-import com.example.burnchuck.domain.auth.model.dto.AuthUser;
+import com.example.burnchuck.common.dto.AuthUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -50,8 +52,10 @@ public class JwtFilter extends OncePerRequestFilter {
         Long userId = jwtUtil.extractId(jwt);
         String email = jwtUtil.extractEmail(jwt);
         String nickname = jwtUtil.extractNickname(jwt);
+        String roleString = jwtUtil.extractRole(jwt);
+        UserRole userRole = UserRole.of(roleString);
 
-        AuthUser authUser = new AuthUser(userId, email, nickname);
+        AuthUser authUser = new AuthUser(userId, email, nickname, userRole);
         JwtAuthenticationToken authenticationToken = new JwtAuthenticationToken(authUser);
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 

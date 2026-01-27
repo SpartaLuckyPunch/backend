@@ -2,6 +2,7 @@ package com.example.burnchuck.common.entity;
 
 import com.example.burnchuck.common.enums.NotificationType;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "notifications")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification {
 
     @Id

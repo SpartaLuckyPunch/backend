@@ -2,23 +2,27 @@ package com.example.burnchuck.domain.meeting.controller;
 
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_CREATE_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_DELETE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_HOSTED_LIST_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_MEMBER_LIST_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_SEARCH_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_UPDATE_SUCCESS;
 
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.dto.PageResponse;
-import com.example.burnchuck.domain.auth.model.dto.AuthUser;
-import com.example.burnchuck.domain.meeting.model.dto.MeetingSummaryDto;
-import com.example.burnchuck.domain.meeting.model.request.MeetingCreateRequest;
-import com.example.burnchuck.domain.meeting.model.request.MeetingSearchRequest;
-import com.example.burnchuck.domain.meeting.model.request.MeetingUpdateRequest;
-import com.example.burnchuck.domain.meeting.model.response.HostedMeetingResponse;
-import com.example.burnchuck.domain.meeting.model.response.MeetingCreateResponse;
-import com.example.burnchuck.domain.meeting.model.response.MeetingDetailResponse;
-import com.example.burnchuck.domain.meeting.model.response.MeetingUpdateResponse;
+import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -40,7 +44,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/meetings")
+@Tag(name = "Meeting")
 public class MeetingController {
 
     private final MeetingService meetingService;
@@ -48,7 +53,13 @@ public class MeetingController {
     /**
      * 모임 생성
      */
-    @PostMapping("/meetings")
+    @Operation(
+            summary = "모임 생성",
+            description = """
+                    번개 모임을 생성합니다.
+                    """
+    )
+    @PostMapping
     public ResponseEntity<CommonResponse<MeetingCreateResponse>> createMeeting(
             @AuthenticationPrincipal AuthUser user,
             @Valid @RequestBody MeetingCreateRequest request
@@ -62,12 +73,18 @@ public class MeetingController {
     /**
      * 모임 전체 조회
      */
-    @GetMapping("/meetings")
-    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryDto>>> getMeetings(
+    @Operation(
+            summary = "모임 전체 조회",
+            description = """
+                    현재 모집 중인 번개 모임을 모두 조회합니다.
+                    """
+    )
+    @GetMapping
+    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> getMeetings(
             @RequestParam(required = false) String category,
             @PageableDefault(size = 6) Pageable pageable
     ) {
-        Page<MeetingSummaryDto> page = meetingService.getMeetingPage(category, pageable);
+        Page<MeetingSummaryResponse> page = meetingService.getMeetingPage(category, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));
@@ -76,7 +93,13 @@ public class MeetingController {
     /**
      * 모임 단건 조회
      */
-    @GetMapping("/meetings/{meetingId}")
+    @Operation(
+            summary = "모임 단건 조회",
+            description = """
+                    특정 모임을 조회합니다.
+                    """
+    )
+    @GetMapping("/{meetingId}")
     public ResponseEntity<CommonResponse<MeetingDetailResponse>> getMeetingDetail(
             @PathVariable Long meetingId
     ) {
@@ -89,7 +112,13 @@ public class MeetingController {
     /**
      * 모임 삭제
      */
-    @DeleteMapping("/meetings/{meetingId}")
+    @Operation(
+            summary = "모임 삭제",
+            description = """
+                    번개 모임을 삭제합니다.
+                    """
+    )
+    @DeleteMapping("/{meetingId}")
     public ResponseEntity<CommonResponse<Void>> deleteMeeting(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long meetingId
@@ -103,7 +132,13 @@ public class MeetingController {
     /**
      * 모임 수정
      */
-    @PatchMapping("/meetings/{meetingId}")
+    @Operation(
+            summary = "모임 수정",
+            description = """
+                    번개 모임의 정보를 수정합니다.
+                    """
+    )
+    @PatchMapping("/{meetingId}")
     public ResponseEntity<CommonResponse<MeetingUpdateResponse>> updateMeeting(
             @AuthenticationPrincipal AuthUser user,
             @PathVariable Long meetingId,
@@ -117,29 +152,80 @@ public class MeetingController {
     }
 
     /**
-     * 주최한 모임 목록 조회
+     * 주최한 모임 목록 조회 (로그인한 유저 기준)
      */
-    @GetMapping("/me/meetings/hosted")
-    public ResponseEntity<CommonResponse<PageResponse<HostedMeetingResponse>>> getHostedMeetings(
-            @AuthenticationPrincipal AuthUser authUser,
-            @PageableDefault(size = 6) Pageable pageable
+    @Operation(
+            summary = "주최한 모임 목록 조회 (로그인한 유저 기준)",
+            description = """
+                    로그인한 유저가 주최한 모임 목록을 조회합니다.
+                    """
+    )
+    @GetMapping("/hosted-meetings")
+    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryWithStatusResponse>>> getMyHostedMeetings(
+        @AuthenticationPrincipal AuthUser authUser,
+        @PageableDefault(size = 6) Pageable pageable
     ) {
-        Page<HostedMeetingResponse> page = meetingService.getHostedMeetings(authUser, pageable);
+        Page<MeetingSummaryWithStatusResponse> page = meetingService.getMyHostedMeetings(authUser, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(MEETING_GET_HOSTED_LIST_SUCCESS, PageResponse.from(page)));
+            .body(CommonResponse.success(MEETING_GET_HOSTED_LIST_SUCCESS, PageResponse.from(page)));
+    }
+
+    /**
+     * 주최한 모임 목록 조회 (입력받은 유저 기준)
+     */
+    @Operation(
+            summary = "주최한 모임 목록 조회 (입력받은 유저 기준)",
+            description = """
+                    특정 사용자가 주최한 모임 목록을 조회합니다.
+                    """
+    )
+    @GetMapping("/hosted-meetings/users/{userId}")
+    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryWithStatusResponse>>> getOthersHostedMeetings(
+        @PathVariable Long userId,
+        @PageableDefault(size = 6) Pageable pageable
+    ) {
+        Page<MeetingSummaryWithStatusResponse> page = meetingService.getOthersHostedMeetings(userId, pageable);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.success(MEETING_GET_HOSTED_LIST_SUCCESS, PageResponse.from(page)));
+    }
+
+    /**
+     * 모임 참여자 목록 조회
+     */
+    @Operation(
+            summary = "모임 참여자 목록 조회",
+            description = """
+                    특정 모임에 참여하는 사람들을 조회합니다.
+                    """
+    )
+    @GetMapping("/{meetingId}/attendees")
+    public ResponseEntity<CommonResponse<MeetingMemberResponse>> getMeetingMembers(
+        @PathVariable Long meetingId
+    ) {
+        MeetingMemberResponse response = meetingService.getMeetingMembers(meetingId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.success(MEETING_GET_MEMBER_LIST_SUCCESS, response));
     }
 
     /**
      * 모임 검색
      */
+    @Operation(
+            summary = "모임 검색",
+            description = """
+                    원하는 필터에 맞게 모임을 검색합니다.
+                    """
+    )
     @GetMapping("/search")
-    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryDto>>> searchMeetings(
+    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> searchMeetings(
             @ModelAttribute MeetingSearchRequest searchRequest,
             @PageableDefault(size = 6) Pageable pageable
     ) {
 
-        Page<MeetingSummaryDto> page = meetingService.searchMeetings(searchRequest, pageable);
+        Page<MeetingSummaryResponse> page = meetingService.searchMeetings(searchRequest, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_SEARCH_SUCCESS, PageResponse.from(page)));

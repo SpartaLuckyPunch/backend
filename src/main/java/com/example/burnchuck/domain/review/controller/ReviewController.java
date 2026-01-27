@@ -5,11 +5,13 @@ import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_GET_LIST_
 import static com.example.burnchuck.common.enums.SuccessMessage.REVIEW_GET_ONE_SUCCESS;
 
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.domain.auth.model.dto.AuthUser;
-import com.example.burnchuck.domain.review.model.request.ReviewCreateRequest;
-import com.example.burnchuck.domain.review.model.response.ReviewDetailResponse;
-import com.example.burnchuck.domain.review.model.response.ReviewGetListResponse;
+import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.domain.review.dto.request.ReviewCreateRequest;
+import com.example.burnchuck.domain.review.dto.response.ReviewDetailResponse;
+import com.example.burnchuck.domain.review.dto.response.ReviewGetListResponse;
 import com.example.burnchuck.domain.review.service.ReviewService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
+@Tag(name = "Review")
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -36,6 +39,12 @@ public class ReviewController {
     /**
      * 후기 등록
      */
+    @Operation(
+            summary = "후기 등록",
+            description = """
+                    모임을 함께 했던 사람에 대한 후기를 생성합니다.
+                    """
+    )
     @PostMapping("/users/{revieweeId}/review")
     public ResponseEntity<CommonResponse<Void>> createReview(
             @AuthenticationPrincipal AuthUser authUser,
@@ -52,7 +61,13 @@ public class ReviewController {
     /**
      * 후기 목록조회
      */
-    @GetMapping("/users/{userId}/reviews")
+    @Operation(
+            summary = "후기 목록 조회",
+            description = """
+                    특정 사용자에 대한 후기 목록을 조회합니다.
+                    """
+    )
+    @GetMapping("/reviews/users/{userId}")
     public ResponseEntity<CommonResponse<ReviewGetListResponse>> getReviewList(
             @PathVariable Long userId,
             @PageableDefault(size = 10, sort = "createdDatetime", direction = Sort.Direction.DESC) Pageable pageable
@@ -66,6 +81,12 @@ public class ReviewController {
     /**
      * 후기 단건조회
      */
+    @Operation(
+            summary = "후기 단건 조회",
+            description = """
+                    특정 사용자에 대한 특정 후기를 조회합니다.
+                    """
+    )
     @GetMapping("/reviews/{reviewId}")
     public ResponseEntity<CommonResponse<ReviewDetailResponse>> getReviewDetail(
             @PathVariable Long reviewId
