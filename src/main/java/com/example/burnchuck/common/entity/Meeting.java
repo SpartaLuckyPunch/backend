@@ -48,7 +48,7 @@ public class Meeting extends BaseEntity {
     @Column(nullable = false)
     private Double longitude;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "POINT SRID 4326")
     private Point point;
 
     @Column(nullable = false)
