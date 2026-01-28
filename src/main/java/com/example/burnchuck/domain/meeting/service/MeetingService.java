@@ -108,7 +108,7 @@ public class MeetingService {
         User user = userRepository.findActivateUserWithAddress(authUser.getId());
         Location userLocation = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
 
-        BoundingBox boundingBox = MeetingDistance.aroundUserBox(userLocation);
+        BoundingBox boundingBox = MeetingDistance.aroundUserBox(userLocation, 5.0);
 
         return meetingRepository.findMeetingList(category, pageable, boundingBox);
     }

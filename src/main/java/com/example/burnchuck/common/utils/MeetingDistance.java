@@ -6,21 +6,18 @@ import com.example.burnchuck.common.entity.Meeting;
 
 public class MeetingDistance {
 
-    // 탐색 거리(km 단위)
-    private static final double SEARCH_DISTANCE = 5.0;
-
     /**
      * 반경 5km 원을 감싸는 최소 사각형 생성
      */
-    public static BoundingBox aroundUserBox(Location userLocation) {
+    public static BoundingBox aroundUserBox(Location userLocation, Double distance) {
 
         double lat = userLocation.getLatitude();
         double lng = userLocation.getLongitude();
 
-        Location north = GeometryUtil.calculateByDirection(lat, lng, SEARCH_DISTANCE, 0.0);
-        Location south = GeometryUtil.calculateByDirection(lat, lng, SEARCH_DISTANCE, 180.0);
-        Location east  = GeometryUtil.calculateByDirection(lat, lng, SEARCH_DISTANCE, 90.0);
-        Location west  = GeometryUtil.calculateByDirection(lat, lng, SEARCH_DISTANCE, 270.0);
+        Location north = GeometryUtil.calculateByDirection(lat, lng, distance, 0.0);
+        Location south = GeometryUtil.calculateByDirection(lat, lng, distance, 180.0);
+        Location east  = GeometryUtil.calculateByDirection(lat, lng, distance, 90.0);
+        Location west  = GeometryUtil.calculateByDirection(lat, lng, distance, 270.0);
 
         return new BoundingBox(
             south.getLatitude(),
