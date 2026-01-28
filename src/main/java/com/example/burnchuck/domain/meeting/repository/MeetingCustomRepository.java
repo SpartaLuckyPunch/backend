@@ -4,7 +4,6 @@ import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchBoundingBoxRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchUserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
@@ -24,8 +23,8 @@ public interface MeetingCustomRepository {
 
     Page<MeetingSummaryResponse> searchMeetings(
         MeetingSearchRequest request,
-        MeetingSearchUserLocationRequest userLocation,
-        MeetingSearchBoundingBoxRequest boundingBox,
+        BoundingBox userBoundingBox,
+        MeetingSearchBoundingBoxRequest mapBoundingBox,
         Pageable pageable
     );
 

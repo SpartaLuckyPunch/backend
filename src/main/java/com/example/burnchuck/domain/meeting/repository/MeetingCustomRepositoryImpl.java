@@ -14,7 +14,6 @@ import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.NotificationType;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchBoundingBoxRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchUserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
@@ -178,8 +177,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     @Override
     public Page<MeetingSummaryResponse> searchMeetings(
         MeetingSearchRequest request,
-        MeetingSearchUserLocationRequest userLocation,
-        MeetingSearchBoundingBoxRequest boundingBox,
+        BoundingBox userBoundingBox,
+        MeetingSearchBoundingBoxRequest mapBoundingBox,
         Pageable pageable
     ) {
         OrderSpecifier<?> orderSpecifier =
@@ -211,6 +210,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                         categoryEq(request.getCategory()),
                         startAt(request.getStartDatetime()),
                         endAt(request.getEndDatetime()),
+                        locationInBoundingBox(userBoundingBox),
                         meeting.status.eq(MeetingStatus.OPEN)
                 )
                 .groupBy(meeting.id)

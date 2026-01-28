@@ -224,12 +224,13 @@ public class MeetingController {
     )
     @GetMapping("/search")
     public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> searchMeetings(
+            @AuthenticationPrincipal AuthUser authUser,
             @ModelAttribute MeetingSearchRequest searchRequest,
             @ModelAttribute MeetingSearchUserLocationRequest userLocation,
             @ModelAttribute MeetingSearchBoundingBoxRequest boundingBox,
             @PageableDefault(size = 6) Pageable pageable
     ) {
-        Page<MeetingSummaryResponse> page = meetingService.searchMeetings(searchRequest, userLocation, boundingBox, pageable);
+        Page<MeetingSummaryResponse> page = meetingService.searchMeetings(authUser, searchRequest, userLocation, boundingBox, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_SEARCH_SUCCESS, PageResponse.from(page)));

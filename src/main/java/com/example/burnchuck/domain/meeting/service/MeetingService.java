@@ -235,12 +235,25 @@ public class MeetingService {
      */
     @Transactional(readOnly = true)
     public Page<MeetingSummaryResponse> searchMeetings(
+        AuthUser authUser,
         MeetingSearchRequest request,
         MeetingSearchUserLocationRequest userLocation,
-        MeetingSearchBoundingBoxRequest boundingBox,
+        MeetingSearchBoundingBoxRequest mapBoundingBox,
         Pageable pageable
     ) {
-        return meetingRepository.searchMeetings(request, userLocation, boundingBox, pageable);
+        Location location;
+
+        if (userLocation.getLatitude() != null && userLocation.getLongitude() != null) {
+            location = new Location(userLocation.getLatitude(), userLocation.getLongitude());
+        } else {
+            User user = userRepository.findActivateUserWithAddress(authUser.getId());
+            location = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+        }
+
+        Double distance = userLocation.getDistance() == null ? 5.0 : userLocation.getDistance();
+        BoundingBox userBoundingBox = MeetingDistance.aroundUserBox(location, distance);
+
+        return meetingRepository.searchMeetings(request, userBoundingBox, mapBoundingBox, pageable);
     }
 
     /**

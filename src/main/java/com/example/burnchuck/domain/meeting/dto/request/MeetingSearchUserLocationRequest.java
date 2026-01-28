@@ -13,4 +13,5 @@ public class MeetingSearchUserLocationRequest {
 
     private Double latitude;
     private Double longitude;
+    private Double distance;
 }
