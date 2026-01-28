@@ -1,8 +1,8 @@
 package com.example.burnchuck.common.utils;
 
+import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Meeting;
-import com.example.burnchuck.common.enums.Direction;
 
 public class MeetingDistance {
 
@@ -10,25 +10,24 @@ public class MeetingDistance {
     private static final double SEARCH_DISTANCE = 5.0;
 
     /**
-     * 기준 지점에서 최대 반경이 되는 북동쪽 좌표
+     * 반경 5km 원을 감싸는 최소 사각형 생성
      */
-    public static Location aroundUserNortheastDot(Location userLocation) {
+    public static BoundingBox aroundUserBox(Location userLocation) {
 
-        double nowLatitude = userLocation.getLatitude();
-        double nowLongitude = userLocation.getLongitude();
+        double lat = userLocation.getLatitude();
+        double lng = userLocation.getLongitude();
 
-        return GeometryUtil.calculateByDirection(nowLatitude, nowLongitude, SEARCH_DISTANCE, Direction.NORTHEAST.getBearing());
-    }
+        Location north = GeometryUtil.calculateByDirection(lat, lng, SEARCH_DISTANCE, 0.0);
+        Location south = GeometryUtil.calculateByDirection(lat, lng, SEARCH_DISTANCE, 180.0);
+        Location east  = GeometryUtil.calculateByDirection(lat, lng, SEARCH_DISTANCE, 90.0);
+        Location west  = GeometryUtil.calculateByDirection(lat, lng, SEARCH_DISTANCE, 270.0);
 
-    /**
-     * 기준 지점에서 최대 거리가 되는 남서쪽 좌표
-     */
-    public static Location aroundUserSouthwestDot(Location userLocation) {
-
-        double nowLatitude = userLocation.getLatitude();
-        double nowLongitude = userLocation.getLongitude();
-
-        return GeometryUtil.calculateByDirection(nowLatitude, nowLongitude, SEARCH_DISTANCE, Direction.SOUTHWEST.getBearing());
+        return new BoundingBox(
+            south.getLatitude(),
+            north.getLatitude(),
+            west.getLongitude(),
+            east.getLongitude()
+        );
     }
 
     /**
