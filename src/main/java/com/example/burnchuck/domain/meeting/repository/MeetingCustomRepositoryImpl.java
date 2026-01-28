@@ -12,7 +12,6 @@ import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.NotificationType;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchBoundingBoxRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
@@ -177,8 +176,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     @Override
     public Page<MeetingSummaryResponse> searchMeetings(
         MeetingSearchRequest request,
-        BoundingBox userBoundingBox,
-        MeetingSearchBoundingBoxRequest mapBoundingBox,
+        BoundingBox boundingBox,
         Pageable pageable
     ) {
         OrderSpecifier<?> orderSpecifier =
@@ -210,7 +208,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                         categoryEq(request.getCategory()),
                         startAt(request.getStartDatetime()),
                         endAt(request.getEndDatetime()),
-                        locationInBoundingBox(userBoundingBox),
+                        locationInBoundingBox(boundingBox),
                         meeting.status.eq(MeetingStatus.OPEN)
                 )
                 .groupBy(meeting.id)
@@ -282,6 +280,10 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      * BoundingBox 이내의 모임인지 확인
      */
     private BooleanExpression locationInBoundingBox(BoundingBox boundingBox) {
+
+        if (boundingBox == null) {
+            return null;
+        }
 
         String lineString = String.format(
             "LINESTRING(%f %f, %f %f)",

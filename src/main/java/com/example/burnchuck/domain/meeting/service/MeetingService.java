@@ -232,28 +232,38 @@ public class MeetingService {
 
     /**
      * 모임 검색
+     *
+     * 위치 필터링 우선순위
+     * 1. mapViewPort : 프론트에서 전달받는 지도 API의 viewPort
+     * 2. userLocation + 범위 : GPS 기반 사용자의 현재 위치
+     * 3. 사용자 주소지 + 범위 : 사용자가 GPS를 허용하지 않았을 때
      */
     @Transactional(readOnly = true)
     public Page<MeetingSummaryResponse> searchMeetings(
         AuthUser authUser,
         MeetingSearchRequest request,
         MeetingSearchUserLocationRequest userLocation,
-        MeetingSearchBoundingBoxRequest mapBoundingBox,
+        MeetingSearchBoundingBoxRequest mapViewPort,
         Pageable pageable
     ) {
+        // TODO: 리팩토링 필요
         Location location;
-
-        if (userLocation.getLatitude() != null && userLocation.getLongitude() != null) {
+        if (userLocation.notNull()) {
             location = new Location(userLocation.getLatitude(), userLocation.getLongitude());
         } else {
             User user = userRepository.findActivateUserWithAddress(authUser.getId());
             location = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
         }
 
-        Double distance = userLocation.getDistance() == null ? 5.0 : userLocation.getDistance();
-        BoundingBox userBoundingBox = MeetingDistance.aroundUserBox(location, distance);
+        BoundingBox boundingBox;
+        if (mapViewPort.notNull()) {
+            boundingBox = new BoundingBox(mapViewPort.getMinLat(), mapViewPort.getMaxLat(), mapViewPort.getMinLng(), mapViewPort.getMaxLng());
+        } else {
+            Double distance = userLocation.getDistance() == null ? 5.0 : userLocation.getDistance();
+            boundingBox = MeetingDistance.aroundUserBox(location, distance);
+        }
 
-        return meetingRepository.searchMeetings(request, userBoundingBox, mapBoundingBox, pageable);
+        return meetingRepository.searchMeetings(request, boundingBox, pageable);
     }
 
     /**

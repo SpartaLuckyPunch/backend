@@ -11,8 +11,12 @@ import lombok.Setter;
 @AllArgsConstructor
 public class MeetingSearchBoundingBoxRequest {
 
-    private double minLat;
-    private double maxLat;
-    private double minLng;
-    private double maxLng;
+    private Double minLat;
+    private Double maxLat;
+    private Double minLng;
+    private Double maxLng;
+
+    public boolean notNull() {
+        return minLat != null && maxLat != null && minLng != null && maxLng != null;
+    }
 }
