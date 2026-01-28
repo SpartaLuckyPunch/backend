@@ -6,6 +6,7 @@ import static com.example.burnchuck.common.entity.QMeetingLike.meetingLike;
 import static com.example.burnchuck.common.entity.QNotification.notification;
 import static com.example.burnchuck.common.entity.QUserMeeting.userMeeting;
 
+import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
@@ -17,6 +18,8 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatu
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.BooleanTemplate;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
@@ -39,7 +42,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     @Override
     public Page<MeetingSummaryResponse> findMeetingList(
             String category,
-            Pageable pageable
+            Pageable pageable,
+            Location userLocation
     ) {
 
         List<MeetingSummaryResponse> content = queryFactory
@@ -61,7 +65,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .leftJoin(meeting.category, category1)
                 .where(
                         categoryEq(category),
-                        meeting.status.eq(MeetingStatus.OPEN)
+                        meeting.status.eq(MeetingStatus.OPEN),
+                        getContainsBooleanExpression(userLocation)
                 )
                 .groupBy(meeting.id)
                 .orderBy(meeting.meetingDateTime.asc())
@@ -235,6 +240,15 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 meeting.meetingDateTime.between(startDate, endDate)
             )
             .fetch();
+    }
+
+    private BooleanTemplate getContainsBooleanExpression(Location userLocation) {
+
+        String target = "Point(%f %f)".formatted(userLocation.getLatitude(), userLocation.getLongitude());
+        String geoFunction = "ST_CONTAINS(ST_BUFFER(ST_GeomFromText('%s', 4326), {0}), point)";
+        String expression = String.format(geoFunction, target);
+
+        return Expressions.booleanTemplate(expression, 5000);
     }
 
     private BooleanExpression categoryEq(String categoryName) {
