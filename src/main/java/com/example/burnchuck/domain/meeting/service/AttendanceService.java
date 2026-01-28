@@ -64,7 +64,6 @@ public class AttendanceService {
         notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
     }
 
-
     /**
      * 모임 참여 취소
      */
