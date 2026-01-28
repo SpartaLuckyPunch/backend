@@ -250,22 +250,9 @@ public class MeetingService {
         MeetingSearchBoundingBoxRequest mapViewPort,
         Pageable pageable
     ) {
-        // TODO: 리팩토링 필요
-        Location location;
-        if (userLocation.notNull()) {
-            location = new Location(userLocation.getLatitude(), userLocation.getLongitude());
-        } else {
-            User user = userRepository.findActivateUserWithAddress(authUser.getId());
-            location = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
-        }
 
-        BoundingBox boundingBox;
-        if (mapViewPort.notNull()) {
-            boundingBox = new BoundingBox(mapViewPort.getMinLat(), mapViewPort.getMaxLat(), mapViewPort.getMinLng(), mapViewPort.getMaxLng());
-        } else {
-            Double distance = userLocation.getDistance() == null ? 5.0 : userLocation.getDistance();
-            boundingBox = MeetingDistance.aroundUserBox(location, distance);
-        }
+        Location location = getLocation(authUser, userLocation);
+        BoundingBox boundingBox = getBoundingBox(userLocation, mapViewPort, location);
 
         Page<MeetingSummaryResponse> meetingSummaryPage = meetingRepository.searchMeetings(request, boundingBox, pageable);
 
@@ -278,6 +265,32 @@ public class MeetingService {
         }
 
         return meetingSummaryPage;
+    }
+
+    /**
+     * 유저의 Location 객체 생성 (GPS 허용 시 GPS 기준, 비허용 시 저장된 주소 기준)
+     */
+    private Location getLocation(AuthUser authUser, MeetingSearchUserLocationRequest userLocation) {
+
+        if (userLocation.notNull()) {
+            return new Location(userLocation.getLatitude(), userLocation.getLongitude());
+        }
+
+        User user = userRepository.findActivateUserWithAddress(authUser.getId());
+        return new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+    }
+
+    /**
+     * BoundingBox 계산 및 객체 생성 (지도 사용 시 ViewPort 기준, 미사용 시 사용자 위치 기준)
+     */
+    private BoundingBox getBoundingBox(MeetingSearchUserLocationRequest userLocation, MeetingSearchBoundingBoxRequest mapViewPort, Location location) {
+
+        if (mapViewPort.notNull()) {
+            return new BoundingBox(mapViewPort.getMinLat(), mapViewPort.getMaxLat(), mapViewPort.getMinLng(), mapViewPort.getMaxLng());
+        }
+
+        Double distance = userLocation.getDistance() == null ? 5.0 : userLocation.getDistance();
+        return MeetingDistance.aroundUserBox(location, distance);
     }
 
     /**
