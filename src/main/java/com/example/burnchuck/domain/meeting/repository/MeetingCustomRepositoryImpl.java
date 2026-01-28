@@ -209,6 +209,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .where(
                         keywordContains(request.getKeyword()),
                         categoryEq(request.getCategory()),
+                        startAt(request.getStartDatetime()),
+                        endAt(request.getEndDatetime()),
                         meeting.status.eq(MeetingStatus.OPEN)
                 )
                 .groupBy(meeting.id)
@@ -264,6 +266,16 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     private BooleanExpression keywordContains(String keyword) {
         return (keyword != null && !keyword.isBlank())
                 ? meeting.title.containsIgnoreCase(keyword) : null;
+    }
+
+    // 모임 시간 시작 범위
+    private BooleanExpression startAt(LocalDateTime startDatetime) {
+        return startDatetime != null ? meeting.meetingDateTime.after(startDatetime) : null;
+    }
+
+    // 모임 시간 끝 범위
+    private BooleanExpression endAt(LocalDateTime endDatetime) {
+        return endDatetime != null ? meeting.meetingDateTime.before(endDatetime) : null;
     }
 
     /**
