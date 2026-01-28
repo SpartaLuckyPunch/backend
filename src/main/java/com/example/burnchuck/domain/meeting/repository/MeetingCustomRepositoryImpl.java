@@ -182,9 +182,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
         OrderSpecifier<?> orderSpecifier =
             switch (request.getOrder() == null ? MeetingSortOption.LATEST : request.getOrder()) {
                 case POPULAR -> meetingLike.id.countDistinct().desc();
-                case LATEST -> meeting.createdDatetime.desc();
-                case RECOMMENDED -> null;
-                case NEAREST -> null;
+                default -> meeting.createdDatetime.desc();
             };
 
         List<MeetingSummaryResponse> content = queryFactory
