@@ -68,7 +68,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .where(
                         categoryEq(category),
                         meeting.status.eq(MeetingStatus.OPEN),
-                        getContainsBooleanExpression(boundingBox)
+                        locationInBoundingBox(boundingBox)
                 )
                 .groupBy(meeting.id)
                 .orderBy(meeting.meetingDateTime.asc())
@@ -281,7 +281,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     /**
      * BoundingBox 이내의 모임인지 확인
      */
-    private BooleanExpression getContainsBooleanExpression(BoundingBox boundingBox) {
+    private BooleanExpression locationInBoundingBox(BoundingBox boundingBox) {
 
         String lineString = String.format(
             "LINESTRING(%f %f, %f %f)",
