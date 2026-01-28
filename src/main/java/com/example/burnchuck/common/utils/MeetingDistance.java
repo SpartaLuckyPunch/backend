@@ -7,7 +7,7 @@ import com.example.burnchuck.common.entity.Meeting;
 public class MeetingDistance {
 
     /**
-     * 반경 5km 원을 감싸는 최소 사각형 생성
+     * 반지름 distance(km)인 원을 감싸는 최소 사각형 생성
      */
     public static BoundingBox aroundUserBox(Location userLocation, Double distance) {
 
