@@ -9,9 +9,12 @@ import static com.example.burnchuck.common.entity.QUserMeeting.userMeeting;
 import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingRole;
+import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.NotificationType;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchBoundingBoxRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchUserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
@@ -173,14 +176,18 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      * 모임 검색
      */
     @Override
-    public Page<MeetingSummaryResponse> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
-
+    public Page<MeetingSummaryResponse> searchMeetings(
+        MeetingSearchRequest request,
+        MeetingSearchUserLocationRequest userLocation,
+        MeetingSearchBoundingBoxRequest boundingBox,
+        Pageable pageable
+    ) {
         OrderSpecifier<?> orderSpecifier =
-            switch (request.getOrder()) {
-
+            switch (request.getOrder() == null ? MeetingSortOption.LATEST : request.getOrder()) {
                 case POPULAR -> meetingLike.id.countDistinct().desc();
-
-                default -> meeting.createdDatetime.desc();
+                case LATEST -> meeting.createdDatetime.desc();
+                case RECOMMENDED -> null;
+                case NEAREST -> null;
             };
 
         List<MeetingSummaryResponse> content = queryFactory
