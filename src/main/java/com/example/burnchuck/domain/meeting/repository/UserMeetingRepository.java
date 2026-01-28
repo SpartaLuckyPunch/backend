@@ -15,6 +15,8 @@ public interface UserMeetingRepository extends JpaRepository<UserMeeting, Long>,
 
     Optional<UserMeeting> findByUserIdAndMeetingId(Long userId, Long meetingId);
 
+    int countByMeetingId(Long meetingId);
+
     @Query("""
         SELECT um
         FROM UserMeeting um
