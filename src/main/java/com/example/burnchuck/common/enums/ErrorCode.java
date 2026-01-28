@@ -59,6 +59,9 @@ public enum ErrorCode {
 
     // 알림
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림이 존재하지 않습니다."),
+
+    // 락
+    LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "락 획득을 실패했습니다"),
     ;
 
     private final HttpStatus status;

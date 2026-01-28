@@ -16,12 +16,15 @@ import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AttendanceService {
 
     private final UserMeetingRepository userMeetingRepository;
@@ -34,33 +37,37 @@ public class AttendanceService {
      */
     @Transactional
     public void registerAttendance(AuthUser authUser, Long meetingId) {
-
         User user = userRepository.findActivateUserById(authUser.getId());
-
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+        log.info("유저 {} 신청 시도 - 모임상태: {}, 현재인원: {}",
+                user.getId(), meeting.getStatus(), userMeetingRepository.countByMeeting(meeting));
 
-        if (!meeting.isOpen()) {
+        int currentAttendees = userMeetingRepository.countByMeeting(meeting);
+
+        log.info("유저 {} 신청 시도 - 모임상태: {}, 현재인원: {}, 최대정원: {}",
+                user.getId(), meeting.getStatus(), currentAttendees, meeting.getMaxAttendees());
+
+        if (meeting.getStatus() != MeetingStatus.OPEN) {
             throw new CustomException(ErrorCode.ATTENDANCE_CANNOT_REGISTER);
         }
 
-        boolean exists = userMeetingRepository.existsByUserIdAndMeetingId(user.getId(), meeting.getId());
-
-        if (exists) {
+        if (userMeetingRepository.existsByUserIdAndMeetingId(user.getId(), meeting.getId())) {
             throw new CustomException(ErrorCode.ATTENDANCE_ALREADY_REGISTERED);
         }
 
-        UserMeeting userMeeting = new UserMeeting(user, meeting, MeetingRole.PARTICIPANT);
+        if (currentAttendees >= meeting.getMaxAttendees()) {
 
-        userMeetingRepository.save(userMeeting);
-
-        int maxAttendees = meeting.getMaxAttendees();
-        int currentAttendees = userMeetingRepository.countByMeeting(meeting);
-
-        if (maxAttendees == currentAttendees) {
             meeting.updateStatus(MeetingStatus.CLOSED);
+            throw new CustomException(ErrorCode.ATTENDANCE_CANNOT_REGISTER);
         }
 
-        notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
+        UserMeeting userMeeting = new UserMeeting(user, meeting, MeetingRole.PARTICIPANT);
+        userMeetingRepository.save(userMeeting);
+
+        if (currentAttendees + 1 >= meeting.getMaxAttendees()) {
+            meeting.updateStatus(MeetingStatus.CLOSED);
+            log.info("모임 ID: {} 가득 참 -> CLOSED로 변경", meetingId);
+        }
     }
 
     /**
