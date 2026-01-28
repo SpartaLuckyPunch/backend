@@ -8,17 +8,17 @@ import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_SUCC
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_SEARCH_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_UPDATE_SUCCESS;
 
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.dto.PageResponse;
-import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
-import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -81,10 +81,11 @@ public class MeetingController {
     )
     @GetMapping
     public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> getMeetings(
+            @AuthenticationPrincipal AuthUser authUser,
             @RequestParam(required = false) String category,
             @PageableDefault(size = 6) Pageable pageable
     ) {
-        Page<MeetingSummaryResponse> page = meetingService.getMeetingPage(category, pageable);
+        Page<MeetingSummaryResponse> page = meetingService.getMeetingPage(authUser,category, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));

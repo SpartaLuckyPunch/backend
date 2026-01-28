@@ -5,6 +5,7 @@ import static com.example.burnchuck.common.enums.ErrorCode.HOST_NOT_FOUND;
 import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
@@ -98,10 +99,14 @@ public class MeetingService {
      */
     @Transactional(readOnly = true)
     public Page<MeetingSummaryResponse> getMeetingPage(
+            AuthUser authUser,
             String category,
             Pageable pageable
     ) {
-        return meetingRepository.findMeetingList(category, pageable);
+        User user = userRepository.findActivateUserWithAddress(authUser.getId());
+        Location userLocation = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+
+        return meetingRepository.findMeetingList(category, pageable, userLocation);
     }
 
     /**
