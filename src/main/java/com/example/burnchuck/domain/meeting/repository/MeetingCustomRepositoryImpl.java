@@ -223,6 +223,9 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
+    /**
+     * TaskSchedule 복구 대상 모임 조회
+     */
     @Override
     public List<Meeting> findActivateMeetingsForNotification(LocalDateTime startDate, LocalDateTime endDate) {
 
