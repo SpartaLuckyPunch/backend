@@ -56,6 +56,7 @@ dependencies {
 
     // Spatial
     implementation 'org.hibernate.orm:hibernate-spatial:6.6.39.Final'
+    implementation 'com.querydsl:querydsl-spatial:5.0.0'
 
     // Redisson
     implementation 'org.redisson:redisson-spring-boot-starter:3.23.2'
