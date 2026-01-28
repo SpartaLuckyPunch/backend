@@ -15,6 +15,7 @@ import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
@@ -57,7 +58,12 @@ public class AttendanceService {
         int maxAttendees = meeting.getMaxAttendees();
         int currentAttendees = userMeetingRepository.countByMeeting(meeting);
 
-        if (maxAttendees == currentAttendees) {
+        if (currentAttendees > maxAttendees) {
+
+            throw new CustomException(ErrorCode.ATTENDANCE_MAX_CAPACITY_REACHED);
+        }
+
+        if (currentAttendees == maxAttendees) {
             meeting.updateStatus(MeetingStatus.CLOSED);
         }
 
