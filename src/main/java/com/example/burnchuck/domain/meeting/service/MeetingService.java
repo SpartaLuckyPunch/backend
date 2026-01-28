@@ -12,6 +12,7 @@ import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
+import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
@@ -32,6 +33,8 @@ import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +43,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -263,7 +267,27 @@ public class MeetingService {
             boundingBox = MeetingDistance.aroundUserBox(location, distance);
         }
 
-        return meetingRepository.searchMeetings(request, boundingBox, pageable);
+        Page<MeetingSummaryResponse> meetingSummaryPage = meetingRepository.searchMeetings(request, boundingBox, pageable);
+
+        if (request.getOrder() == MeetingSortOption.NEAREST) {
+
+            List<MeetingSummaryResponse> meetingSummaryList = new ArrayList<>(meetingSummaryPage.getContent());
+            sortMeetingsByDistance(meetingSummaryList, location);
+
+            return new PageImpl<>(meetingSummaryList, pageable, meetingSummaryPage.getTotalElements());
+        }
+
+        return meetingSummaryPage;
+    }
+
+    /**
+     * 사용자 위치 기준 가까운순 정렬
+     */
+    private void sortMeetingsByDistance(List<MeetingSummaryResponse> meetings, Location userLocation) {
+
+        meetings.sort(Comparator.comparingDouble(
+            m -> MeetingDistance.calculateDistance(userLocation, m)
+        ));
     }
 
     /**
