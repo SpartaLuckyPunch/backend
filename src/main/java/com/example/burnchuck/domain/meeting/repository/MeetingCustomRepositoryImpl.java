@@ -6,6 +6,7 @@ import static com.example.burnchuck.common.entity.QMeetingLike.meetingLike;
 import static com.example.burnchuck.common.entity.QNotification.notification;
 import static com.example.burnchuck.common.entity.QUserMeeting.userMeeting;
 
+import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
@@ -17,6 +18,7 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatu
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
@@ -39,7 +41,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     @Override
     public Page<MeetingSummaryResponse> findMeetingList(
             String category,
-            Pageable pageable
+            Pageable pageable,
+            BoundingBox boundingBox
     ) {
 
         List<MeetingSummaryResponse> content = queryFactory
@@ -61,7 +64,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .leftJoin(meeting.category, category1)
                 .where(
                         categoryEq(category),
-                        meeting.status.eq(MeetingStatus.OPEN)
+                        meeting.status.eq(MeetingStatus.OPEN),
+                        getContainsBooleanExpression(boundingBox)
                 )
                 .groupBy(meeting.id)
                 .orderBy(meeting.meetingDateTime.asc())
@@ -219,6 +223,9 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
+    /**
+     * TaskSchedule 복구 대상 모임 조회
+     */
     @Override
     public List<Meeting> findActivateMeetingsForNotification(LocalDateTime startDate, LocalDateTime endDate) {
 
@@ -250,5 +257,24 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     private BooleanExpression keywordContains(String keyword) {
         return (keyword != null && !keyword.isBlank())
                 ? meeting.title.containsIgnoreCase(keyword) : null;
+    }
+
+    /**
+     * BoundingBox 이내의 모임인지 확인
+     */
+    private BooleanExpression getContainsBooleanExpression(BoundingBox boundingBox) {
+
+        String lineString = String.format(
+            "LINESTRING(%f %f, %f %f)",
+            boundingBox.getMinLat(), boundingBox.getMinLng(),
+            boundingBox.getMaxLat(), boundingBox.getMaxLng()
+        );
+
+        return Expressions.numberTemplate(
+            Integer.class,
+            "MBRContains(ST_LINESTRINGFROMTEXT({0}, 4326), {1})",
+            lineString,
+            meeting.point
+        ).eq(1);
     }
 }

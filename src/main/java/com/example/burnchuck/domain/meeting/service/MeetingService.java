@@ -5,12 +5,15 @@ import static com.example.burnchuck.common.enums.ErrorCode.HOST_NOT_FOUND;
 import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.common.dto.BoundingBox;
+import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
@@ -30,6 +33,10 @@ import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -47,6 +54,7 @@ public class MeetingService {
     private final UserMeetingRepository userMeetingRepository;
     private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
+    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     /**
      * 모임 생성과 알림 생성 메서드를 호출하는 메서드
@@ -72,7 +80,9 @@ public class MeetingService {
 
         Category category = categoryRepository.findCategoryById(request.getCategoryId());
 
-        Meeting meeting = new Meeting(request, category);
+        Point point = createPoint(request.getLatitude(), request.getLongitude());
+
+        Meeting meeting = new Meeting(request, category, point);
 
         meetingRepository.save(meeting);
 
@@ -92,10 +102,16 @@ public class MeetingService {
      */
     @Transactional(readOnly = true)
     public Page<MeetingSummaryResponse> getMeetingPage(
+            AuthUser authUser,
             String category,
             Pageable pageable
     ) {
-        return meetingRepository.findMeetingList(category, pageable);
+        User user = userRepository.findActivateUserWithAddress(authUser.getId());
+        Location userLocation = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+
+        BoundingBox boundingBox = MeetingDistance.aroundUserBox(userLocation, 5.0);
+
+        return meetingRepository.findMeetingList(category, pageable, boundingBox);
     }
 
     /**
@@ -129,7 +145,9 @@ public class MeetingService {
 
         Category category = categoryRepository.findCategoryById(request.getCategoryId());
 
-        meeting.updateMeeting(request, category);
+        Point point = createPoint(request.getLatitude(), request.getLongitude());
+
+        meeting.updateMeeting(request, category, point);
 
         eventPublisherService.publishMeetingUpdatedEvent(meeting);
 
@@ -217,6 +235,13 @@ public class MeetingService {
     public Page<MeetingSummaryResponse> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
 
         return meetingRepository.searchMeetings(request, pageable);
+    }
+
+    /**
+     * 위도, 경도 값을 Point 객체로 변환
+     */
+    private Point createPoint(double latitude, double longitude) {
+        return geometryFactory.createPoint(new Coordinate(longitude, latitude));
     }
 }
 
