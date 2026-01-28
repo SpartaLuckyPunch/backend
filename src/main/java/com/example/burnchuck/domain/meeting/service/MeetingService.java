@@ -60,6 +60,7 @@ public class MeetingService {
     private final UserMeetingRepository userMeetingRepository;
     private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
+    private final MeetingCacheService meetingCacheService;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     /**
@@ -99,6 +100,8 @@ public class MeetingService {
         );
 
         userMeetingRepository.save(userMeeting);
+
+        meetingCacheService.saveMeetingLocation(meeting);
 
         return meeting;
     }
