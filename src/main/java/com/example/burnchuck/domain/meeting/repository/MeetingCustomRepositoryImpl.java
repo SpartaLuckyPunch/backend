@@ -6,7 +6,7 @@ import static com.example.burnchuck.common.entity.QMeetingLike.meetingLike;
 import static com.example.burnchuck.common.entity.QNotification.notification;
 import static com.example.burnchuck.common.entity.QUserMeeting.userMeeting;
 
-import com.example.burnchuck.common.dto.Location;
+import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
@@ -18,7 +18,6 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatu
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.BooleanTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -43,7 +42,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     public Page<MeetingSummaryResponse> findMeetingList(
             String category,
             Pageable pageable,
-            Location userLocation
+            BoundingBox boundingBox
     ) {
 
         List<MeetingSummaryResponse> content = queryFactory
@@ -66,7 +65,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .where(
                         categoryEq(category),
                         meeting.status.eq(MeetingStatus.OPEN),
-                        getContainsBooleanExpression(userLocation)
+                        getContainsBooleanExpression(boundingBox)
                 )
                 .groupBy(meeting.id)
                 .orderBy(meeting.meetingDateTime.asc())
@@ -242,15 +241,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
             .fetch();
     }
 
-    private BooleanTemplate getContainsBooleanExpression(Location userLocation) {
-
-        String target = "Point(%f %f)".formatted(userLocation.getLatitude(), userLocation.getLongitude());
-        String geoFunction = "ST_CONTAINS(ST_BUFFER(ST_GeomFromText('%s', 4326), {0}), point)";
-        String expression = String.format(geoFunction, target);
-
-        return Expressions.booleanTemplate(expression, 5000);
-    }
-
     private BooleanExpression categoryEq(String categoryName) {
 
         if (categoryName == null) {
@@ -264,5 +254,24 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     private BooleanExpression keywordContains(String keyword) {
         return (keyword != null && !keyword.isBlank())
                 ? meeting.title.containsIgnoreCase(keyword) : null;
+    }
+
+    /**
+     * BoundingBox 이내의 모임인지 확인
+     */
+    private BooleanExpression getContainsBooleanExpression(BoundingBox boundingBox) {
+
+        String lineString = String.format(
+            "LINESTRING(%f %f, %f %f)",
+            boundingBox.getMinLat(), boundingBox.getMinLng(),
+            boundingBox.getMaxLat(), boundingBox.getMaxLng()
+        );
+
+        return Expressions.numberTemplate(
+            Integer.class,
+            "MBRContains(ST_LINESTRINGFROMTEXT({0}, 4326), {1})",
+            lineString,
+            meeting.point
+        ).eq(1);
     }
 }

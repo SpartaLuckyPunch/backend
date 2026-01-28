@@ -5,6 +5,7 @@ import static com.example.burnchuck.common.enums.ErrorCode.HOST_NOT_FOUND;
 import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
@@ -12,6 +13,7 @@ import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
@@ -106,7 +108,9 @@ public class MeetingService {
         User user = userRepository.findActivateUserWithAddress(authUser.getId());
         Location userLocation = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
 
-        return meetingRepository.findMeetingList(category, pageable, userLocation);
+        BoundingBox boundingBox = MeetingDistance.aroundUserBox(userLocation);
+
+        return meetingRepository.findMeetingList(category, pageable, boundingBox);
     }
 
     /**
