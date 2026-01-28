@@ -54,6 +54,7 @@ public class MeetingService {
     private final UserMeetingRepository userMeetingRepository;
     private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
+    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     /**
      * 모임 생성과 알림 생성 메서드를 호출하는 메서드
@@ -240,7 +241,6 @@ public class MeetingService {
      * 위도, 경도 값을 Point 객체로 변환
      */
     private Point createPoint(double latitude, double longitude) {
-        GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
         return geometryFactory.createPoint(new Coordinate(longitude, latitude));
     }
 }
