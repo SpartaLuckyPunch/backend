@@ -20,7 +20,11 @@ public interface MeetingCustomRepository {
 
     Page<MeetingSummaryWithStatusResponse> findHostedMeetings(Long userId, Pageable pageable);
 
-    Page<MeetingSummaryResponse> searchMeetings(MeetingSearchRequest request, Pageable pageable);
+    Page<MeetingSummaryResponse> searchMeetings(
+        MeetingSearchRequest request,
+        BoundingBox boundingBox,
+        Pageable pageable
+    );
 
     List<Meeting> findActivateMeetingsForNotification(LocalDateTime startDate, LocalDateTime endDate);
 }

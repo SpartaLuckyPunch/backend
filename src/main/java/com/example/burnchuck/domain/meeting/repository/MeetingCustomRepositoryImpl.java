@@ -9,6 +9,7 @@ import static com.example.burnchuck.common.entity.QUserMeeting.userMeeting;
 import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingRole;
+import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.NotificationType;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
@@ -65,7 +66,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .where(
                         categoryEq(category),
                         meeting.status.eq(MeetingStatus.OPEN),
-                        getContainsBooleanExpression(boundingBox)
+                        locationInBoundingBox(boundingBox)
                 )
                 .groupBy(meeting.id)
                 .orderBy(meeting.meetingDateTime.asc())
@@ -173,13 +174,14 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      * 모임 검색
      */
     @Override
-    public Page<MeetingSummaryResponse> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
-
+    public Page<MeetingSummaryResponse> searchMeetings(
+        MeetingSearchRequest request,
+        BoundingBox boundingBox,
+        Pageable pageable
+    ) {
         OrderSpecifier<?> orderSpecifier =
-            switch (request.getOrder()) {
-
+            switch (request.getOrder() == null ? MeetingSortOption.LATEST : request.getOrder()) {
                 case POPULAR -> meetingLike.id.countDistinct().desc();
-
                 default -> meeting.createdDatetime.desc();
             };
 
@@ -202,6 +204,9 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .where(
                         keywordContains(request.getKeyword()),
                         categoryEq(request.getCategory()),
+                        startAt(request.getStartDatetime()),
+                        endAt(request.getEndDatetime()),
+                        locationInBoundingBox(boundingBox),
                         meeting.status.eq(MeetingStatus.OPEN)
                 )
                 .groupBy(meeting.id)
@@ -259,10 +264,24 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 ? meeting.title.containsIgnoreCase(keyword) : null;
     }
 
+    // 모임 시간 시작 범위
+    private BooleanExpression startAt(LocalDateTime startDatetime) {
+        return startDatetime != null ? meeting.meetingDateTime.after(startDatetime) : null;
+    }
+
+    // 모임 시간 끝 범위
+    private BooleanExpression endAt(LocalDateTime endDatetime) {
+        return endDatetime != null ? meeting.meetingDateTime.before(endDatetime) : null;
+    }
+
     /**
      * BoundingBox 이내의 모임인지 확인
      */
-    private BooleanExpression getContainsBooleanExpression(BoundingBox boundingBox) {
+    private BooleanExpression locationInBoundingBox(BoundingBox boundingBox) {
+
+        if (boundingBox == null) {
+            return null;
+        }
 
         String lineString = String.format(
             "LINESTRING(%f %f, %f %f)",
