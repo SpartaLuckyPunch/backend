@@ -2,7 +2,9 @@ package com.example.burnchuck.domain.meeting.repository;
 
 import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchBoundingBoxRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchUserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
@@ -20,7 +22,12 @@ public interface MeetingCustomRepository {
 
     Page<MeetingSummaryWithStatusResponse> findHostedMeetings(Long userId, Pageable pageable);
 
-    Page<MeetingSummaryResponse> searchMeetings(MeetingSearchRequest request, Pageable pageable);
+    Page<MeetingSummaryResponse> searchMeetings(
+        MeetingSearchRequest request,
+        MeetingSearchUserLocationRequest userLocation,
+        MeetingSearchBoundingBoxRequest boundingBox,
+        Pageable pageable
+    );
 
     List<Meeting> findActivateMeetingsForNotification(LocalDateTime startDate, LocalDateTime endDate);
 }

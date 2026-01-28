@@ -16,7 +16,9 @@ import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchBoundingBoxRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchUserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.dto.response.AttendeeResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
@@ -232,9 +234,13 @@ public class MeetingService {
      * 모임 검색
      */
     @Transactional(readOnly = true)
-    public Page<MeetingSummaryResponse> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
-
-        return meetingRepository.searchMeetings(request, pageable);
+    public Page<MeetingSummaryResponse> searchMeetings(
+        MeetingSearchRequest request,
+        MeetingSearchUserLocationRequest userLocation,
+        MeetingSearchBoundingBoxRequest boundingBox,
+        Pageable pageable
+    ) {
+        return meetingRepository.searchMeetings(request, userLocation, boundingBox, pageable);
     }
 
     /**

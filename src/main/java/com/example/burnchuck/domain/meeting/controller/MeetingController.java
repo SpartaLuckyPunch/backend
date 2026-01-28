@@ -12,7 +12,9 @@ import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchBoundingBoxRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchUserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
@@ -223,10 +225,11 @@ public class MeetingController {
     @GetMapping("/search")
     public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> searchMeetings(
             @ModelAttribute MeetingSearchRequest searchRequest,
+            @ModelAttribute MeetingSearchUserLocationRequest userLocation,
+            @ModelAttribute MeetingSearchBoundingBoxRequest boundingBox,
             @PageableDefault(size = 6) Pageable pageable
     ) {
-
-        Page<MeetingSummaryResponse> page = meetingService.searchMeetings(searchRequest, pageable);
+        Page<MeetingSummaryResponse> page = meetingService.searchMeetings(searchRequest, userLocation, boundingBox, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_SEARCH_SUCCESS, PageResponse.from(page)));
