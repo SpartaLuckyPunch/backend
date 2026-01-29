@@ -7,6 +7,7 @@ import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.dto.Location;
+import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
@@ -16,10 +17,9 @@ import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
+import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchBoundingBoxRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchUserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.dto.response.AttendeeResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
@@ -32,6 +32,7 @@ import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
+import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import io.lettuce.core.RedisException;
 import java.util.ArrayList;
@@ -59,6 +60,7 @@ public class MeetingService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
+    private final AddressRepository addressRepository;
     private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
     private final MeetingCacheService meetingCacheService;
@@ -113,22 +115,43 @@ public class MeetingService {
     @Transactional(readOnly = true)
     public Page<MeetingSummaryResponse> getMeetingPage(
             AuthUser authUser,
-            String category,
+            MeetingSearchRequest searchRequest,
+            LocationFilterRequest locationRequest,
             Pageable pageable
     ) {
         User user = userRepository.findActivateUserWithAddress(authUser.getId());
-        Location userLocation = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+        Location location = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+
+        if (locationRequest.notNull()) {
+            Address address = addressRepository.findAddressByAddressInfo(locationRequest.getProvince(), locationRequest.getCity(), locationRequest.getDistrict());
+            location = new Location(address.getLatitude(), address.getLongitude());
+        }
 
         List<Long> meetingIdList = null;
         BoundingBox boundingBox = null;
 
+        boolean redisError = false;
+
+        Double radius = searchRequest.getDistance() == null ? 5.0 : searchRequest.getDistance();
+
         try {
-            meetingIdList = meetingCacheService.findMeetingsByLocation(userLocation, 5);
+            meetingIdList = meetingCacheService.findMeetingsByLocation(location, radius);
         } catch (RedisException e) {
-            boundingBox = MeetingDistance.aroundUserBox(userLocation, 5.0);
+            boundingBox = MeetingDistance.aroundUserBox(location, radius);
+            redisError = true;
         }
 
-        return meetingRepository.findMeetingList(category, pageable, boundingBox, meetingIdList);
+        Page<MeetingSummaryResponse> meetingPage = meetingRepository.findMeetingList(searchRequest, pageable, boundingBox, meetingIdList);
+
+        if (redisError && searchRequest.getOrder() == MeetingSortOption.NEAREST) {
+
+            List<MeetingSummaryResponse> meetingSummaryList = new ArrayList<>(meetingPage.getContent());
+            sortMeetingsByDistance(meetingSummaryList, location);
+
+            return new PageImpl<>(meetingSummaryList, pageable, meetingPage.getTotalElements());
+        }
+
+        return meetingPage;
     }
 
     /**
@@ -250,71 +273,12 @@ public class MeetingService {
     }
 
     /**
-     * 모임 검색
-     *
-     * 위치 필터링 우선순위
-     * 1. mapViewPort : 프론트에서 전달받는 지도 API의 viewPort
-     * 2. userLocation + 범위 : GPS 기반 사용자의 현재 위치
-     * 3. 사용자 주소지 + 범위 : 사용자가 GPS를 허용하지 않았을 때
+     * 중심지 기준 가까운순 정렬
      */
-    @Transactional(readOnly = true)
-    public Page<MeetingSummaryResponse> searchMeetings(
-        AuthUser authUser,
-        MeetingSearchRequest request,
-        MeetingSearchUserLocationRequest userLocation,
-        MeetingSearchBoundingBoxRequest mapViewPort,
-        Pageable pageable
-    ) {
-
-        Location location = getLocation(authUser, userLocation);
-        BoundingBox boundingBox = getBoundingBox(userLocation, mapViewPort, location);
-
-        Page<MeetingSummaryResponse> meetingSummaryPage = meetingRepository.searchMeetings(request, boundingBox, pageable);
-
-        if (request.getOrder() == MeetingSortOption.NEAREST) {
-
-            List<MeetingSummaryResponse> meetingSummaryList = new ArrayList<>(meetingSummaryPage.getContent());
-            sortMeetingsByDistance(meetingSummaryList, location);
-
-            return new PageImpl<>(meetingSummaryList, pageable, meetingSummaryPage.getTotalElements());
-        }
-
-        return meetingSummaryPage;
-    }
-
-    /**
-     * 유저의 Location 객체 생성 (GPS 허용 시 GPS 기준, 비허용 시 저장된 주소 기준)
-     */
-    private Location getLocation(AuthUser authUser, MeetingSearchUserLocationRequest userLocation) {
-
-        if (userLocation.notNull()) {
-            return new Location(userLocation.getLatitude(), userLocation.getLongitude());
-        }
-
-        User user = userRepository.findActivateUserWithAddress(authUser.getId());
-        return new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
-    }
-
-    /**
-     * BoundingBox 계산 및 객체 생성 (지도 사용 시 ViewPort 기준, 미사용 시 사용자 위치 기준)
-     */
-    private BoundingBox getBoundingBox(MeetingSearchUserLocationRequest userLocation, MeetingSearchBoundingBoxRequest mapViewPort, Location location) {
-
-        if (mapViewPort.notNull()) {
-            return new BoundingBox(mapViewPort.getMinLat(), mapViewPort.getMaxLat(), mapViewPort.getMinLng(), mapViewPort.getMaxLng());
-        }
-
-        Double distance = userLocation.getDistance() == null ? 5.0 : userLocation.getDistance();
-        return MeetingDistance.aroundUserBox(location, distance);
-    }
-
-    /**
-     * 사용자 위치 기준 가까운순 정렬
-     */
-    private void sortMeetingsByDistance(List<MeetingSummaryResponse> meetings, Location userLocation) {
+    private void sortMeetingsByDistance(List<MeetingSummaryResponse> meetings, Location location) {
 
         meetings.sort(Comparator.comparingDouble(
-            m -> MeetingDistance.calculateDistance(userLocation, m)
+            m -> MeetingDistance.calculateDistance(location, m)
         ));
     }
 

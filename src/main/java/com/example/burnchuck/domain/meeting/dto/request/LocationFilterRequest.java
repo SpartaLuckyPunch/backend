@@ -9,13 +9,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MeetingSearchUserLocationRequest {
+public class LocationFilterRequest {
 
-    private Double latitude;
-    private Double longitude;
-    private Double distance;
+    private String province;
+    private String city;
+    private String district;
 
     public boolean notNull() {
-        return latitude != null && longitude != null;
+        return province != null && city != null;
     }
 }

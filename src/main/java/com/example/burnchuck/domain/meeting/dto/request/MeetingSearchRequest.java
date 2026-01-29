@@ -18,4 +18,5 @@ public class MeetingSearchRequest {
     private String category;
     private LocalDateTime startDatetime;
     private LocalDateTime endDatetime;
+    private Double distance;
 }
