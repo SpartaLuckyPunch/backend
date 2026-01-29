@@ -22,6 +22,9 @@ public class MeetingCacheService {
     private final RedisTemplate<String, String> redisTemplate;
     private static final String CACHE_GEO_KEY = "geoPoints:meeting";
 
+    /**
+     * 위치 정보 저장
+     */
     public void saveMeetingLocation(Meeting meeting) {
 
         GeoOperations<String, String> geoOperations = redisTemplate.opsForGeo();
@@ -31,11 +34,16 @@ public class MeetingCacheService {
         geoOperations.add(CACHE_GEO_KEY, point, String.valueOf(meeting.getId()));
     }
 
+    /**
+     * 유저 위치 주변 모임 조회(거리 기준 오름차순 정렬)
+     */
     public List<Long> findMeetingsByLocation(Location userLocation, double radius) {
 
         Circle searchArea = new Circle(new Point(userLocation.getLongitude(), userLocation.getLatitude()), new Distance(radius, RedisGeoCommands.DistanceUnit.KILOMETERS));
 
-        GeoResults<GeoLocation<String>> geoResults = redisTemplate.opsForGeo().radius(CACHE_GEO_KEY, searchArea);
+        RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().sortAscending();
+
+        GeoResults<GeoLocation<String>> geoResults = redisTemplate.opsForGeo().radius(CACHE_GEO_KEY, searchArea, args);
 
         if (geoResults == null) {
             return List.of();
@@ -46,6 +54,9 @@ public class MeetingCacheService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * 저장된 내용 삭제
+     */
     public void deleteMeetingLocation(Long meetingId) {
         redisTemplate.opsForZSet().remove(CACHE_GEO_KEY, String.valueOf(meetingId));
     }
