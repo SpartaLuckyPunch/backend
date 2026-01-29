@@ -14,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface MeetingCustomRepository {
 
-    Page<MeetingSummaryResponse> findMeetingList(String category, Pageable pageable, BoundingBox boundingBox);
+    Page<MeetingSummaryResponse> findMeetingList(String category, Pageable pageable, BoundingBox boundingBox, List<Long> meetingIdList);
 
     Optional<MeetingDetailResponse> findMeetingDetail(Long meetingId);
 
