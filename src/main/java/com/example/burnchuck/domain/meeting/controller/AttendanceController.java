@@ -7,6 +7,7 @@ import static com.example.burnchuck.common.enums.SuccessMessage.ATTENDANCE_REGIS
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.domain.meeting.dto.response.AttendanceGetMeetingListResponse;
+import com.example.burnchuck.domain.meeting.service.AttendanceFacade;
 import com.example.burnchuck.domain.meeting.service.AttendanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Attendance")
 public class AttendanceController {
 
+    private final AttendanceFacade attendanceFacade;
     private final AttendanceService attendanceService;
 
     /**
@@ -43,7 +45,7 @@ public class AttendanceController {
         @AuthenticationPrincipal AuthUser authUser,
         @PathVariable Long meetingId
     ) {
-        attendanceService.registerAttendance(authUser, meetingId);
+        attendanceFacade.registerAttendance(authUser, meetingId);
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.successNodata(ATTENDANCE_REGISTER_SUCCESS));

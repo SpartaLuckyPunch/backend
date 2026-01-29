@@ -38,36 +38,35 @@ public class AttendanceService {
     public void registerAttendance(AuthUser authUser, Long meetingId) {
 
         User user = userRepository.findActivateUserById(authUser.getId());
-
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
         if (!meeting.isOpen()) {
             throw new CustomException(ErrorCode.ATTENDANCE_CANNOT_REGISTER);
         }
 
-        boolean exists = userMeetingRepository.existsByUserIdAndMeetingId(user.getId(), meeting.getId());
-
-        if (exists) {
+        if (userMeetingRepository.existsByUserIdAndMeetingId(user.getId(), meeting.getId())) {
             throw new CustomException(ErrorCode.ATTENDANCE_ALREADY_REGISTERED);
         }
-
-        UserMeeting userMeeting = new UserMeeting(user, meeting, MeetingRole.PARTICIPANT);
-
-        userMeetingRepository.save(userMeeting);
 
         int maxAttendees = meeting.getMaxAttendees();
         int currentAttendees = userMeetingRepository.countByMeeting(meeting);
 
-        if (currentAttendees > maxAttendees) {
-
+        if (currentAttendees >= maxAttendees) {
             throw new CustomException(ErrorCode.ATTENDANCE_MAX_CAPACITY_REACHED);
         }
 
-        if (currentAttendees == maxAttendees) {
+        UserMeeting userMeeting =
+                new UserMeeting(user, meeting, MeetingRole.PARTICIPANT);
+
+        userMeetingRepository.save(userMeeting);
+
+
+        if (currentAttendees +1 == maxAttendees) {
             meeting.updateStatus(MeetingStatus.CLOSED);
         }
 
-        notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
+        notificationService.notifyMeetingMember(
+                NotificationType.MEETING_MEMBER_JOIN, meeting, user);
     }
 
     /**
