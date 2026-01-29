@@ -10,6 +10,7 @@ import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_UPDATE_S
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.dto.PageResponse;
+import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
@@ -81,9 +82,10 @@ public class MeetingController {
     public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> getMeetings(
             @AuthenticationPrincipal AuthUser authUser,
             @ModelAttribute MeetingSearchRequest searchRequest,
+            @ModelAttribute LocationFilterRequest locationRequest,
             @PageableDefault(size = 6) Pageable pageable
     ) {
-        Page<MeetingSummaryResponse> page = meetingService.getMeetingPage(authUser, searchRequest, pageable);
+        Page<MeetingSummaryResponse> page = meetingService.getMeetingPage(authUser, searchRequest, locationRequest, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));

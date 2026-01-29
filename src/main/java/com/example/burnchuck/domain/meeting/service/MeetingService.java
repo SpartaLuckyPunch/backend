@@ -7,6 +7,7 @@ import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.dto.Location;
+import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
@@ -16,6 +17,7 @@ import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
+import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
@@ -30,6 +32,7 @@ import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
+import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import io.lettuce.core.RedisException;
 import java.util.ArrayList;
@@ -57,6 +60,7 @@ public class MeetingService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
+    private final AddressRepository addressRepository;
     private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
     private final MeetingCacheService meetingCacheService;
@@ -112,10 +116,16 @@ public class MeetingService {
     public Page<MeetingSummaryResponse> getMeetingPage(
             AuthUser authUser,
             MeetingSearchRequest searchRequest,
+            LocationFilterRequest locationRequest,
             Pageable pageable
     ) {
         User user = userRepository.findActivateUserWithAddress(authUser.getId());
-        Location userLocation = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+        Location location = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+
+        if (locationRequest.notNull()) {
+            Address address = addressRepository.findAddressByAddressInfo(locationRequest.getProvince(), locationRequest.getCity(), locationRequest.getDistrict());
+            location = new Location(address.getLatitude(), address.getLongitude());
+        }
 
         List<Long> meetingIdList = null;
         BoundingBox boundingBox = null;
@@ -123,9 +133,9 @@ public class MeetingService {
         boolean redisError = false;
 
         try {
-            meetingIdList = meetingCacheService.findMeetingsByLocation(userLocation, 5);
+            meetingIdList = meetingCacheService.findMeetingsByLocation(location, 5);
         } catch (RedisException e) {
-            boundingBox = MeetingDistance.aroundUserBox(userLocation, 5.0);
+            boundingBox = MeetingDistance.aroundUserBox(location, 5.0);
             redisError = true;
         }
 
@@ -134,7 +144,7 @@ public class MeetingService {
         if (redisError && searchRequest.getOrder() == MeetingSortOption.NEAREST) {
 
             List<MeetingSummaryResponse> meetingSummaryList = new ArrayList<>(meetingPage.getContent());
-            sortMeetingsByDistance(meetingSummaryList, userLocation);
+            sortMeetingsByDistance(meetingSummaryList, location);
 
             return new PageImpl<>(meetingSummaryList, pageable, meetingPage.getTotalElements());
         }
