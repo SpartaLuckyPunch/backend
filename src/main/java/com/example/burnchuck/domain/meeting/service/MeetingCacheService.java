@@ -1,8 +1,15 @@
 package com.example.burnchuck.domain.meeting.service;
 
 import com.example.burnchuck.common.entity.Meeting;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.geo.Circle;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
+import org.springframework.data.redis.connection.RedisGeoCommands;
+import org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation;
 import org.springframework.data.redis.core.GeoOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -21,5 +28,22 @@ public class MeetingCacheService {
         Point point = new Point(meeting.getLongitude(), meeting.getLatitude());
 
         geoOperations.add(CACHE_GEO_KEY, point, String.valueOf(meeting.getId()));
+    }
+
+    public List<Long> findMeetingsByLocation(double latitude, double longitude, double radius) {
+
+        RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs();
+
+        Circle searchArea = new Circle(new Point(longitude, latitude), new Distance(radius, RedisGeoCommands.DistanceUnit.KILOMETERS));
+
+        GeoResults<GeoLocation<String>> geoResults = redisTemplate.opsForGeo().radius(CACHE_GEO_KEY, searchArea, args);
+
+        if (geoResults == null) {
+            return List.of();
+        }
+
+        return geoResults.getContent().stream()
+            .map(r -> Long.parseLong(r.getContent().getName()))
+            .collect(Collectors.toList());
     }
 }
