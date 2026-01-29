@@ -79,7 +79,7 @@ public class MeetingController {
                     """
     )
     @GetMapping
-    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> getMeetings(
+    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> getMeetingPage(
             @AuthenticationPrincipal AuthUser authUser,
             @ModelAttribute MeetingSearchRequest searchRequest,
             @ModelAttribute LocationFilterRequest locationRequest,
