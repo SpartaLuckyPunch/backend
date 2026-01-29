@@ -12,8 +12,10 @@ import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.NotificationType;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.querydsl.core.types.OrderSpecifier;
@@ -109,6 +111,34 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
             );
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    /**
+     * 모임 지도 조회
+     */
+    @Override
+    public List<MeetingMapPointResponse> findMeetingPointList(
+        MeetingMapSearchRequest request,
+        BoundingBox boundingBox
+    ) {
+        return queryFactory
+            .select(Projections.constructor(
+                MeetingMapPointResponse.class,
+                meeting.id,
+                meeting.title,
+                meeting.latitude,
+                meeting.longitude
+            ))
+            .from(meeting)
+            .where(
+                meeting.status.eq(MeetingStatus.OPEN),
+                keywordContains(request.getKeyword()),
+                categoryEq(request.getCategory()),
+                startAt(request.getStartDatetime()),
+                endAt(request.getEndDatetime()),
+                locationInBoundingBox(boundingBox)
+            )
+            .fetch();
     }
 
     /**

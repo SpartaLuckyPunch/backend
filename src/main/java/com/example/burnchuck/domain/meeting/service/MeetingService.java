@@ -19,11 +19,14 @@ import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.dto.response.AttendeeResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
@@ -152,6 +155,19 @@ public class MeetingService {
         }
 
         return meetingPage;
+    }
+
+    /**
+     * 모임 지도 조회
+     */
+    @Transactional(readOnly = true)
+    public List<MeetingMapPointResponse> getMeetingPointList(
+        MeetingMapSearchRequest searchRequest,
+        MeetingMapViewPortRequest viewPort
+    ) {
+        BoundingBox boundingBox = new BoundingBox(viewPort.getMinLat(), viewPort.getMaxLat(), viewPort.getMinLng(), viewPort.getMaxLng());
+
+        return meetingRepository.findMeetingPointList(searchRequest, boundingBox);
     }
 
     /**
