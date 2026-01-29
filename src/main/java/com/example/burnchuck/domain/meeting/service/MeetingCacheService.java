@@ -32,11 +32,9 @@ public class MeetingCacheService {
 
     public List<Long> findMeetingsByLocation(double latitude, double longitude, double radius) {
 
-        RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs();
-
         Circle searchArea = new Circle(new Point(longitude, latitude), new Distance(radius, RedisGeoCommands.DistanceUnit.KILOMETERS));
 
-        GeoResults<GeoLocation<String>> geoResults = redisTemplate.opsForGeo().radius(CACHE_GEO_KEY, searchArea, args);
+        GeoResults<GeoLocation<String>> geoResults = redisTemplate.opsForGeo().radius(CACHE_GEO_KEY, searchArea);
 
         if (geoResults == null) {
             return List.of();
