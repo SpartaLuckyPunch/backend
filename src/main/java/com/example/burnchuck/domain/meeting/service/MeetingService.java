@@ -158,6 +158,8 @@ public class MeetingService {
 
         meeting.updateMeeting(request, category, point);
 
+        meetingCacheService.saveMeetingLocation(meeting);
+
         eventPublisherService.publishMeetingUpdatedEvent(meeting);
 
         return MeetingUpdateResponse.from(meeting);
