@@ -132,10 +132,12 @@ public class MeetingService {
 
         boolean redisError = false;
 
+        Double radius = searchRequest.getDistance() == null ? 5.0 : searchRequest.getDistance();
+
         try {
-            meetingIdList = meetingCacheService.findMeetingsByLocation(location, 5);
+            meetingIdList = meetingCacheService.findMeetingsByLocation(location, radius);
         } catch (RedisException e) {
-            boundingBox = MeetingDistance.aroundUserBox(location, 5.0);
+            boundingBox = MeetingDistance.aroundUserBox(location, radius);
             redisError = true;
         }
 
