@@ -1,5 +1,6 @@
 package com.example.burnchuck.domain.meeting.service;
 
+import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Meeting;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,9 +31,9 @@ public class MeetingCacheService {
         geoOperations.add(CACHE_GEO_KEY, point, String.valueOf(meeting.getId()));
     }
 
-    public List<Long> findMeetingsByLocation(double latitude, double longitude, double radius) {
+    public List<Long> findMeetingsByLocation(Location userLocation, double radius) {
 
-        Circle searchArea = new Circle(new Point(longitude, latitude), new Distance(radius, RedisGeoCommands.DistanceUnit.KILOMETERS));
+        Circle searchArea = new Circle(new Point(userLocation.getLongitude(), userLocation.getLatitude()), new Distance(radius, RedisGeoCommands.DistanceUnit.KILOMETERS));
 
         GeoResults<GeoLocation<String>> geoResults = redisTemplate.opsForGeo().radius(CACHE_GEO_KEY, searchArea);
 
