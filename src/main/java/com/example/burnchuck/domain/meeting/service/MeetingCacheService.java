@@ -44,4 +44,8 @@ public class MeetingCacheService {
             .map(r -> Long.parseLong(r.getContent().getName()))
             .collect(Collectors.toList());
     }
+
+    public void deleteMeetingLocation(Long meetingId) {
+        redisTemplate.opsForZSet().remove(CACHE_GEO_KEY, String.valueOf(meetingId));
+    }
 }
