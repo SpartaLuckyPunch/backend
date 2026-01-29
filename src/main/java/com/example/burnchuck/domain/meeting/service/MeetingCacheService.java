@@ -11,16 +11,15 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MeetingCacheService {
 
-    private final RedisTemplate<String, Object> redisTemplate;
-    private static final String CACHE_GEO_KEY = "geoPoints";
-    private static final String CACHE_GEO_PREFIX = "meeting:";
+    private final RedisTemplate<String, String> redisTemplate;
+    private static final String CACHE_GEO_KEY = "geoPoints:meeting";
 
     public void saveMeetingLocation(Meeting meeting) {
 
-        GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
+        GeoOperations<String, String> geoOperations = redisTemplate.opsForGeo();
 
         Point point = new Point(meeting.getLongitude(), meeting.getLatitude());
 
-        geoOperations.add(CACHE_GEO_KEY, point, CACHE_GEO_PREFIX + meeting.getId());
+        geoOperations.add(CACHE_GEO_KEY, point, String.valueOf(meeting.getId()));
     }
 }
