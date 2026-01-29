@@ -43,7 +43,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     public Page<MeetingSummaryResponse> findMeetingList(
             String category,
             Pageable pageable,
-            BoundingBox boundingBox
+            BoundingBox boundingBox,
+            List<Long> meetingIdList
     ) {
 
         List<MeetingSummaryResponse> content = queryFactory
@@ -66,7 +67,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .where(
                         categoryEq(category),
                         meeting.status.eq(MeetingStatus.OPEN),
-                        locationInBoundingBox(boundingBox)
+                        locationInBoundingBox(boundingBox),
+                        inMeetingIdList(meetingIdList)
                 )
                 .groupBy(meeting.id)
                 .orderBy(meeting.meetingDateTime.asc())
@@ -256,6 +258,15 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
         }
 
         return category1.category.eq(categoryName);
+    }
+
+    private BooleanExpression inMeetingIdList(List<Long> meetingIdList) {
+
+        if (meetingIdList == null) {
+            return null;
+        }
+
+        return meeting.id.in(meetingIdList);
     }
 
     // 키워드 검색

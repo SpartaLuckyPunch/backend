@@ -33,6 +33,7 @@ import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+import io.lettuce.core.RedisException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -118,9 +119,16 @@ public class MeetingService {
         User user = userRepository.findActivateUserWithAddress(authUser.getId());
         Location userLocation = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
 
-        BoundingBox boundingBox = MeetingDistance.aroundUserBox(userLocation, 5.0);
+        List<Long> meetingIdList = null;
+        BoundingBox boundingBox = null;
 
-        return meetingRepository.findMeetingList(category, pageable, boundingBox);
+        try {
+            meetingIdList = meetingCacheService.findMeetingsByLocation(userLocation, 5);
+        } catch (RedisException e) {
+            boundingBox = MeetingDistance.aroundUserBox(userLocation, 5.0);
+        }
+
+        return meetingRepository.findMeetingList(category, pageable, boundingBox, meetingIdList);
     }
 
     /**
