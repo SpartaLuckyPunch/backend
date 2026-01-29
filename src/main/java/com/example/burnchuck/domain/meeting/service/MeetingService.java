@@ -182,6 +182,8 @@ public class MeetingService {
 
         meeting.delete();
 
+        meetingCacheService.deleteMeetingLocation(meeting.getId());
+
         eventPublisherService.publishMeetingDeletedEvent(meeting);
     }
 
