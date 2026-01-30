@@ -148,7 +148,7 @@ class AttendanceConcurrencyTest {
         latch.await();
         executorService.shutdown();
 
-        long finalAttendeeCount = userMeetingRepository.countByMeetingId(meeting.getId());
+        long finalAttendeeCount = userMeetingRepository.countByMeeting(meeting);
         Meeting updatedMeeting = meetingRepository.findById(meeting.getId()).orElseThrow();
 
         System.out.println("최종 참여 인원(방장 포함): " + finalAttendeeCount);
