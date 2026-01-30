@@ -9,7 +9,7 @@ import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
-import com.example.burnchuck.domain.meeting.service.AttendanceFacade;
+import com.example.burnchuck.domain.meeting.service.RedissonLockAttendanceFacade;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 
@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 class AttendanceConcurrencyTest {
 
-    @Autowired private AttendanceFacade attendanceFacade;
+    @Autowired private RedissonLockAttendanceFacade redissonLockAttendanceFacade;
     @Autowired private UserMeetingRepository userMeetingRepository;
     @Autowired private MeetingRepository meetingRepository;
     @Autowired private UserRepository userRepository;
@@ -136,7 +136,7 @@ class AttendanceConcurrencyTest {
         for (AuthUser authUser : authUsers) {
             executorService.submit(() -> {
                 try {
-                    attendanceFacade.registerAttendance(authUser, meeting.getId());
+                    redissonLockAttendanceFacade.registerAttendance(authUser, meeting.getId());
                 } catch (Exception e) {
 
                 } finally {

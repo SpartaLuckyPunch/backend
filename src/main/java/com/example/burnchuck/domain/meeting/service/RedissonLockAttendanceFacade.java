@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AttendanceFacade {
+public class RedissonLockAttendanceFacade {
 
     private final AttendanceService attendanceService;
     private final RedissonClient redissonClient;
