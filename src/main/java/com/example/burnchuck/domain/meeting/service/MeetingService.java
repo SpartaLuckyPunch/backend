@@ -201,9 +201,28 @@ public class MeetingService {
         MeetingMapSearchRequest searchRequest,
         MeetingMapViewPortRequest viewPort
     ) {
-        BoundingBox boundingBox = new BoundingBox(viewPort.getMinLat(), viewPort.getMaxLat(), viewPort.getMinLng(), viewPort.getMaxLng());
+        List<Long> meetingIdList = null;
+        BoundingBox boundingBox = null;
 
-        return meetingRepository.findMeetingPointList(searchRequest, boundingBox);
+        try {
+            meetingIdList = meetingCacheService.findMeetingsByViewPort(viewPort);
+        } catch (RedisException e) {
+            boundingBox = new BoundingBox(viewPort.getMinLat(), viewPort.getMaxLat(), viewPort.getMinLng(), viewPort.getMaxLng());
+        }
+
+        return meetingRepository.findMeetingPointList(searchRequest, boundingBox, meetingIdList);
+    }
+
+    /**
+     * 모임 단건 요약 조회
+     */
+    @Transactional
+    public MeetingSummaryResponse getMeetingSummary(Long meetingId) {
+
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+        int currentAttendees = userMeetingRepository.countByMeeting(meeting);
+
+        return MeetingSummaryResponse.from(meeting, currentAttendees);
     }
 
     /**

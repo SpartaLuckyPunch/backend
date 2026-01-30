@@ -24,5 +24,5 @@ public interface MeetingCustomRepository {
 
     List<Meeting> findActivateMeetingsForNotification(LocalDateTime startDate, LocalDateTime endDate);
 
-    List<MeetingMapPointResponse> findMeetingPointList(MeetingMapSearchRequest searchRequest, BoundingBox boundingBox);
+    List<MeetingMapPointResponse> findMeetingPointList(MeetingMapSearchRequest searchRequest, BoundingBox boundingBox, List<Long> meetingIdList);
 }
