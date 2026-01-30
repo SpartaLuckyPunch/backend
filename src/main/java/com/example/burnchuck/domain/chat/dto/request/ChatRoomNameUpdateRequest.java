@@ -1,12 +1,19 @@
 package com.example.burnchuck.domain.chat.dto.request;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import static com.example.burnchuck.common.enums.ValidationMessage.CHAT_ROOM_NAME_NOT_NULL;
+import static com.example.burnchuck.common.enums.ValidationMessage.CHAT_ROOM_NAME_SIZE;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatRoomNameUpdateRequest {
+    @NotNull(message = CHAT_ROOM_NAME_NOT_NULL)
+    @Size(max = 50, message = CHAT_ROOM_NAME_SIZE)
     private String name;
 }

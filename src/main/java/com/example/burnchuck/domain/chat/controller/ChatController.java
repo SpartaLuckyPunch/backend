@@ -13,6 +13,7 @@ import com.example.burnchuck.domain.chat.dto.response.ChatMessageResponse;
 import com.example.burnchuck.domain.chat.dto.response.ChatRoomDetailResponse;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.chat.service.ChatService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -41,7 +42,7 @@ public class ChatController {
     public ResponseEntity<CommonResponse<ChatMessageResponse>> sendMessage(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long roomId,
-            @RequestBody ChatMessageRequest request
+            @Valid @RequestBody ChatMessageRequest request
     ) {
         ChatMessageResponse response = chatService.sendMessage(authUser, roomId, request);
 
@@ -55,7 +56,7 @@ public class ChatController {
     @PostMapping("/rooms/private")
     public ResponseEntity<CommonResponse<Long>> createPrivateRoom(
             @AuthenticationPrincipal AuthUser authUser,
-            @RequestBody ChatRoomCreateRequest request
+            @Valid @RequestBody ChatRoomCreateRequest request
     ) {
         ChatRoomCreationResult result = chatRoomService.getOrCreatePrivateRoom(authUser, request.getTargetUserId());
 
@@ -116,7 +117,7 @@ public class ChatController {
     public ResponseEntity<CommonResponse<Void>> updateRoomName(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long roomId,
-            @RequestBody ChatRoomNameUpdateRequest request
+            @Valid @RequestBody ChatRoomNameUpdateRequest request
     ) {
         chatRoomService.updateRoomName(authUser, roomId, request.getName());
 
