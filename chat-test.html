@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat Test (Hybrid)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+<h2>🔥 Burn Chuck 채팅 테스트 (HTTP 전송 + Socket 수신)</h2>
+
+<div style="border: 2px solid red; padding: 10px; margin-bottom: 20px;">
+    <label><strong>🔑 Access Token (Bearer 제외하고 붙여넣기):</strong></label><br>
+    <textarea id="accessToken" rows="3" cols="100" placeholder="eyJh... (로그인 후 받은 토큰을 여기에 붙여넣으세요)"></textarea>
+</div>
+
+<div>
+    <button onclick="connect()">연결하기 (Connect)</button>
+    <button onclick="disconnect()" disabled id="disconnectBtn">연결 끊기</button>
+</div>
+<br>
+<div>
+    <label>방 번호(Room ID): <input type="text" id="roomId" value="1"></label><br>
+    <label>메시지: <input type="text" id="message" value="안녕하세요!"></label>
+    <button onclick="sendMessage()" id="sendBtn" disabled>전송 (HTTP POST)</button>
+</div>
+
+<h3>받은 메시지 (Socket Subscribe):</h3>
+<ul id="messages"></ul>
+
+<script>
+    var stompClient = null;
+
+    function connect() {
+        var socket = new SockJS('http://localhost:8080/ws-stomp');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('disconnectBtn').disabled = false;
+
+            var roomId = document.getElementById('roomId').value;
+
+            stompClient.subscribe('/sub/chat/room/' + roomId, function (message) {
+                // 받은 메시지 처리
+                var body = JSON.parse(message.body);
+                // 서버 응답 구조(ChatMessageResponse)에 맞춰서 파싱
+                showMessage(body);
+            });
+
+            alert("연결 성공!");
+        });
+    }
+
+    function disconnect() {
+        if (stompClient !== null) {
+            stompClient.disconnect();
+        }
+        console.log("Disconnected");
+        document.getElementById('sendBtn').disabled = true;
+        document.getElementById('disconnectBtn').disabled = true;
+    }
+
+    function sendMessage() {
+        var roomId = document.getElementById('roomId').value;
+        var content = document.getElementById('message').value;
+        // [중요] 입력창에서 토큰 가져오기
+        var token = document.getElementById('accessToken').value;
+
+        if (!token) {
+            alert("토큰을 입력해주세요!");
+            return;
+        }
+
+        var payload = {
+            'roomId': roomId,
+            'content': content
+        };
+
+        fetch('http://localhost:8080/api/chat/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // [핵심] 헤더에 토큰 추가 (Bearer + 공백 + 토큰)
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(response => {
+                if (response.ok) {
+                    console.log('HTTP 전송 성공');
+                    document.getElementById('message').value = '';
+                } else if (response.status === 401) {
+                    alert('인증 실패! 토큰이 만료되었거나 잘못되었습니다.');
+                } else {
+                    alert('전송 실패: ' + response.status);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('서버 에러 발생');
+            });
+    }
+
+    function showMessage(message) {
+        var ul = document.getElementById('messages');
+        var li = document.createElement('li');
+        // ChatMessageResponse 필드명: senderNickname, content, createdDatetime
+        li.appendChild(document.createTextNode(
+            "[" + message.senderNickname + "] : " + message.content + " (" + message.createdDatetime + ")"
+        ));
+        ul.appendChild(li);
+    }
+</script>
+</body>
+</html>

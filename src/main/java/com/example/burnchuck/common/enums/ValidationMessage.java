@@ -39,4 +39,11 @@ public class ValidationMessage {
     public static final String MEETING_DATETIME_FUTURE = "모임 시간은 현재 이후여야 합니다.";
     public static final String MEETING_CATEGORY_NOT_NULL = "카테고리는 필수입니다.";
     public static final String MEETING_MAX_ATTENDEES_NOT_NULL = "참여자 수는 필수 값입니다.";
+
+    // --- Chat 관련 ---
+    public static final String CHAT_CONTENT_NOT_NULL = "채팅 내용은 필수입니다.";
+    public static final String CHAT_TARGET_USER_NOT_NULL = "타겟 유저는 필수입니다.";
+    public static final String CHAT_ROOM_NAME_NOT_NULL = "채팅 제목은 필수입니다.";
+    public static final String CHAT_ROOM_NAME_SIZE = "채팅 제목 길이는 최대 50자 입니다.";
+
 }

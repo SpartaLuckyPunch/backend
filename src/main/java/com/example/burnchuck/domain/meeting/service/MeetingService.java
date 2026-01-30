@@ -17,13 +17,17 @@ import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
+import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.dto.response.AttendeeResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
@@ -65,6 +69,7 @@ public class MeetingService {
     private final EventPublisherService eventPublisherService;
     private final MeetingCacheService meetingCacheService;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+    private final ChatRoomService chatRoomService;
 
     /**
      * 모임 생성과 알림 생성 메서드를 호출하는 메서드
@@ -95,6 +100,8 @@ public class MeetingService {
         Meeting meeting = new Meeting(request, category, point);
 
         meetingRepository.save(meeting);
+
+        chatRoomService.createGroupChatRoom(meeting, user);
 
         UserMeeting userMeeting = new UserMeeting(
                 user,
@@ -152,6 +159,38 @@ public class MeetingService {
         }
 
         return meetingPage;
+    }
+
+    /**
+     * 모임 지도 조회
+     */
+    @Transactional(readOnly = true)
+    public List<MeetingMapPointResponse> getMeetingPointList(
+        MeetingMapSearchRequest searchRequest,
+        MeetingMapViewPortRequest viewPort
+    ) {
+        List<Long> meetingIdList = null;
+        BoundingBox boundingBox = null;
+
+        try {
+            meetingIdList = meetingCacheService.findMeetingsByViewPort(viewPort);
+        } catch (RedisException e) {
+            boundingBox = new BoundingBox(viewPort.getMinLat(), viewPort.getMaxLat(), viewPort.getMinLng(), viewPort.getMaxLng());
+        }
+
+        return meetingRepository.findMeetingPointList(searchRequest, boundingBox, meetingIdList);
+    }
+
+    /**
+     * 모임 단건 요약 조회
+     */
+    @Transactional
+    public MeetingSummaryResponse getMeetingSummary(Long meetingId) {
+
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+        int currentAttendees = userMeetingRepository.countByMeeting(meeting);
+
+        return MeetingSummaryResponse.from(meeting, currentAttendees);
     }
 
     /**

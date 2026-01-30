@@ -11,11 +11,14 @@ import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
@@ -24,6 +27,7 @@ import com.example.burnchuck.domain.meeting.service.MeetingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -79,7 +83,7 @@ public class MeetingController {
                     """
     )
     @GetMapping
-    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> getMeetings(
+    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> getMeetingPage(
             @AuthenticationPrincipal AuthUser authUser,
             @ModelAttribute MeetingSearchRequest searchRequest,
             @ModelAttribute LocationFilterRequest locationRequest,
@@ -89,6 +93,45 @@ public class MeetingController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));
+    }
+
+    /**
+     * 모임 지도 조회
+     */
+    @Operation(
+        summary = "모임 지도 조회",
+        description = """
+                    현재 모집 중인 번개 모임을 사용자 화면과 지정 조건에 따라 지도 형태로 조회합니다.
+                    """
+    )
+    @GetMapping("/map")
+    public ResponseEntity<CommonResponse<List<MeetingMapPointResponse>>> getMeetingPointList(
+        @ModelAttribute MeetingMapSearchRequest searchRequest,
+        @ModelAttribute MeetingMapViewPortRequest viewPort
+    ) {
+        List<MeetingMapPointResponse> pointList = meetingService.getMeetingPointList(searchRequest, viewPort);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.success(MEETING_GET_SUCCESS, pointList));
+    }
+
+    /**
+     * 모임 단건 요약 조회
+     */
+    @Operation(
+        summary = "모임 단건 요약 조회",
+        description = """
+                    특정 모임의 요약된 내용을 조회합니다.
+                    """
+    )
+    @GetMapping("/{meetingId}/summary")
+    public ResponseEntity<CommonResponse<MeetingSummaryResponse>> getMeetingSummary(
+        @PathVariable Long meetingId
+    ) {
+        MeetingSummaryResponse response = meetingService.getMeetingSummary(meetingId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.success(MEETING_GET_SUCCESS, response));
     }
 
     /**

@@ -9,8 +9,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MeetingSearchBoundingBoxRequest {
+public class MeetingMapViewPortRequest {
 
+    private Double centerLat;
+    private Double centerLng;
     private Double minLat;
     private Double maxLat;
     private Double minLng;

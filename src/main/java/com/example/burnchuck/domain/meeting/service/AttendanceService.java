@@ -9,6 +9,7 @@ import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.NotificationType;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.response.AttendanceGetMeetingListResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
@@ -30,6 +31,7 @@ public class AttendanceService {
     private final UserRepository userRepository;
     private final MeetingRepository meetingRepository;
     private final NotificationService notificationService;
+    private final ChatRoomService chatRoomService;
 
     /**
      * 모임 참여 신청
@@ -59,6 +61,10 @@ public class AttendanceService {
 
         userMeetingRepository.save(userMeeting);
 
+        chatRoomService.joinGroupChatRoom(meeting.getId(), user);
+
+        int maxAttendees = meeting.getMaxAttendees();
+        int currentAttendees = userMeetingRepository.countByMeeting(meeting);
 
         if (currentAttendees +1 == maxAttendees) {
             meeting.updateStatus(MeetingStatus.CLOSED);
@@ -88,6 +94,8 @@ public class AttendanceService {
         }
 
         userMeetingRepository.delete(userMeeting);
+
+        chatRoomService.leaveChatRoom(authUser, meetingId);
 
         if (meeting.isClosed()) {
             meeting.updateStatus(MeetingStatus.OPEN);
