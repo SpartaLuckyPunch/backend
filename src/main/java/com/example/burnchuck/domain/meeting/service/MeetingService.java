@@ -171,6 +171,18 @@ public class MeetingService {
     }
 
     /**
+     * 모임 단건 요약 조회
+     */
+    @Transactional
+    public MeetingSummaryResponse getMeetingSummary(Long meetingId) {
+
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+        int currentAttendees = userMeetingRepository.countByMeeting(meeting);
+
+        return MeetingSummaryResponse.from(meeting, currentAttendees);
+    }
+
+    /**
      * 모임 단건 조회
      */
     @Transactional

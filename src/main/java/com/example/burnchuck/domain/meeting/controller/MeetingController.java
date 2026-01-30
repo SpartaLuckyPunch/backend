@@ -116,6 +116,25 @@ public class MeetingController {
     }
 
     /**
+     * 모임 단건 요약 조회
+     */
+    @Operation(
+        summary = "모임 단건 요약 조회",
+        description = """
+                    특정 모임의 요약된 내용을 조회합니다.
+                    """
+    )
+    @GetMapping("/{meetingId}/summary")
+    public ResponseEntity<CommonResponse<MeetingSummaryResponse>> getMeetingSummary(
+        @PathVariable Long meetingId
+    ) {
+        MeetingSummaryResponse response = meetingService.getMeetingSummary(meetingId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.success(MEETING_GET_SUCCESS, response));
+    }
+
+    /**
      * 모임 단건 조회
      */
     @Operation(
