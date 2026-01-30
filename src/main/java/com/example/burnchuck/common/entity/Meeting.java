@@ -100,6 +100,9 @@ public class Meeting extends BaseEntity {
         this.views++;
     }
 
+    public void updateMaxAttendees(int maxAttendees) {
+        this.maxAttendees = maxAttendees; }
+
     public void updateStatus(MeetingStatus status) {
         this.status = status;
     }
