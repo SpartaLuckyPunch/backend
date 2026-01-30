@@ -305,6 +305,10 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      */
     private OrderSpecifier<Integer> orderByListOrder(List<Long> meetingIdList) {
 
+        if (meetingIdList.isEmpty()) {
+            return null;
+        }
+
         String ids = meetingIdList.stream()
             .map(String::valueOf)
             .collect(Collectors.joining(","));
