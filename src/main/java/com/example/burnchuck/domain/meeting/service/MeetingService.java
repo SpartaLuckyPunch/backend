@@ -165,9 +165,16 @@ public class MeetingService {
         MeetingMapSearchRequest searchRequest,
         MeetingMapViewPortRequest viewPort
     ) {
-        BoundingBox boundingBox = new BoundingBox(viewPort.getMinLat(), viewPort.getMaxLat(), viewPort.getMinLng(), viewPort.getMaxLng());
+        List<Long> meetingIdList = null;
+        BoundingBox boundingBox = null;
 
-        return meetingRepository.findMeetingPointList(searchRequest, boundingBox);
+        try {
+            meetingIdList = meetingCacheService.findMeetingsByViewPort(viewPort);
+        } catch (RedisException e) {
+            boundingBox = new BoundingBox(viewPort.getMinLat(), viewPort.getMaxLat(), viewPort.getMinLng(), viewPort.getMaxLng());
+        }
+
+        return meetingRepository.findMeetingPointList(searchRequest, boundingBox, meetingIdList);
     }
 
     /**

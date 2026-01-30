@@ -119,7 +119,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     @Override
     public List<MeetingMapPointResponse> findMeetingPointList(
         MeetingMapSearchRequest request,
-        BoundingBox boundingBox
+        BoundingBox boundingBox,
+        List<Long> meetingIdList
     ) {
         return queryFactory
             .select(Projections.constructor(
@@ -136,7 +137,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 categoryEq(request.getCategory()),
                 startAt(request.getStartDatetime()),
                 endAt(request.getEndDatetime()),
-                locationInBoundingBox(boundingBox)
+                locationInBoundingBox(boundingBox),
+                inMeetingIdList(meetingIdList)
             )
             .fetch();
     }
