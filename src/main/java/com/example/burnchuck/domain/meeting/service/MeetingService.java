@@ -12,6 +12,7 @@ import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
+import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
@@ -47,6 +48,7 @@ public class MeetingService {
     private final UserMeetingRepository userMeetingRepository;
     private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
+    private final ChatRoomService chatRoomService;
 
     /**
      * 모임 생성과 알림 생성 메서드를 호출하는 메서드
@@ -75,6 +77,8 @@ public class MeetingService {
         Meeting meeting = new Meeting(request, category);
 
         meetingRepository.save(meeting);
+
+        chatRoomService.createGroupChatRoom(meeting, user);
 
         UserMeeting userMeeting = new UserMeeting(
                 user,

@@ -53,6 +53,12 @@ dependencies {
 
     // CSV
     implementation 'com.opencsv:opencsv:5.9'
+
+    // MongoDB
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    // WebSocket + STOMP
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 tasks.named('test') {
