@@ -63,7 +63,8 @@ public enum ErrorCode {
     // 채팅
     CANNOT_CHAT_WITH_SELF(HttpStatus.CONFLICT, "자기 자신과 채팅할 수 없습니다."),
     CHAT_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 참여자가 존재하지 않습니다."),
-    CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 방이 존재하지 않습니다.")
+    CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 방이 존재하지 않습니다."),
+    CANNOT_LEAVE_CLOSED_MEETING(HttpStatus.BAD_REQUEST, "마감된 모임의 채팅방은 나갈 수 없습니다."),
     ;
 
     private final HttpStatus status;

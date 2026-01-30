@@ -2,6 +2,7 @@ package com.example.burnchuck.domain.chat.service;
 
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.entity.*;
+import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.RoomType;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.chat.dto.dto.ChatRoomCreationResult;
@@ -12,6 +13,7 @@ import com.example.burnchuck.domain.chat.dto.response.ChatRoomDetailResponse;
 import com.example.burnchuck.domain.chat.repository.ChatMessageRepository;
 import com.example.burnchuck.domain.chat.repository.ChatRoomRepository;
 import com.example.burnchuck.domain.chat.repository.ChatRoomUserRepository;
+import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +34,7 @@ public class ChatRoomService {
     private final ChatRoomUserRepository chatRoomUserRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
+    private final MeetingRepository meetingRepository;
 
     /**
      * 1:1 채팅방 생성 (이미 존재하면 기존 방 ID 반환)
@@ -154,7 +157,18 @@ public class ChatRoomService {
         User user = userRepository.findActivateUserById(authUser.getId());
 
         ChatRoomUser chatRoomUser = chatRoomUserRepository.findByChatRoomIdAndUserId(roomId, user.getId())
-                .orElseThrow(() -> new CustomException(CHAT_USER_NOT_FOUND)); // 참여자가 아님
+                .orElseThrow(() -> new CustomException(CHAT_USER_NOT_FOUND));
+
+        ChatRoom room = chatRoomUser.getChatRoom();
+
+        if (room.getType() == RoomType.GROUP) {
+            Meeting meeting = meetingRepository.findById(room.getMeetingId())
+                    .orElseThrow(() -> new CustomException(MEETING_NOT_FOUND));
+
+            if (meeting.getStatus() == MeetingStatus.CLOSED) {
+                throw new CustomException(CANNOT_LEAVE_CLOSED_MEETING);
+            }
+        }
 
         chatRoomUser.delete();
     }
