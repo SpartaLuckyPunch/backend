@@ -5,20 +5,20 @@ import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_DELETE_S
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_HOSTED_LIST_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_MEMBER_LIST_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_SEARCH_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_UPDATE_SUCCESS;
 
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.dto.PageResponse;
-import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
+import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
-import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,7 +39,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -71,20 +70,22 @@ public class MeetingController {
     }
 
     /**
-     * 모임 전체 조회
+     * 모임 목록 조회
      */
     @Operation(
-            summary = "모임 전체 조회",
+            summary = "모임 목록 조회",
             description = """
-                    현재 모집 중인 번개 모임을 모두 조회합니다.
+                    현재 모집 중인 번개 모임을 사용자 지정 조건에 따라 목록 형태로 조회합니다.
                     """
     )
     @GetMapping
     public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> getMeetings(
-            @RequestParam(required = false) String category,
+            @AuthenticationPrincipal AuthUser authUser,
+            @ModelAttribute MeetingSearchRequest searchRequest,
+            @ModelAttribute LocationFilterRequest locationRequest,
             @PageableDefault(size = 6) Pageable pageable
     ) {
-        Page<MeetingSummaryResponse> page = meetingService.getMeetingPage(category, pageable);
+        Page<MeetingSummaryResponse> page = meetingService.getMeetingPage(authUser, searchRequest, locationRequest, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));
@@ -208,26 +209,5 @@ public class MeetingController {
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(MEETING_GET_MEMBER_LIST_SUCCESS, response));
-    }
-
-    /**
-     * 모임 검색
-     */
-    @Operation(
-            summary = "모임 검색",
-            description = """
-                    원하는 필터에 맞게 모임을 검색합니다.
-                    """
-    )
-    @GetMapping("/search")
-    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> searchMeetings(
-            @ModelAttribute MeetingSearchRequest searchRequest,
-            @PageableDefault(size = 6) Pageable pageable
-    ) {
-
-        Page<MeetingSummaryResponse> page = meetingService.searchMeetings(searchRequest, pageable);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(MEETING_SEARCH_SUCCESS, PageResponse.from(page)));
     }
 }

@@ -5,14 +5,20 @@ import static com.example.burnchuck.common.enums.ErrorCode.HOST_NOT_FOUND;
 import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.common.dto.BoundingBox;
+import com.example.burnchuck.common.dto.Location;
+import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
+import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
+import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
@@ -27,11 +33,20 @@ import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
+import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+import io.lettuce.core.RedisException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,8 +61,11 @@ public class MeetingService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
+    private final AddressRepository addressRepository;
     private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
+    private final MeetingCacheService meetingCacheService;
+    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     private final ChatRoomService chatRoomService;
 
     /**
@@ -74,7 +92,9 @@ public class MeetingService {
 
         Category category = categoryRepository.findCategoryById(request.getCategoryId());
 
-        Meeting meeting = new Meeting(request, category);
+        Point point = createPoint(request.getLatitude(), request.getLongitude());
+
+        Meeting meeting = new Meeting(request, category, point);
 
         meetingRepository.save(meeting);
 
@@ -88,6 +108,8 @@ public class MeetingService {
 
         userMeetingRepository.save(userMeeting);
 
+        meetingCacheService.saveMeetingLocation(meeting);
+
         return meeting;
     }
 
@@ -96,10 +118,44 @@ public class MeetingService {
      */
     @Transactional(readOnly = true)
     public Page<MeetingSummaryResponse> getMeetingPage(
-            String category,
+            AuthUser authUser,
+            MeetingSearchRequest searchRequest,
+            LocationFilterRequest locationRequest,
             Pageable pageable
     ) {
-        return meetingRepository.findMeetingList(category, pageable);
+        User user = userRepository.findActivateUserWithAddress(authUser.getId());
+        Location location = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+
+        if (locationRequest.notNull()) {
+            Address address = addressRepository.findAddressByAddressInfo(locationRequest.getProvince(), locationRequest.getCity(), locationRequest.getDistrict());
+            location = new Location(address.getLatitude(), address.getLongitude());
+        }
+
+        List<Long> meetingIdList = null;
+        BoundingBox boundingBox = null;
+
+        boolean redisError = false;
+
+        Double radius = searchRequest.getDistance() == null ? 5.0 : searchRequest.getDistance();
+
+        try {
+            meetingIdList = meetingCacheService.findMeetingsByLocation(location, radius);
+        } catch (RedisException e) {
+            boundingBox = MeetingDistance.aroundUserBox(location, radius);
+            redisError = true;
+        }
+
+        Page<MeetingSummaryResponse> meetingPage = meetingRepository.findMeetingList(searchRequest, pageable, boundingBox, meetingIdList);
+
+        if (redisError && searchRequest.getOrder() == MeetingSortOption.NEAREST) {
+
+            List<MeetingSummaryResponse> meetingSummaryList = new ArrayList<>(meetingPage.getContent());
+            sortMeetingsByDistance(meetingSummaryList, location);
+
+            return new PageImpl<>(meetingSummaryList, pageable, meetingPage.getTotalElements());
+        }
+
+        return meetingPage;
     }
 
     /**
@@ -133,7 +189,11 @@ public class MeetingService {
 
         Category category = categoryRepository.findCategoryById(request.getCategoryId());
 
-        meeting.updateMeeting(request, category);
+        Point point = createPoint(request.getLatitude(), request.getLongitude());
+
+        meeting.updateMeeting(request, category, point);
+
+        meetingCacheService.saveMeetingLocation(meeting);
 
         eventPublisherService.publishMeetingUpdatedEvent(meeting);
 
@@ -156,6 +216,8 @@ public class MeetingService {
         }
 
         meeting.delete();
+
+        meetingCacheService.deleteMeetingLocation(meeting.getId());
 
         eventPublisherService.publishMeetingDeletedEvent(meeting);
     }
@@ -215,12 +277,20 @@ public class MeetingService {
     }
 
     /**
-     * 모임 검색
+     * 중심지 기준 가까운순 정렬
      */
-    @Transactional(readOnly = true)
-    public Page<MeetingSummaryResponse> searchMeetings(MeetingSearchRequest request, Pageable pageable) {
+    private void sortMeetingsByDistance(List<MeetingSummaryResponse> meetings, Location location) {
 
-        return meetingRepository.searchMeetings(request, pageable);
+        meetings.sort(Comparator.comparingDouble(
+            m -> MeetingDistance.calculateDistance(location, m)
+        ));
+    }
+
+    /**
+     * 위도, 경도 값을 Point 객체로 변환
+     */
+    private Point createPoint(double latitude, double longitude) {
+        return geometryFactory.createPoint(new Coordinate(longitude, latitude));
     }
 }
 
