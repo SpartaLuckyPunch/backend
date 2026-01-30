@@ -14,13 +14,11 @@ import org.springframework.data.domain.Pageable;
 
 public interface MeetingCustomRepository {
 
-    Page<MeetingSummaryResponse> findMeetingList(String category, Pageable pageable, BoundingBox boundingBox);
+    Page<MeetingSummaryResponse> findMeetingList(MeetingSearchRequest searchRequest, Pageable pageable, BoundingBox boundingBox, List<Long> meetingIdList);
 
     Optional<MeetingDetailResponse> findMeetingDetail(Long meetingId);
 
     Page<MeetingSummaryWithStatusResponse> findHostedMeetings(Long userId, Pageable pageable);
-
-    Page<MeetingSummaryResponse> searchMeetings(MeetingSearchRequest request, Pageable pageable);
 
     List<Meeting> findActivateMeetingsForNotification(LocalDateTime startDate, LocalDateTime endDate);
 }
