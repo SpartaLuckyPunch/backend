@@ -20,11 +20,14 @@ import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.dto.response.AttendeeResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
@@ -156,6 +159,38 @@ public class MeetingService {
         }
 
         return meetingPage;
+    }
+
+    /**
+     * 모임 지도 조회
+     */
+    @Transactional(readOnly = true)
+    public List<MeetingMapPointResponse> getMeetingPointList(
+        MeetingMapSearchRequest searchRequest,
+        MeetingMapViewPortRequest viewPort
+    ) {
+        List<Long> meetingIdList = null;
+        BoundingBox boundingBox = null;
+
+        try {
+            meetingIdList = meetingCacheService.findMeetingsByViewPort(viewPort);
+        } catch (RedisException e) {
+            boundingBox = new BoundingBox(viewPort.getMinLat(), viewPort.getMaxLat(), viewPort.getMinLng(), viewPort.getMaxLng());
+        }
+
+        return meetingRepository.findMeetingPointList(searchRequest, boundingBox, meetingIdList);
+    }
+
+    /**
+     * 모임 단건 요약 조회
+     */
+    @Transactional
+    public MeetingSummaryResponse getMeetingSummary(Long meetingId) {
+
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+        int currentAttendees = userMeetingRepository.countByMeeting(meeting);
+
+        return MeetingSummaryResponse.from(meeting, currentAttendees);
     }
 
     /**

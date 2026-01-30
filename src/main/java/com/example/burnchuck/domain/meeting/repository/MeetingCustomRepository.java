@@ -2,8 +2,10 @@ package com.example.burnchuck.domain.meeting.repository;
 
 import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import java.time.LocalDateTime;
@@ -21,4 +23,6 @@ public interface MeetingCustomRepository {
     Page<MeetingSummaryWithStatusResponse> findHostedMeetings(Long userId, Pageable pageable);
 
     List<Meeting> findActivateMeetingsForNotification(LocalDateTime startDate, LocalDateTime endDate);
+
+    List<MeetingMapPointResponse> findMeetingPointList(MeetingMapSearchRequest searchRequest, BoundingBox boundingBox, List<Long> meetingIdList);
 }

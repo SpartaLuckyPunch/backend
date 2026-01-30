@@ -12,8 +12,10 @@ import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.NotificationType;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.querydsl.core.types.OrderSpecifier;
@@ -109,6 +111,36 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
             );
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    /**
+     * 모임 지도 조회
+     */
+    @Override
+    public List<MeetingMapPointResponse> findMeetingPointList(
+        MeetingMapSearchRequest request,
+        BoundingBox boundingBox,
+        List<Long> meetingIdList
+    ) {
+        return queryFactory
+            .select(Projections.constructor(
+                MeetingMapPointResponse.class,
+                meeting.id,
+                meeting.title,
+                meeting.latitude,
+                meeting.longitude
+            ))
+            .from(meeting)
+            .where(
+                meeting.status.eq(MeetingStatus.OPEN),
+                keywordContains(request.getKeyword()),
+                categoryEq(request.getCategory()),
+                startAt(request.getStartDatetime()),
+                endAt(request.getEndDatetime()),
+                locationInBoundingBox(boundingBox),
+                inMeetingIdList(meetingIdList)
+            )
+            .fetch();
     }
 
     /**
@@ -273,14 +305,18 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     /**
      * 주어진 리스트 순서대로 정렬
      */
-    private OrderSpecifier<Integer> orderByListOrder(List<Long> meetingIdList) {
+    private OrderSpecifier<Long> orderByListOrder(List<Long> meetingIdList) {
+
+        if (meetingIdList == null || meetingIdList.isEmpty()) {
+            return meeting.id.asc();
+        }
 
         String ids = meetingIdList.stream()
             .map(String::valueOf)
             .collect(Collectors.joining(","));
 
-        NumberTemplate<Integer> orderExpr = Expressions.numberTemplate(
-            Integer.class,
+        NumberTemplate<Long> orderExpr = Expressions.numberTemplate(
+            Long.class,
             "FIELD({0}, " + ids + ")",
             meeting.id
         );
