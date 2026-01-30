@@ -162,8 +162,7 @@ public class ChatRoomService {
         ChatRoom room = chatRoomUser.getChatRoom();
 
         if (room.getType() == RoomType.GROUP) {
-            Meeting meeting = meetingRepository.findById(room.getMeetingId())
-                    .orElseThrow(() -> new CustomException(MEETING_NOT_FOUND));
+            Meeting meeting = meetingRepository.findActivateMeetingById(room.getMeetingId());
 
             if (meeting.getStatus() == MeetingStatus.CLOSED) {
                 throw new CustomException(CANNOT_LEAVE_CLOSED_MEETING);
