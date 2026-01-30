@@ -55,8 +55,7 @@ public class AttendanceService {
             throw new CustomException(ErrorCode.ATTENDANCE_MAX_CAPACITY_REACHED);
         }
 
-        UserMeeting userMeeting =
-                new UserMeeting(user, meeting, MeetingRole.PARTICIPANT);
+        UserMeeting userMeeting = new UserMeeting(user, meeting, MeetingRole.PARTICIPANT);
 
         userMeetingRepository.save(userMeeting);
 
@@ -65,8 +64,7 @@ public class AttendanceService {
             meeting.updateStatus(MeetingStatus.CLOSED);
         }
 
-        notificationService.notifyMeetingMember(
-                NotificationType.MEETING_MEMBER_JOIN, meeting, user);
+        notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
     }
 
     /**
