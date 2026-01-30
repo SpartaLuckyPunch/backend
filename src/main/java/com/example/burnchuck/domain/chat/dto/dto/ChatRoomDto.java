@@ -2,6 +2,7 @@ package com.example.burnchuck.domain.chat.dto.dto;
 
 import com.example.burnchuck.common.entity.ChatMessage;
 import com.example.burnchuck.common.entity.ChatRoom;
+import com.example.burnchuck.common.enums.RoomType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 public class ChatRoomDto {
     private final Long roomId;
     private final String name;
+    private final RoomType roomType;
     private final String lastMessage;
     private final LocalDateTime lastMessageTime;
     private final int memberCount;
@@ -21,6 +23,7 @@ public class ChatRoomDto {
         return new ChatRoomDto(
                 room.getId(),
                 name,
+                room.getType(),
                 lastMsg != null ? lastMsg.getContent() : null,
                 lastMsg != null ? lastMsg.getCreatedDatetime() : room.getCreatedDatetime(),
                 memberCount

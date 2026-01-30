@@ -6,7 +6,9 @@ import com.example.burnchuck.common.enums.RoomType;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.chat.dto.dto.ChatRoomCreationResult;
 import com.example.burnchuck.domain.chat.dto.dto.ChatRoomDto;
+import com.example.burnchuck.domain.chat.dto.dto.ChatRoomMemberDto;
 import com.example.burnchuck.domain.chat.dto.response.ChatMessageResponse;
+import com.example.burnchuck.domain.chat.dto.response.ChatRoomDetailResponse;
 import com.example.burnchuck.domain.chat.repository.ChatMessageRepository;
 import com.example.burnchuck.domain.chat.repository.ChatRoomRepository;
 import com.example.burnchuck.domain.chat.repository.ChatRoomUserRepository;
@@ -178,5 +180,33 @@ public class ChatRoomService {
                 .orElseThrow(() -> new CustomException(CHAT_USER_NOT_FOUND));
 
         chatRoomUser.updateCustomName(newName);
+    }
+
+    /**
+     * 채팅방 단건 조회 (참여자 목록 포함)
+     */
+    @Transactional(readOnly = true)
+    public ChatRoomDetailResponse getChatRoomDetail(AuthUser authUser, Long roomId) {
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        ChatRoomUser myRoomUser = chatRoomUserRepository.findByChatRoomIdAndUserId(roomId, user.getId())
+                .orElseThrow(() -> new CustomException(CHAT_USER_NOT_FOUND));
+
+        ChatRoom room = myRoomUser.getChatRoom();
+
+        String roomName = myRoomUser.getCustomRoomName();
+        if (roomName == null) {
+            roomName = room.getName();
+            if (room.getType() == RoomType.PRIVATE) {
+                roomName = getPartnerName(room, user.getId());
+            }
+        }
+
+        List<ChatRoomUser> roomUsers = chatRoomUserRepository.findByChatRoomId(roomId);
+        List<ChatRoomMemberDto> members = roomUsers.stream()
+                .map(roomUser -> ChatRoomMemberDto.from(roomUser.getUser()))
+                .collect(Collectors.toList());
+
+        return ChatRoomDetailResponse.from(room, roomName, members);
     }
 }

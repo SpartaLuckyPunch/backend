@@ -10,6 +10,7 @@ import com.example.burnchuck.domain.chat.dto.request.ChatMessageRequest;
 import com.example.burnchuck.domain.chat.dto.request.ChatRoomCreateRequest;
 import com.example.burnchuck.domain.chat.dto.request.ChatRoomNameUpdateRequest;
 import com.example.burnchuck.domain.chat.dto.response.ChatMessageResponse;
+import com.example.burnchuck.domain.chat.dto.response.ChatRoomDetailResponse;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -120,5 +121,19 @@ public class ChatController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.successNodata(CHAT_ROOM_NAME_UPDATE_SUCCESS));
+    }
+
+    /**
+     * 채팅방 단건 조회
+     */
+    @GetMapping("/rooms/{roomId}")
+    public ResponseEntity<CommonResponse<ChatRoomDetailResponse>> getChatRoomDetail(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long roomId
+    ) {
+        ChatRoomDetailResponse response = chatRoomService.getChatRoomDetail(authUser, roomId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(CHAT_ROOM_GET_SUCCESS, response));
     }
 }

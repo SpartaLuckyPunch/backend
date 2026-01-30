@@ -63,7 +63,8 @@ public enum SuccessMessage {
     CHAT_ROOM_LIST_GET_SUCCESS("채팅방 목록 조회 성공"),
     CHAT_HISTORY_GET_SUCCESS("채팅 내역 조회 성공"),
     CHAT_ROOM_LEAVE_SUCCESS("채팅방 퇴장 성공"),
-    CHAT_ROOM_NAME_UPDATE_SUCCESS("채팅방 제목 수정 성공")
+    CHAT_ROOM_NAME_UPDATE_SUCCESS("채팅방 제목 수정 성공"),
+    CHAT_ROOM_GET_SUCCESS("채팅방 단건 조회 성공")
     ;
 
     private final String message;
