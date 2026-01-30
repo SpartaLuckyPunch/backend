@@ -65,13 +65,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // [중요] 프론트엔드가 실행되는 주소를 정확히 입력 (http://localhost:63342)
-        // "*" 를 쓰면 credentials(쿠키, 토큰) 사용 시 에러가 날 수 있으므로 명시하는 게 좋습니다.
         configuration.setAllowedOrigins(List.of("http://localhost:63342", "http://localhost:3000"));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); // 쿠키나 인증 토큰을 포함하려면 true여야 함
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
