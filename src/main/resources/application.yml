@@ -20,6 +20,9 @@ spring:
   swagger-ui:
     tags-sorter: none
     operations-sorter: none
+  data:
+    mongodb:
+      uri: ${MONGO_DB_URI}
 jwt:
   secret:
     key: ${JWT_SECRET_KEY}

@@ -55,6 +55,16 @@ public enum SuccessMessage {
     // 알림
     NOTIFICATION_GET_LIST_SUCCESS("알림 목록 조회 성공"),
     NOTIFICATION_GET_ONE_SUCCESS("알림 목록 조회 성공"),
+
+    // 채팅
+    CHAT_SEND_SUCCESS("채팅 전송 성공"),
+    CHAT_ROOM_CREATE_SUCCESS("채팅방 생성 성공"),
+    CHAT_ROOM_ENTER_SUCCESS("채팅방 입장 성공"),
+    CHAT_ROOM_LIST_GET_SUCCESS("채팅방 목록 조회 성공"),
+    CHAT_HISTORY_GET_SUCCESS("채팅 내역 조회 성공"),
+    CHAT_ROOM_LEAVE_SUCCESS("채팅방 퇴장 성공"),
+    CHAT_ROOM_NAME_UPDATE_SUCCESS("채팅방 제목 수정 성공"),
+    CHAT_ROOM_GET_SUCCESS("채팅방 단건 조회 성공")
     ;
 
     private final String message;
