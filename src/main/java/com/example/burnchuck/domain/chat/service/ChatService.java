@@ -23,12 +23,12 @@ public class ChatService {
      * 채팅 보내기
      */
     @Transactional
-    public ChatMessageResponse sendMessage(AuthUser authUser, ChatMessageRequest request) {
+    public ChatMessageResponse sendMessage(AuthUser authUser, Long roomId, ChatMessageRequest request) {
 
         User sender = userRepository.findActivateUserById(authUser.getId());
 
         ChatMessage chatMessage = new ChatMessage(
-                request.getRoomId(),
+                roomId,
                 sender.getId(),
                 request.getContent(),
                 sender.getNickname(),

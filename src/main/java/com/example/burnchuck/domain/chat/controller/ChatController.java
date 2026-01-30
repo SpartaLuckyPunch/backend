@@ -37,12 +37,13 @@ public class ChatController {
     /**
      * 메세지 보내기
      */
-    @PostMapping("/messages")
+    @PostMapping("/rooms/{roomId}/messages")
     public ResponseEntity<CommonResponse<ChatMessageResponse>> sendMessage(
             @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long roomId,
             @RequestBody ChatMessageRequest request
     ) {
-        ChatMessageResponse response = chatService.sendMessage(authUser, request);
+        ChatMessageResponse response = chatService.sendMessage(authUser, roomId, request);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(CHAT_SEND_SUCCESS, response));
@@ -96,7 +97,7 @@ public class ChatController {
     /**
      * 채팅방 나가기
      */
-    @DeleteMapping("/{roomId}")
+    @DeleteMapping("/rooms/{roomId}")
     public ResponseEntity<CommonResponse<Void>> leaveChatRoom(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long roomId
@@ -111,7 +112,7 @@ public class ChatController {
     /**
      * 채팅방 제목 수정
      */
-    @PatchMapping("/{roomId}/name")
+    @PatchMapping("/rooms/{roomId}/name")
     public ResponseEntity<CommonResponse<Void>> updateRoomName(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long roomId,
