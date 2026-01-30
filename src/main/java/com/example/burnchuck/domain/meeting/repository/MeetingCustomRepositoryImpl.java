@@ -305,7 +305,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      */
     private OrderSpecifier<Integer> orderByListOrder(List<Long> meetingIdList) {
 
-        if (meetingIdList.isEmpty()) {
+        if (meetingIdList == null || meetingIdList.isEmpty()) {
             return null;
         }
 
