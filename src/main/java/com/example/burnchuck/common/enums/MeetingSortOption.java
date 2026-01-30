@@ -4,6 +4,6 @@ public enum MeetingSortOption {
 
     POPULAR,        // 인기순
     LATEST,         // 최신 등록순
-    RECOMMENDED,    // 추천순
+    UPCOMING,       // 모임 일정 순
     NEAREST         // 가까운순
 }

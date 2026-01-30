@@ -2,7 +2,7 @@ package com.example.burnchuck.common.utils;
 
 import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.dto.Location;
-import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 
 public class MeetingDistance {
 
@@ -30,13 +30,13 @@ public class MeetingDistance {
     /**
      * 유저와 모임 사이 거리 계산
      */
-    public static double calculateDistance(Location userLocation, Meeting meeting) {
+    public static double calculateDistance(Location userLocation, MeetingSummaryResponse meeting) {
 
         double nowLatitude = userLocation.getLatitude();
         double nowLongitude = userLocation.getLongitude();
 
-        double storeLatitude = meeting.getPoint().getY();
-        double storeLongitude = meeting.getPoint().getX();
+        double storeLatitude = meeting.getLatitude();
+        double storeLongitude = meeting.getLongitude();
 
         return GeometryUtil.calculateDistance(nowLatitude, nowLongitude, storeLatitude, storeLongitude);
     }
