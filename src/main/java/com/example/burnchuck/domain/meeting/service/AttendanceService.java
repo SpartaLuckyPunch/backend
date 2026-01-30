@@ -16,7 +16,9 @@ import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,17 +40,21 @@ public class AttendanceService {
     public void registerAttendance(AuthUser authUser, Long meetingId) {
 
         User user = userRepository.findActivateUserById(authUser.getId());
-
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
         if (!meeting.isOpen()) {
             throw new CustomException(ErrorCode.ATTENDANCE_CANNOT_REGISTER);
         }
 
-        boolean exists = userMeetingRepository.existsByUserIdAndMeetingId(user.getId(), meeting.getId());
-
-        if (exists) {
+        if (userMeetingRepository.existsByUserIdAndMeetingId(user.getId(), meeting.getId())) {
             throw new CustomException(ErrorCode.ATTENDANCE_ALREADY_REGISTERED);
+        }
+
+        int maxAttendees = meeting.getMaxAttendees();
+        int currentAttendees = userMeetingRepository.countByMeeting(meeting);
+
+        if (currentAttendees >= maxAttendees) {
+            throw new CustomException(ErrorCode.ATTENDANCE_MAX_CAPACITY_REACHED);
         }
 
         UserMeeting userMeeting = new UserMeeting(user, meeting, MeetingRole.PARTICIPANT);
@@ -60,7 +66,7 @@ public class AttendanceService {
         int maxAttendees = meeting.getMaxAttendees();
         int currentAttendees = userMeetingRepository.countByMeeting(meeting);
 
-        if (maxAttendees == currentAttendees) {
+        if (currentAttendees +1 == maxAttendees) {
             meeting.updateStatus(MeetingStatus.CLOSED);
         }
 
