@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 public class MeetingCacheService {
 
     private final RedisTemplate<String, String> redisTemplate;
-    private static final String CACHE_GEO_KEY = "geoPoints:meeting";
+    private static final String CACHE_GEO_KEY = "meetings:geo";
 
     /**
      * 위치 정보 저장

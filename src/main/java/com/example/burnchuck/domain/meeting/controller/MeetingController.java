@@ -43,6 +43,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -93,6 +94,19 @@ public class MeetingController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> getMeetingPage(
+        @RequestParam double latitude,
+        @RequestParam double longitude,
+        @ModelAttribute MeetingSearchRequest searchRequest,
+        @PageableDefault(size = 6) Pageable pageable
+    ) {
+        Page<MeetingSummaryResponse> page = meetingService.test(latitude, longitude, searchRequest, pageable);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));
     }
 
     /**

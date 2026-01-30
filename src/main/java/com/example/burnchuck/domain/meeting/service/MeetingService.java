@@ -157,6 +157,42 @@ public class MeetingService {
         return meetingPage;
     }
 
+    @Transactional(readOnly = true)
+    public Page<MeetingSummaryResponse> test(
+        double latitude,
+        double longitude,
+        MeetingSearchRequest searchRequest,
+        Pageable pageable
+    ) {
+        Location location = new Location(latitude, longitude);
+
+        List<Long> meetingIdList = null;
+        BoundingBox boundingBox = null;
+
+        boolean redisError = false;
+
+        Double radius = searchRequest.getDistance() == null ? 5.0 : searchRequest.getDistance();
+
+        try {
+            meetingIdList = meetingCacheService.findMeetingsByLocation(location, radius);
+        } catch (RedisException e) {
+            boundingBox = MeetingDistance.aroundUserBox(location, radius);
+            redisError = true;
+        }
+
+        Page<MeetingSummaryResponse> meetingPage = meetingRepository.findMeetingList(searchRequest, pageable, boundingBox, meetingIdList);
+
+        if (redisError && searchRequest.getOrder() == MeetingSortOption.NEAREST) {
+
+            List<MeetingSummaryResponse> meetingSummaryList = new ArrayList<>(meetingPage.getContent());
+            sortMeetingsByDistance(meetingSummaryList, location);
+
+            return new PageImpl<>(meetingSummaryList, pageable, meetingPage.getTotalElements());
+        }
+
+        return meetingPage;
+    }
+
     /**
      * 모임 지도 조회
      */
