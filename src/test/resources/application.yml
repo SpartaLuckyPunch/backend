@@ -1,20 +1,25 @@
 spring:
+  application:
+    name: ticketing-service
+
   datasource:
-    url: jdbc:mysql://localhost:3306/lucky_punch_database?serverTimezone=Asia/Seoul
-    username: root
-    password: 12345678
     driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/attendance_concurrency_test?createDatabaseIfNotExist=true
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     hikari:
       maximum-pool-size: 50
       connection-timeout: 30000
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          batch_size: 1000
 
   data:
     redis:
@@ -23,4 +28,4 @@ spring:
 
 jwt:
   secret:
-    key: c29tZS12ZXJ5LWxvbmctc2VjcmV0LWtleS1mb3ItdGVzdGluZy1wdXJwb3Nlcy1vbmx5LTEyMzQ1Njc4
+    key: ${JWT_SECRET}
