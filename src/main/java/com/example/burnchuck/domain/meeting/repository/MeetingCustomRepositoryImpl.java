@@ -303,18 +303,18 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     /**
      * 주어진 리스트 순서대로 정렬
      */
-    private OrderSpecifier<Integer> orderByListOrder(List<Long> meetingIdList) {
+    private OrderSpecifier<Long> orderByListOrder(List<Long> meetingIdList) {
 
         if (meetingIdList == null || meetingIdList.isEmpty()) {
-            return null;
+            return meeting.id.asc();
         }
 
         String ids = meetingIdList.stream()
             .map(String::valueOf)
             .collect(Collectors.joining(","));
 
-        NumberTemplate<Integer> orderExpr = Expressions.numberTemplate(
-            Integer.class,
+        NumberTemplate<Long> orderExpr = Expressions.numberTemplate(
+            Long.class,
             "FIELD({0}, " + ids + ")",
             meeting.id
         );
