@@ -1,0 +1,135 @@
+package com.example.burnchuck.domain.notification.service;
+
+import static com.example.burnchuck.domain.notification.repository.EmitterRepository.EVENT_CACHE_PREFIX;
+import static com.example.burnchuck.domain.notification.repository.EmitterRepository.SSE_EMITTER_PREFIX;
+
+import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.common.entity.Notification;
+import com.example.burnchuck.domain.notification.dto.response.NotificationResponse;
+import com.example.burnchuck.domain.notification.repository.EmitterRepository;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+@Service
+@RequiredArgsConstructor
+public class SseNotifyService {
+
+    private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;
+
+    private final EmitterRepository emitterRepository;
+
+    /**
+     * 클라이언트와의 SSE 스트림 통신 연결(성공 시, EventStream Created. [userId="{userId}"] 반환)
+     */
+    public SseEmitter subscribe(AuthUser authUser, String lastEventId) {
+
+        Long userId = authUser.getId();
+
+        String emitterId = createEmitterId(userId);
+        SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(DEFAULT_TIMEOUT));
+
+        emitter.onCompletion(() -> emitterRepository.deleteById(emitterId));
+        emitter.onTimeout(() -> emitterRepository.deleteById(emitterId));
+
+        String eventId = createEventId(userId);
+        sendNotification(emitter, eventId, emitterId, "EventStream Created. [userId=" + userId + "]");
+
+        if (hasLostData(lastEventId)) {
+            sendLostData(lastEventId, userId, emitterId, emitter);
+        }
+
+        return emitter;
+    }
+
+    /**
+     * Emitter ID 생성(prefix::userId_현재시간)
+     */
+    private String createEmitterId(Long userId) {
+        return SSE_EMITTER_PREFIX + userId + "_" + System.currentTimeMillis();
+    }
+
+    /**
+     * Event ID 생성(prefix::userId_현재시간)
+     */
+    private String createEventId(Long userId) {
+        return EVENT_CACHE_PREFIX + userId + "_" + System.currentTimeMillis();
+    }
+
+    /**
+     * 알림 이벤트 전송
+     */
+    private void sendNotification(SseEmitter emitter, String eventId, String emitterId, Object data) {
+
+        try {
+            emitter.send(SseEmitter.event()
+                .id(eventId)
+                .name("sse")
+                .data(data));
+
+        } catch (IOException exception) {
+            emitterRepository.deleteById(emitterId);
+        }
+    }
+
+    /**
+     * 미수신 이벤트가 있는지 확인
+     */
+    private boolean hasLostData(String lastEventId) {
+        return !lastEventId.isEmpty();
+    }
+
+    /**
+     * 해당 이벤트 이후의 이벤트들을 캐시에서 가져와 클라이언트에게 전송
+     */
+    private void sendLostData(String lastEventId, Long userId, String emitterId, SseEmitter emitter) {
+
+        Map<String, Object> eventCaches = emitterRepository.findAllEventCacheStartWithByMemberId(userId);
+
+        eventCaches.entrySet().stream()
+            .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
+            .forEach(entry -> sendNotification(emitter, entry.getKey(), emitterId, entry.getValue()));
+    }
+
+    /**
+     * 해당 알림을 수신하는 모든 유저에게 전송
+     */
+    public void send(Notification notification) {
+
+        Long userId = notification.getUser().getId();
+        String eventId = createEventId(userId);
+
+        Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByMemberId(userId);
+
+        NotificationResponse notificationResponse = NotificationResponse.from(notification);
+
+        emitterRepository.saveEventCache(eventId, notificationResponse);
+
+        emitters.forEach(
+            (key, emitter) -> sendNotification(emitter, eventId, key, notificationResponse)
+        );
+    }
+
+    public void sendAll(List<Notification> notificationList) {
+
+        for (Notification notification : notificationList) {
+
+            Long userId = notification.getUser().getId();
+            String eventId = createEventId(userId);
+
+            Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByMemberId(userId);
+
+            NotificationResponse notificationResponse = NotificationResponse.from(notification);
+
+            emitters.forEach(
+                (key, emitter) -> {
+                    emitterRepository.saveEventCache(key, notification);
+                    sendNotification(emitter, eventId, key, notificationResponse);
+                }
+            );
+        }
+    }
+}
