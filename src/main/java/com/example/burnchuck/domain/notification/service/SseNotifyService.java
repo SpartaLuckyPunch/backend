@@ -1,6 +1,5 @@
 package com.example.burnchuck.domain.notification.service;
 
-import static com.example.burnchuck.domain.notification.repository.EmitterRepository.EVENT_CACHE_PREFIX;
 import static com.example.burnchuck.domain.notification.repository.EmitterRepository.SSE_EMITTER_PREFIX;
 
 import com.example.burnchuck.common.dto.AuthUser;
@@ -25,7 +24,7 @@ public class SseNotifyService {
     /**
      * 클라이언트와의 SSE 스트림 통신 연결(성공 시, EventStream Created. [userId="{userId}"] 반환)
      */
-    public SseEmitter subscribe(AuthUser authUser, String lastEventId) {
+    public SseEmitter subscribe(AuthUser authUser) {
 
         Long userId = authUser.getId();
 
@@ -35,12 +34,7 @@ public class SseNotifyService {
         emitter.onCompletion(() -> emitterRepository.deleteById(emitterId));
         emitter.onTimeout(() -> emitterRepository.deleteById(emitterId));
 
-        String eventId = createEventId(userId);
-        sendNotification(emitter, eventId, emitterId, "EventStream Created. [userId=" + userId + "]");
-
-        if (hasLostData(lastEventId)) {
-            sendLostData(lastEventId, userId, emitterId, emitter);
-        }
+        sendNotification(emitter, emitterId, "EventStream Created. [userId=" + userId + "]");
 
         return emitter;
     }
@@ -53,20 +47,12 @@ public class SseNotifyService {
     }
 
     /**
-     * Event ID 생성(prefix::userId_현재시간)
-     */
-    private String createEventId(Long userId) {
-        return EVENT_CACHE_PREFIX + userId + "_" + System.currentTimeMillis();
-    }
-
-    /**
      * 알림 이벤트 전송
      */
-    private void sendNotification(SseEmitter emitter, String eventId, String emitterId, Object data) {
+    private void sendNotification(SseEmitter emitter, String emitterId, Object data) {
 
         try {
             emitter.send(SseEmitter.event()
-                .id(eventId)
                 .name("sse")
                 .data(data));
 
@@ -76,40 +62,18 @@ public class SseNotifyService {
     }
 
     /**
-     * 미수신 이벤트가 있는지 확인
-     */
-    private boolean hasLostData(String lastEventId) {
-        return !lastEventId.isEmpty();
-    }
-
-    /**
-     * 해당 이벤트 이후의 이벤트들을 캐시에서 가져와 클라이언트에게 전송
-     */
-    private void sendLostData(String lastEventId, Long userId, String emitterId, SseEmitter emitter) {
-
-        Map<String, Object> eventCaches = emitterRepository.findAllEventCacheStartWithByMemberId(userId);
-
-        eventCaches.entrySet().stream()
-            .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
-            .forEach(entry -> sendNotification(emitter, entry.getKey(), emitterId, entry.getValue()));
-    }
-
-    /**
      * 해당 알림을 수신하는 모든 유저에게 전송
      */
     public void send(Notification notification) {
 
         Long userId = notification.getUser().getId();
-        String eventId = createEventId(userId);
 
         Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByMemberId(userId);
 
         NotificationResponse notificationResponse = NotificationResponse.from(notification);
 
-        emitterRepository.saveEventCache(eventId, notificationResponse);
-
         emitters.forEach(
-            (key, emitter) -> sendNotification(emitter, eventId, key, notificationResponse)
+            (key, emitter) -> sendNotification(emitter, key, notificationResponse)
         );
     }
 
@@ -118,7 +82,6 @@ public class SseNotifyService {
         for (Notification notification : notificationList) {
 
             Long userId = notification.getUser().getId();
-            String eventId = createEventId(userId);
 
             Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByMemberId(userId);
 
@@ -126,8 +89,7 @@ public class SseNotifyService {
 
             emitters.forEach(
                 (key, emitter) -> {
-                    emitterRepository.saveEventCache(key, notification);
-                    sendNotification(emitter, eventId, key, notificationResponse);
+                    sendNotification(emitter, key, notificationResponse);
                 }
             );
         }
