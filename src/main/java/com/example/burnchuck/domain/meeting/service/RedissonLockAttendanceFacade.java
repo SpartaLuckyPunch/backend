@@ -54,14 +54,5 @@ public class RedissonLockAttendanceFacade {
                 lock.unlock();
             }
         }
-        User user = userRepository.findActivateUserById(authUser.getId());
-        Meeting meeting = meetingRepository.findById(meetingId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEETING_NOT_FOUND));
-
-
-        chatRoomService.joinGroupChatRoom(meetingId,user);
-
-        // 알림도 필요하다면 여기서 호출
-        notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
     }
 }

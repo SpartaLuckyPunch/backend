@@ -40,8 +40,7 @@ public class AttendanceService {
     public void registerAttendance(AuthUser authUser, Long meetingId) {
 
         User user = userRepository.findActivateUserById(authUser.getId());
-        Meeting meeting = meetingRepository.findByIdWithLock(meetingId)
-                .orElseThrow(()-> new CustomException(ErrorCode.MEETING_NOT_FOUND));
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
         if (!meeting.isOpen()) {
             throw new CustomException(ErrorCode.ATTENDANCE_CANNOT_REGISTER);
@@ -65,6 +64,10 @@ public class AttendanceService {
         if (currentAttendees +1 == maxAttendees) {
             meeting.updateStatus(MeetingStatus.CLOSED);
         }
+
+        chatRoomService.joinGroupChatRoom(meetingId, user);
+
+        notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
     }
 
     /**
