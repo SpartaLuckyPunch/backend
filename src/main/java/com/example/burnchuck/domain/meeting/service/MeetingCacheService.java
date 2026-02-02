@@ -5,6 +5,7 @@ import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.utils.GeometryUtil;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -90,5 +91,17 @@ public class MeetingCacheService {
     public void deleteMeetingLocation(Long meetingId) {
 
         redisTemplate.opsForZSet().remove(CACHE_GEO_KEY, String.valueOf(meetingId));
+    }
+
+    /**
+     * 저장된 모든 내용 조회
+     */
+    public Set<Long> findAll() {
+
+        Set<String> members = redisTemplate.opsForZSet().range(CACHE_GEO_KEY, 0, -1);
+
+        return members.stream()
+            .map(Long::parseLong)
+            .collect(Collectors.toSet());
     }
 }
