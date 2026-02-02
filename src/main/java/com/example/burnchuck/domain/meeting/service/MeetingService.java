@@ -55,7 +55,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -90,7 +89,7 @@ public class MeetingService {
 
         try {
             meetingCacheService.saveMeetingLocation(meeting);
-        } catch (DataAccessException e) {
+        } catch (RedisException | DataAccessException e) {
             log.error("Redis 예외 발생: {}", e.getMessage());
 
             RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.CREATE);
@@ -158,7 +157,7 @@ public class MeetingService {
 
         try {
             meetingIdList = meetingCacheService.findMeetingsByLocation(location, radius);
-        } catch (RedisException | RedisConnectionFailureException e) {
+        } catch (RedisException | DataAccessException e) {
             boundingBox = MeetingDistance.aroundUserBox(location, radius);
             redisError = true;
         }
@@ -189,7 +188,7 @@ public class MeetingService {
 
         try {
             meetingIdList = meetingCacheService.findMeetingsByViewPort(viewPort);
-        } catch (RedisException | RedisConnectionFailureException e) {
+        } catch (RedisException | DataAccessException e) {
             boundingBox = new BoundingBox(viewPort.getMinLat(), viewPort.getMaxLat(), viewPort.getMinLng(), viewPort.getMaxLng());
         }
 
@@ -245,7 +244,7 @@ public class MeetingService {
 
         try {
             meetingCacheService.saveMeetingLocation(meeting);
-        } catch (RedisException | RedisConnectionFailureException e) {
+        } catch (RedisException | DataAccessException e) {
             log.error("Redis 예외 발생: {}", e.getMessage());
 
             RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.CREATE);
@@ -276,7 +275,7 @@ public class MeetingService {
 
         try {
             meetingCacheService.deleteMeetingLocation(meeting.getId());
-        } catch (RedisException | RedisConnectionFailureException e) {
+        } catch (RedisException | DataAccessException e) {
             log.error("Redis 예외 발생: {}", e.getMessage());
 
             RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.DELETE);
