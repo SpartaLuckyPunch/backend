@@ -8,6 +8,11 @@ env:
   ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
   IMAGE_TAG: ${{ github.sha }}
+  DB_URL: ${{ secrets.DB_URL }}
+  DB_USERNAME: ${{ secrets.DB_USERNAME }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  MONGO_DB_URI: ${{ secrets.MONGO_DB_URI }}
+  JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
 # =========================
 # 1️⃣ CI: Build & Push
@@ -78,5 +83,5 @@ jobs:
             docker run -d \
               --name burn-chuck \
               -p 8080:8080 \
-              -env-file .env \
+              --env-file .env \
               $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

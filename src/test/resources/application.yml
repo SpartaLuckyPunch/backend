@@ -2,9 +2,9 @@ spring:
   application:
     name: name=burn-chuck
   datasource:
-    url: ${{ secrets.DB_URL }}
-    username: ${{ secrets.DB_USERNAME }}
-    password: ${{ secrets.DB_PASSWORD }}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: true
@@ -20,7 +20,7 @@ spring:
     operations-sorter: none
   data:
     mongodb:
-      uri: ${{ secrets.MONGO_DB_URI }}
+      uri: ${MONGO_DB_URI}
 jwt:
   secret:
-    key: ${{ secrets.JWT_SECRET_KEY }}
+    key: ${JWT_SECRET_KEY}
