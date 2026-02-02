@@ -11,10 +11,9 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @EnableAsync
 public class AsyncConfig {
 
-
-    private static final int CORE_POOL_SIZE = 2;
-    private static final int MAX_POOL_SIZE = 4;
-    private static final int queueCapacity = 20;
+    private static final int CORE_POOL_SIZE = 4;
+    private static final int MAX_POOL_SIZE = 8;
+    private static final int queueCapacity = 50;
 
     @Bean("CustomTaskExecutor")
     public Executor CustomTaskExecutor() {
