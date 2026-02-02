@@ -45,16 +45,22 @@ public class EmitterRepository {
     }
 
     /**
-     * 해당 회원과 관련된 모든 emitter 삭제
+     * 해당 회원과 관련된 모든 emitter 종료 후 삭제
      */
-    public void deleteAllEmitterStartWithId(Long userId) {
+    public void disconnectAllEmittersByUserId(Long userId) {
 
         String userKey = SSE_EMITTER_PREFIX + userId + "_";
 
         emitters.forEach(
             (key, emitter) -> {
                 if (key.startsWith(userKey)) {
-                    emitters.remove(key);
+                    try {
+                        emitter.complete();
+                    } catch (Exception ignored) {
+
+                    } finally {
+                        emitters.remove(key);
+                    }
                 }
             }
         );
