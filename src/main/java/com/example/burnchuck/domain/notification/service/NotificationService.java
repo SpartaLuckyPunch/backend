@@ -56,9 +56,9 @@ public class NotificationService {
             notificationList.add(notification);
         }
 
-        notificationRepository.saveAllAndFlush(notificationList);
+        notificationRepository.saveAll(notificationList);
 
-        sseNotifyService.sendAll(notificationList);
+        sseNotifyService.sendAllAfterCommit(notificationList);
     }
 
     /**
@@ -79,9 +79,9 @@ public class NotificationService {
             meeting
         );
 
-        notificationRepository.saveAndFlush(notification);
+        notificationRepository.save(notification);
 
-        sseNotifyService.send(notification);
+        sseNotifyService.sendAfterCommit(notification);
     }
 
     /**
@@ -112,7 +112,7 @@ public class NotificationService {
 
         notificationRepository.saveAll(notificationList);
 
-        sseNotifyService.sendAll(notificationList);
+        sseNotifyService.sendAllAfterCommit(notificationList);
     }
 
     /**

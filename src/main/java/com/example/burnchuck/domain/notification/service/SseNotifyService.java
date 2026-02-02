@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
@@ -100,5 +102,23 @@ public class SseNotifyService {
                 }
             );
         }
+    }
+
+    public void sendAfterCommit(Notification notification) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                send(notification);
+            }
+        });
+    }
+
+    public void sendAllAfterCommit(List<Notification> notificationList) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                sendAll(notificationList);
+            }
+        });
     }
 }
