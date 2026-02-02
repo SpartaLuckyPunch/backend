@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +53,7 @@ public class ScheduleEventHandler {
     /**
      * MeetingCreatedEvent에 대한 Handler -> TaskSchedule 생성
      */
+    @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @EventListener
     public void meetingCreateScheduleEventHandler(MeetingCreatedEvent event) {
@@ -69,6 +71,7 @@ public class ScheduleEventHandler {
     /**
      * MeetingUpdatedEvent에 대한 Handler -> 기존 TaskSchedule 취소 및 새 작업 생성
      */
+    @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void meetingUpdateScheduleEventHandler(MeetingUpdatedEvent event) {
@@ -88,6 +91,7 @@ public class ScheduleEventHandler {
     /**
      * MeetingDeletedEvent에 대한 Handler -> 기존 TaskSchedule 취소
      */
+    @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void meetingDeleteScheduleEventHandler(MeetingDeletedEvent event) {

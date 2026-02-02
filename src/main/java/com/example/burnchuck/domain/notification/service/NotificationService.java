@@ -16,6 +16,7 @@ import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,7 @@ public class NotificationService {
     /**
      * 유저가 모임을 생성했을 때 -> 해당 유저를 팔로우하는 사람에게 알림 발송
      */
+    @Async
     @Transactional
     public void notifyNewFollowerPost(Meeting meeting, User user) {
 
@@ -65,6 +67,7 @@ public class NotificationService {
      * 모임에 새로운 유저가 추가되었을 때 -> 해당 모임의 주최자에게 알림 발송
      * 모임의 유저가 탈퇴했을 때 -> 해당 모임의 주최자에게 알림 발송
      */
+    @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void notifyMeetingMember(NotificationType notificationType, Meeting meeting, User attendee) {
 
@@ -87,6 +90,7 @@ public class NotificationService {
     /**
      * 후기 작성 안내 -> 모임 시작 시간 3시간 뒤, 모임 참석자들에게 발송
      */
+    @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void notifyCommentRequest(Meeting meeting) {
 
