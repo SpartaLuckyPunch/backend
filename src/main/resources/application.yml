@@ -12,6 +12,8 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
+    mongodb:
+      uri: ${MONGO_DB_URI}
   jpa:
     show-sql: true
     hibernate:
@@ -24,9 +26,6 @@ spring:
   swagger-ui:
     tags-sorter: none
     operations-sorter: none
-  data:
-    mongodb:
-      uri: ${MONGO_DB_URI}
 jwt:
   secret:
     key: ${JWT_SECRET_KEY}

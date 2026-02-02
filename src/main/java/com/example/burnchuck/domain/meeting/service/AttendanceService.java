@@ -20,6 +20,7 @@ import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ public class AttendanceService {
     private final MeetingRepository meetingRepository;
     private final NotificationService notificationService;
     private final ChatRoomService chatRoomService;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 모임 참여 신청
@@ -40,7 +42,8 @@ public class AttendanceService {
     public void registerAttendance(AuthUser authUser, Long meetingId) {
 
         User user = userRepository.findActivateUserById(authUser.getId());
-        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+        Meeting meeting = meetingRepository.findByIdWithLock(meetingId)
+                .orElseThrow(()-> new CustomException(ErrorCode.MEETING_NOT_FOUND));
 
         if (!meeting.isOpen()) {
             throw new CustomException(ErrorCode.ATTENDANCE_CANNOT_REGISTER);
@@ -61,16 +64,12 @@ public class AttendanceService {
 
         userMeetingRepository.save(userMeeting);
 
-        chatRoomService.joinGroupChatRoom(meeting.getId(), user);
-
-        int maxAttendees = meeting.getMaxAttendees();
-        int currentAttendees = userMeetingRepository.countByMeeting(meeting);
-
         if (currentAttendees +1 == maxAttendees) {
             meeting.updateStatus(MeetingStatus.CLOSED);
         }
 
-        notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
+        eventPublisher.publishEvent(new AttendanceServiceEvent(meeting, user));
+
     }
 
     /**

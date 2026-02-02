@@ -61,6 +61,9 @@ public enum ErrorCode {
     // 알림
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림이 존재하지 않습니다."),
 
+    // 락
+    LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "락 획득을 실패하였습니다."),
+
     // 채팅
     CANNOT_CHAT_WITH_SELF(HttpStatus.CONFLICT, "자기 자신과 채팅할 수 없습니다."),
     CHAT_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 참여자가 존재하지 않습니다."),
