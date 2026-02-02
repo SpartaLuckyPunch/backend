@@ -5,7 +5,9 @@ import static com.example.burnchuck.domain.notification.repository.EmitterReposi
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.entity.Notification;
 import com.example.burnchuck.domain.notification.dto.response.NotificationResponse;
+import com.example.burnchuck.domain.notification.dto.response.NotificationSseResponse;
 import com.example.burnchuck.domain.notification.repository.EmitterRepository;
+import com.example.burnchuck.domain.notification.repository.NotificationRepository;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +22,7 @@ public class SseNotifyService {
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;
 
     private final EmitterRepository emitterRepository;
+    private final NotificationRepository notificationRepository;
 
     /**
      * 클라이언트와의 SSE 스트림 통신 연결(성공 시, EventStream Created. [userId="{userId}"] 반환)
@@ -34,7 +37,9 @@ public class SseNotifyService {
         emitter.onCompletion(() -> emitterRepository.deleteById(emitterId));
         emitter.onTimeout(() -> emitterRepository.deleteById(emitterId));
 
-        sendNotification(emitter, emitterId, "EventStream Created. [userId=" + userId + "]");
+        long unread = notificationRepository.countByUserIdAndIsReadFalse(userId);
+
+        sendNotification(emitter, emitterId, NotificationSseResponse.sseConnection(unread));
 
         return emitter;
     }
@@ -71,9 +76,10 @@ public class SseNotifyService {
         Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByMemberId(userId);
 
         NotificationResponse notificationResponse = NotificationResponse.from(notification);
+        long unread = notificationRepository.countByUserIdAndIsReadFalse(userId);
 
         emitters.forEach(
-            (key, emitter) -> sendNotification(emitter, key, notificationResponse)
+            (key, emitter) -> sendNotification(emitter, key, NotificationSseResponse.newNotification(unread, notificationResponse))
         );
     }
 
@@ -86,10 +92,11 @@ public class SseNotifyService {
             Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByMemberId(userId);
 
             NotificationResponse notificationResponse = NotificationResponse.from(notification);
+            long unread = notificationRepository.countByUserIdAndIsReadFalse(userId);
 
             emitters.forEach(
                 (key, emitter) -> {
-                    sendNotification(emitter, key, notificationResponse);
+                    sendNotification(emitter, key, NotificationSseResponse.newNotification(unread, notificationResponse));
                 }
             );
         }
