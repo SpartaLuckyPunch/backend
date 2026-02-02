@@ -201,7 +201,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .from(userMeeting)
                 .join(userMeeting.meeting, meeting)
                 .where(
-                        meeting.isDeleted.isFalse(),
                         userMeeting.user.id.eq(userId),
                         userMeeting.meetingRole.eq(MeetingRole.HOST)
                 )
@@ -215,7 +214,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 .from(userMeeting)
                 .join(userMeeting.meeting, meeting)
                 .where(
-                        meeting.isDeleted.isFalse(),
                         userMeeting.user.id.eq(userId),
                         userMeeting.meetingRole.eq(MeetingRole.HOST)
                 )
@@ -238,7 +236,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
             )
             .where(
                 meeting.status.eq(MeetingStatus.COMPLETED),
-                meeting.isDeleted.isFalse(),
                 notification.id.isNull(),
                 meeting.meetingDateTime.between(startDate, endDate)
             )

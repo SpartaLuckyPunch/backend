@@ -4,13 +4,16 @@ import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.utils.GeometryUtil;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
+import io.lettuce.core.RedisException;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.Circle;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation;
 import org.springframework.data.redis.connection.RedisGeoCommands.GeoSearchCommandArgs;
@@ -22,10 +25,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j(topic = "MeetingRedisCache")
 public class MeetingCacheService {
 
     private final RedisTemplate<String, String> redisTemplate;
-    private static final String CACHE_GEO_KEY = "meetings:geo";
+    private static final String CACHE_GEO_KEY = "geoPoints:meeting";
 
     /**
      * 위치 정보 저장
@@ -36,7 +40,11 @@ public class MeetingCacheService {
 
         Point point = new Point(meeting.getLongitude(), meeting.getLatitude());
 
-        geoOperations.add(CACHE_GEO_KEY, point, String.valueOf(meeting.getId()));
+        try {
+            geoOperations.add(CACHE_GEO_KEY, point, String.valueOf(meeting.getId()));
+        } catch (RedisException | RedisConnectionFailureException e) {
+            log.error("Redis 예외 발생: {}", e.getMessage());
+        }
     }
 
     /**
@@ -85,6 +93,11 @@ public class MeetingCacheService {
      * 저장된 내용 삭제
      */
     public void deleteMeetingLocation(Long meetingId) {
-        redisTemplate.opsForZSet().remove(CACHE_GEO_KEY, String.valueOf(meetingId));
+
+        try {
+            redisTemplate.opsForZSet().remove(CACHE_GEO_KEY, String.valueOf(meetingId));
+        } catch (RedisException | RedisConnectionFailureException e) {
+            log.error("Redis 예외 발생: {}", e.getMessage());
+        }
     }
 }
