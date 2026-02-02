@@ -80,6 +80,8 @@ public class MeetingService {
 
         Meeting meeting = createMeeting(user, request);
 
+        meetingCacheService.saveMeetingLocation(meeting);
+
         notificationService.notifyNewFollowerPost(meeting, user);
 
         eventPublisherService.publishMeetingCreatedEvent(meeting);
@@ -110,8 +112,6 @@ public class MeetingService {
         );
 
         userMeetingRepository.save(userMeeting);
-
-        meetingCacheService.saveMeetingLocation(meeting);
 
         return meeting;
     }
