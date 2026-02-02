@@ -25,7 +25,7 @@ public class SseNotifyService {
     private final NotificationRepository notificationRepository;
 
     /**
-     * 클라이언트와의 SSE 스트림 통신 연결(성공 시, EventStream Created. [userId="{userId}"] 반환)
+     * 클라이언트와의 SSE 스트림 통신 연결
      */
     public SseEmitter subscribe(AuthUser authUser) {
 
