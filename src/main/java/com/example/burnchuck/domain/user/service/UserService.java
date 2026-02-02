@@ -8,6 +8,7 @@ import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
+import com.example.burnchuck.domain.notification.repository.EmitterRepository;
 import com.example.burnchuck.domain.review.repository.ReviewRepository;
 import com.example.burnchuck.domain.user.dto.request.UserUpdatePasswordRequest;
 import com.example.burnchuck.domain.user.dto.request.UserUpdateProfileRequest;
@@ -32,6 +33,7 @@ public class UserService {
     private final MeetingLikeRepository meetingLikeRepository;
     private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmitterRepository emitterRepository;
 
     /**
      * 내 정보 수정(닉네임, 주소)
@@ -106,6 +108,8 @@ public class UserService {
 
         followRepository.deleteByFollowerId(user.getId());
         followRepository.deleteByFolloweeId(user.getId());
+
+        emitterRepository.disconnectAllEmittersByUserId(user.getId());
     }
 
     /**
