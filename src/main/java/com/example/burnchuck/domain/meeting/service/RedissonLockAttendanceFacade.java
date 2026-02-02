@@ -1,8 +1,16 @@
 package com.example.burnchuck.domain.meeting.service;
 
 import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
+import com.example.burnchuck.common.enums.NotificationType;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.domain.chat.service.ChatRoomService;
+import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
+import com.example.burnchuck.domain.notification.service.NotificationService;
+import com.example.burnchuck.domain.user.repository.UserRepository;
+import com.example.burnchuck.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
@@ -16,8 +24,13 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class RedissonLockAttendanceFacade {
 
+    private final ChatRoomService chatRoomService;
+    private final NotificationService notificationService;
     private final AttendanceService attendanceService;
     private final RedissonClient redissonClient;
+    private final UserRepository userRepository;
+    private final MeetingRepository meetingRepository;
+
 
     public static final Long WAIT_TIME = 5L;
 
@@ -41,5 +54,14 @@ public class RedissonLockAttendanceFacade {
                 lock.unlock();
             }
         }
+        User user = userRepository.findActivateUserById(authUser.getId());
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEETING_NOT_FOUND));
+
+
+        chatRoomService.joinGroupChatRoom(meetingId,user);
+
+        // 알림도 필요하다면 여기서 호출
+        notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
     }
 }

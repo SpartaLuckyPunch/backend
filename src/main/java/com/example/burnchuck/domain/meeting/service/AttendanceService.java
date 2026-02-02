@@ -20,7 +20,6 @@ import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +32,6 @@ public class AttendanceService {
     private final MeetingRepository meetingRepository;
     private final NotificationService notificationService;
     private final ChatRoomService chatRoomService;
-    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 모임 참여 신청
@@ -67,9 +65,6 @@ public class AttendanceService {
         if (currentAttendees +1 == maxAttendees) {
             meeting.updateStatus(MeetingStatus.CLOSED);
         }
-
-        eventPublisher.publishEvent(new AttendanceServiceEvent(meeting, user));
-
     }
 
     /**
