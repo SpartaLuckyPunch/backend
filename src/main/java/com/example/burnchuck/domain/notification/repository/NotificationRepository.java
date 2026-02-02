@@ -27,6 +27,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
         """)
     List<NotificationResponse> findAllNotificationsByUser(@Param("user") User user);
 
+    long countByUserIdAndIsReadFalse(Long userId);
+
     default Notification findNotificationById(Long notificationId) {
         return findById(notificationId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));

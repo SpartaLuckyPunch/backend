@@ -1,14 +1,14 @@
 package com.example.burnchuck.domain.notification.service;
 
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.entity.Follow;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.Notification;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.NotificationType;
-import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
-import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
+import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.dto.response.NotificationGetListResponse;
 import com.example.burnchuck.domain.notification.dto.response.NotificationResponse;
 import com.example.burnchuck.domain.notification.repository.NotificationRepository;
@@ -28,6 +28,7 @@ public class NotificationService {
     private final FollowRepository followRepository;
     private final UserMeetingRepository userMeetingRepository;
     private final UserRepository userRepository;
+    private final SseNotifyService sseNotifyService;
 
     /**
      * 유저가 모임을 생성했을 때 -> 해당 유저를 팔로우하는 사람에게 알림 발송
@@ -56,6 +57,8 @@ public class NotificationService {
         }
 
         notificationRepository.saveAll(notificationList);
+
+        sseNotifyService.sendAllAfterCommit(notificationList);
     }
 
     /**
@@ -77,6 +80,8 @@ public class NotificationService {
         );
 
         notificationRepository.save(notification);
+
+        sseNotifyService.sendAfterCommit(notification);
     }
 
     /**
@@ -106,6 +111,8 @@ public class NotificationService {
         }
 
         notificationRepository.saveAll(notificationList);
+
+        sseNotifyService.sendAllAfterCommit(notificationList);
     }
 
     /**

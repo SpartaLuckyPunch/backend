@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 public class SchedulingRepository {
 
     private static final String SCHEDULED_TASK_PREFIX = "ScheduledTask::";
-    public static final String MEETING_CHANGE_STATUS = "Meeting change status::";
-    public static final String NOTIFICATION_REVIEW_REQUEST = "Notification review request::";
+    public static final String MEETING_CHANGE_STATUS = "Meeting::";
+    public static final String NOTIFICATION_REVIEW_REQUEST = "Notification::";
 
     private final ConcurrentHashMap<String, ScheduledFuture<?>> repository = new ConcurrentHashMap<>();
 
