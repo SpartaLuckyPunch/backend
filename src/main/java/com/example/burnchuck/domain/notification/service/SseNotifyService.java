@@ -35,7 +35,7 @@ public class SseNotifyService {
         SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(DEFAULT_TIMEOUT));
 
         emitter.onCompletion(() -> emitterRepository.deleteById(emitterId));
-        emitter.onTimeout(() -> emitterRepository.deleteById(emitterId));
+        emitter.onTimeout(() -> emitter.complete());
 
         long unread = notificationRepository.countByUserIdAndIsReadFalse(userId);
 
