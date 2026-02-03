@@ -104,11 +104,7 @@ public class JwtUtil {
 
         long remainDays = Duration.between(now, expireAt).toDays();
 
-        if (remainDays < 2) {
-            return true;
-        }
-
-        return false;
+        return remainDays < 2;
     }
 
     public boolean isRefreshToken(String token) {
