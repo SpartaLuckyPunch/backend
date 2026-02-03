@@ -25,6 +25,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberTemplate;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -52,7 +53,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     ) {
         MeetingSortOption sort = request.getOrder() == null ? MeetingSortOption.LATEST : request.getOrder();
 
-        if (request.getStartDatetime() != null || request.getEndDatetime() != null) {
+        if (request.getStartDate() != null || request.getEndDate() != null) {
             sort = MeetingSortOption.UPCOMING;
         }
 
@@ -85,8 +86,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                     meeting.status.eq(MeetingStatus.OPEN),
                     keywordContains(request.getKeyword()),
                     categoryEq(request.getCategory()),
-                    startAt(request.getStartDatetime()),
-                    endAt(request.getEndDatetime()),
+                    betweenDate(request.getStartDate(), request.getEndDate()),
+                    betweenTime(request.getStartTime(), request.getEndTime()),
                     locationInBoundingBox(boundingBox),
                     inMeetingIdList(meetingIdList)
             )
@@ -104,8 +105,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 meeting.status.eq(MeetingStatus.OPEN),
                 keywordContains(request.getKeyword()),
                 categoryEq(request.getCategory()),
-                startAt(request.getStartDatetime()),
-                endAt(request.getEndDatetime()),
+                betweenDate(request.getStartDate(), request.getEndDate()),
+                betweenTime(request.getStartTime(), request.getEndTime()),
                 locationInBoundingBox(boundingBox),
                 inMeetingIdList(meetingIdList)
             );
@@ -135,8 +136,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 meeting.status.eq(MeetingStatus.OPEN),
                 keywordContains(request.getKeyword()),
                 categoryEq(request.getCategory()),
-                startAt(request.getStartDatetime()),
-                endAt(request.getEndDatetime()),
+                betweenDate(request.getStartDate(), request.getEndDate()),
+                betweenTime(request.getStartTime(), request.getEndTime()),
                 locationInBoundingBox(boundingBox),
                 inMeetingIdList(meetingIdList)
             )
@@ -266,14 +267,33 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 ? meeting.title.containsIgnoreCase(keyword) : null;
     }
 
-    // 모임 시간 시작 범위
-    private BooleanExpression startAt(LocalDateTime startDatetime) {
-        return startDatetime != null ? meeting.meetingDateTime.after(startDatetime) : null;
+    // 모임 날짜 범위
+    private BooleanExpression betweenDate(LocalDate startDate, LocalDate endDate) {
+
+        if (startDate == null || endDate == null) {
+            return null;
+        }
+
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+
+        return meeting.meetingDateTime.between(startDateTime, endDateTime);
     }
 
-    // 모임 시간 끝 범위
-    private BooleanExpression endAt(LocalDateTime endDatetime) {
-        return endDatetime != null ? meeting.meetingDateTime.before(endDatetime) : null;
+    // 모임 시간 범위
+    private BooleanExpression betweenTime(Integer startTime, Integer endTime) {
+
+        if (startTime == null || endTime == null) {
+            return null;
+        }
+
+        NumberTemplate<Integer> timeTemplate = Expressions.numberTemplate(
+            Integer.class,
+            "HOUR({0})",
+            meeting.meetingDateTime
+        );
+
+        return timeTemplate.between(startTime, endTime);
     }
 
     /**
