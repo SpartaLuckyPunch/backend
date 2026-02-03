@@ -1,6 +1,6 @@
 spring:
   application:
-    name: name=burn-chuck
+    name: burn-chuck
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
