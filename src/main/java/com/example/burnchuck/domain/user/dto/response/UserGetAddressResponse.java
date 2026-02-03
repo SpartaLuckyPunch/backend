@@ -11,12 +11,16 @@ public class UserGetAddressResponse {
     private final String province;
     private final String city;
     private final String district;
+    private final Double latitude;
+    private final Double longitude;
 
     public static UserGetAddressResponse from(Address address) {
         return new UserGetAddressResponse(
             address.getCity(),
             address.getCity(),
-            address.getDistrict()
+            address.getDistrict(),
+            address.getLatitude(),
+            address.getLongitude()
         );
     }
 }
