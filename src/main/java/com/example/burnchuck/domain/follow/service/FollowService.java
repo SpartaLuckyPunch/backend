@@ -138,6 +138,9 @@ public class FollowService {
         return new FollowListResponse(users);
     }
 
+    /**
+     * 팔로우 여부 확인
+     */
     @Transactional(readOnly = true)
     public boolean checkFollowExistence(Long userId, AuthUser authUser) {
 
