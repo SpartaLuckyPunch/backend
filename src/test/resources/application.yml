@@ -1,10 +1,10 @@
 spring:
   application:
-    name: ticketing-service
+    name: name=burn-chuck
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/attendance_concurrency_test?createDatabaseIfNotExist=true
+    url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     hikari:
@@ -30,4 +30,4 @@ spring:
 
 jwt:
   secret:
-    key: ${JWT_SECRET}
+    key: ${JWT_SECRET_KEY}
