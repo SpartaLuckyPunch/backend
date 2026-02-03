@@ -18,6 +18,7 @@ public class MeetingSummaryResponse {
     private final Double latitude;
     private final Double longitude;
     private final LocalDateTime meetingDatetime;
+    private final String status;
     private final int maxAttendees;
     private final int currentAttendees;
 
@@ -30,6 +31,7 @@ public class MeetingSummaryResponse {
                 meeting.getLatitude(),
                 meeting.getLongitude(),
                 meeting.getMeetingDateTime(),
+                meeting.getStatus().name(),
                 meeting.getMaxAttendees(),
                 currentAttendees
         );

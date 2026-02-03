@@ -75,6 +75,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                     meeting.latitude,
                     meeting.longitude,
                     meeting.meetingDateTime,
+                    meeting.status.stringValue(),
                     meeting.maxAttendees,
                     userMeeting.id.countDistinct().intValue()
             ))
