@@ -59,7 +59,6 @@ public class ScheduleEventHandler {
     public void meetingCreateScheduleEventHandler(MeetingCreatedEvent event) {
 
         Meeting meeting = event.getMeeting();
-        log.error("스케줄러 생성 : {}", meeting.getId());
 
         try {
             schedulingService.scheduleMeetingStatusComplete(meeting);
