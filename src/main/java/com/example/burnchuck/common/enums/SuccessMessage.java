@@ -11,6 +11,8 @@ public enum SuccessMessage {
 
     // 유저
     USER_UPDATE_PROFILE_SUCCESS("프로필 수정 성공"),
+    USER_PROFILE_IMG_PUT_LINK_SUCCESS("프로필 이미지 업로드 링크 생성 성공"),
+    USER_PROFILE_IMG_GET_LINK_SUCCESS("프로필 이미지 조회 링크 생성 성공"),
     USER_UPDATE_PASSWORD_SUCCESS("비밀번호 변경 성공"),
     USER_DELETE_SUCCESS("회원 탈퇴 성공"),
     USER_GET_PROFILE_SUCCESS("회원 프로필 조회 성공"),
