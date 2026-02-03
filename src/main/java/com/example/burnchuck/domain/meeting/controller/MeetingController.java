@@ -1,14 +1,8 @@
 package com.example.burnchuck.domain.meeting.controller;
 
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_CREATE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_DELETE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_HOSTED_LIST_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_MEMBER_LIST_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_UPDATE_SUCCESS;
-
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
+import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
@@ -35,15 +29,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -52,6 +40,30 @@ import org.springframework.web.bind.annotation.RestController;
 public class MeetingController {
 
     private final MeetingService meetingService;
+
+    /**
+     * 모임 이미지 등록
+     */
+    @GetMapping("/profileImg")
+    public ResponseEntity<CommonResponse<GetS3Url>> getUploadImgUrl() {
+        GetS3Url response = meetingService.getUploadMeetingImgUrl();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(MEETING_IMG_UPLOAD_LINK_SUCCESS, response));
+    }
+
+    /**
+     * 모임 이미지 조회
+     */
+    @GetMapping("/profileImg/get")
+    public ResponseEntity<CommonResponse<GetS3Url>> getViewImgUrl(
+            @RequestParam String key
+    ) {
+        GetS3Url response = meetingService.getViewMeetingImgUrl(key);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(MEETING_IMG_VIEW_LINK_SUCCESS, response));
+    }
 
     /**
      * 모임 생성

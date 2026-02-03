@@ -1,11 +1,13 @@
 package com.example.burnchuck.domain.user.service;
 
 import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Review;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.common.utils.S3UrlGenerator;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
 import com.example.burnchuck.domain.notification.repository.EmitterRepository;
@@ -18,6 +20,8 @@ import com.example.burnchuck.domain.user.dto.response.UserUpdateProfileResponse;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.List;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,6 +39,24 @@ public class UserService {
     private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmitterRepository emitterRepository;
+    private final S3UrlGenerator s3UrlGenerator;
+
+    /**
+     * 프로필 사진 등록
+     */
+    public GetS3Url getUploadProfileImgUrl(AuthUser authUser) {
+
+        String key = "profile/" + authUser.getId() + "/" + UUID.randomUUID();
+        return s3UrlGenerator.generateUploadImgUrl(key);
+    }
+
+    /**
+     * 프로필 사진 조회
+     */
+    public GetS3Url getViewProfileImgUrl(String key) {
+
+        return s3UrlGenerator.generateViewImgUrl(key);
+    }
 
     /**
      * 내 정보 수정(닉네임, 주소)

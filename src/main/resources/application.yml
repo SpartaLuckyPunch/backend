@@ -24,14 +24,17 @@ spring:
     mongodb:
       uri: ${MONGO_DB_URI}
 cloud:
-   aws:
-     s3:
-       bucket: ${BUCKET_NAME} # 버킷 이름
-     stack.auto: false
-     region.static: ${BUCKET_REGION} # 버킷 리전
-     credentials:
-       access-key: ${ACCESS_KEY} # 엑세스 키
-       secret-key: ${SECRET_KEY} # 시크릿 키
+  aws:
+    s3:
+      bucket: ${BUCKET_NAME}
+    stack.auto: false
+    region:
+      static: ${BUCKET_REGION}
+    credentials:
+      access-key: ${ACCESS_KEY}
+      secret-key: ${SECRET_KEY}
+    cloudfront:
+      domain: ${CLOUDFRONT_DOMAIN}
 
 jwt:
   secret:
