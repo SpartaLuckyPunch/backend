@@ -3,6 +3,7 @@ package com.example.burnchuck.domain.auth.service;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
+import com.example.burnchuck.common.enums.Provider;
 import com.example.burnchuck.common.enums.UserRole;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.JwtUtil;
@@ -12,9 +13,12 @@ import com.example.burnchuck.common.enums.Gender;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -49,11 +53,11 @@ public class AuthService {
         Address address = addressRepository.findAddressByAddressInfo(request.getProvince(), request.getCity(), request.getDistrict());
 
         User user = new User(
-            email, encodedPassword, nickname,
-            request.getBirthDate(),
-            gender.isValue(),
-            address,
-            UserRole.USER
+                email, encodedPassword, nickname,
+                request.getBirthDate(),
+                gender.isValue(),
+                address,
+                UserRole.USER, Provider.LOCAL, null
         );
 
         userRepository.save(user);
@@ -80,5 +84,40 @@ public class AuthService {
         String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getNickname(), user.getRole());
 
         return new AuthLoginResponse(token);
+    }
+
+    /**
+     * 소셜로그인/회원가입 통합 처리
+     */
+    @Transactional
+    public AuthLoginResponse socialLogin(String email, String nickname, Provider provider, String providerId) {
+
+        Optional<User> optionalUser = userRepository.findByProviderAndProviderIdAndIsDeletedFalse(provider, providerId);
+        // 유저 존재 X? -> 회원가입
+        if (optionalUser.isEmpty()) {
+            User user = new User(
+                    email,
+                    null,
+                    nickname,
+                    null,
+                    false,
+                    null,
+                    UserRole.USER,
+                    provider,
+                    providerId
+            );
+            userRepository.save(user);
+
+            String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getNickname(), user.getRole());
+
+            return new AuthLoginResponse(token);
+        } else {
+        // 유저 존재 O -> 로그인
+        User existingUser = optionalUser.get();
+
+        String token = jwtUtil.generateToken(existingUser.getId(), existingUser.getEmail(), existingUser.getNickname(), existingUser.getRole());
+
+        return new AuthLoginResponse(token);
+        }
     }
 }
