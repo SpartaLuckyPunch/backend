@@ -12,6 +12,7 @@ import com.example.burnchuck.domain.notification.repository.EmitterRepository;
 import com.example.burnchuck.domain.review.repository.ReviewRepository;
 import com.example.burnchuck.domain.user.dto.request.UserUpdatePasswordRequest;
 import com.example.burnchuck.domain.user.dto.request.UserUpdateProfileRequest;
+import com.example.burnchuck.domain.user.dto.response.UserGetAddressResponse;
 import com.example.burnchuck.domain.user.dto.response.UserGetProfileReponse;
 import com.example.burnchuck.domain.user.dto.response.UserUpdateProfileResponse;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
@@ -137,5 +138,16 @@ public class UserService {
             followers,
             avgRates
         );
+    }
+
+    /**
+     * 주소 조회
+     */
+    @Transactional(readOnly = true)
+    public UserGetAddressResponse getAddress(AuthUser authUser) {
+
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        return UserGetAddressResponse.from(user.getAddress());
     }
 }

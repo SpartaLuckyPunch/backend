@@ -18,12 +18,14 @@ import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 import org.locationtech.jts.geom.Point;
 
 @Entity
 @Table(name = "meetings")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("is_deleted = false")
 public class Meeting extends BaseEntity {
 
     @Id
