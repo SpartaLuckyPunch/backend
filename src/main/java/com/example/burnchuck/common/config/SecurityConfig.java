@@ -6,6 +6,7 @@ import com.example.burnchuck.common.jwt.JwtAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -51,11 +52,16 @@ public class SecurityConfig {
             )
 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(request -> request.getRequestURI().startsWith("/api/auth")).permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/v3/api-docs", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/ws-stomp/**", "/ws-stomp/info").permitAll()
+                .requestMatchers("/api/meetings/attendance").authenticated()
+                .requestMatchers("/api/meetings/hosted-meetings").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/meetings/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/reactions").permitAll()
                 .anyRequest().authenticated()
             )
             .build();
