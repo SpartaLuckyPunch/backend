@@ -19,7 +19,10 @@ import org.springframework.stereotype.Component;
 public class JwtUtil {
 
     public static final String BEARER_PREFIX = "Bearer ";
-    private static final long TOKEN_TIME = 60 * 60 * 1000L; // 1시간
+    private static final long ACCESS_TOKEN_TIME = 60 * 60 * 1000L; // 1시간
+    private static final long REFRESH_TOKEN_TIME = 7 * 24 * 60 * 60 * 1000L; // 1주
+    public static final String TOKEN_TYPE_ACCESS = "access";
+    public static final String TOKEN_TYPE_REFRESH = "refresh";
 
     @Value("${jwt.secret.key}")
     private String secretKeyString;
@@ -37,16 +40,30 @@ public class JwtUtil {
     }
 
     // 토큰 생성
-    public String generateToken(Long id, String email, String nickname, UserRole userRole) {
+    public String generateAccessToken(Long id, String email, String nickname, UserRole userRole) {
         Date now = new Date();
 
         return BEARER_PREFIX + Jwts.builder()
+            .claim("type", TOKEN_TYPE_ACCESS)
             .claim("id", id)
             .claim("email", email)
             .claim("nickname", nickname)
             .claim("role", userRole.name())
             .issuedAt(now)
-            .expiration(new Date(now.getTime() + TOKEN_TIME))
+            .expiration(new Date(now.getTime() + ACCESS_TOKEN_TIME))
+            .signWith(key, Jwts.SIG.HS256)
+            .compact();
+    }
+
+    // Refresh 토큰 생성 (1주 뒤 만료)
+    public String generateRefreshToken(Long userId) {
+        Date now = new Date();
+
+        return BEARER_PREFIX + Jwts.builder()
+            .issuedAt(now)
+            .claim("type", TOKEN_TYPE_REFRESH)
+            .claim("id", userId)
+            .expiration(new Date(now.getTime() + REFRESH_TOKEN_TIME))
             .signWith(key, Jwts.SIG.HS256)
             .compact();
     }
