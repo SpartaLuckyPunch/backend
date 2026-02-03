@@ -2,6 +2,7 @@ package com.example.burnchuck.domain.follow.controller;
 
 import static com.example.burnchuck.common.enums.SuccessMessage.FOLLOW_CREATE_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.FOLLOW_DELETE_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.FOLLOW_GET_EXISTENCE_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.FOLLOW_GET_FOLLOWER_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.FOLLOW_GET_FOLLOWING_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.FOLLOW_GET_SUCCESS;
@@ -128,5 +129,25 @@ public class FollowController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(FOLLOW_GET_FOLLOWER_SUCCESS, response));
+    }
+
+    /**
+     * 팔로우 여부 확인
+     */
+    @Operation(
+        summary = "팔로우 여부 확인",
+        description = """
+                    특정 사용자를 팔로우하고 있는지 조회합니다.
+                    """
+    )
+    @GetMapping("/{userId}/follow-existence")
+    public ResponseEntity<CommonResponse<Boolean>> checkFollowExistence(
+        @PathVariable Long userId,
+        @AuthenticationPrincipal AuthUser authUser
+    ) {
+        boolean response = followService.checkFollowExistence(userId, authUser);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.success(FOLLOW_GET_EXISTENCE_SUCCESS, response));
     }
 }

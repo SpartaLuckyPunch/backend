@@ -137,4 +137,13 @@ public class FollowService {
 
         return new FollowListResponse(users);
     }
+
+    @Transactional(readOnly = true)
+    public boolean checkFollowExistence(Long userId, AuthUser authUser) {
+
+        User follower = userRepository.findActivateUserById(authUser.getId(), FOLLOWER_NOT_FOUND);
+        User followee = userRepository.findActivateUserById(userId, FOLLOWEE_NOT_FOUND);
+
+        return followRepository.existsByFollowerAndFollowee(follower, followee);
+    }
 }
