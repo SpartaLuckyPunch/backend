@@ -9,6 +9,7 @@ import com.example.burnchuck.common.enums.UserRole;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.JwtUtil;
 import com.example.burnchuck.domain.auth.dto.request.AuthLoginRequest;
+import com.example.burnchuck.domain.auth.dto.request.AuthReissueTokenRequest;
 import com.example.burnchuck.domain.auth.dto.request.AuthSignupRequest;
 import com.example.burnchuck.domain.auth.dto.response.AuthTokenResponse;
 import com.example.burnchuck.domain.auth.repository.UserRefreshRepository;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -109,6 +111,39 @@ public class AuthService {
         }
 
         userRefreshRepository.save(userRefresh);
+
+        return new AuthTokenResponse(accessToken, refreshToken);
+    }
+
+    @Transactional
+    public AuthTokenResponse reissueToken(AuthReissueTokenRequest request) {
+
+        String refreshToken = request.getRefreshToken();
+
+        if (jwtUtil.isExpired(refreshToken)) {
+            throw new CustomException(ErrorCode.EXPIRED_TOKEN);
+        }
+
+        if (!jwtUtil.validateToken(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+        Long userId = jwtUtil.extractId(refreshToken);
+
+        UserRefresh userRefresh = userRefreshRepository.findUserRefreshByUserId(userId);
+
+        if (!ObjectUtils.nullSafeEquals(refreshToken, userRefresh.getRefreshToken())) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+        User user = userRefresh.getUser();
+
+        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), user.getNickname(), user.getRole());
+
+        if (jwtUtil.expireInTwoDays(refreshToken)) {
+            refreshToken = jwtUtil.generateRefreshToken(userId);
+            userRefresh.updateRefreshToken(refreshToken);
+        }
 
         return new AuthTokenResponse(accessToken, refreshToken);
     }

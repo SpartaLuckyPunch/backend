@@ -1,11 +1,14 @@
 package com.example.burnchuck.domain.auth.controller;
 
 import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_LOGIN_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_REISSUE_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_SIGNUP_SUCCESS;
 
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.domain.auth.dto.request.*;
-import com.example.burnchuck.domain.auth.dto.response.*;
+import com.example.burnchuck.domain.auth.dto.request.AuthLoginRequest;
+import com.example.burnchuck.domain.auth.dto.request.AuthReissueTokenRequest;
+import com.example.burnchuck.domain.auth.dto.request.AuthSignupRequest;
+import com.example.burnchuck.domain.auth.dto.response.AuthTokenResponse;
 import com.example.burnchuck.domain.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -64,5 +67,15 @@ public class AuthController {
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(AUTH_LOGIN_SUCCESS, response));
+    }
+
+    @PostMapping("/reissue")
+    public ResponseEntity<CommonResponse<AuthTokenResponse>> reissueToken(
+        @Valid @RequestBody AuthReissueTokenRequest request
+    ) {
+        AuthTokenResponse response = authService.reissueToken(request);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.success(AUTH_REISSUE_SUCCESS, response));
     }
 }

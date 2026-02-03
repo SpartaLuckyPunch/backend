@@ -8,6 +8,7 @@ public enum SuccessMessage {
     // 인증
     AUTH_SIGNUP_SUCCESS("유저 회원가입 성공"),
     AUTH_LOGIN_SUCCESS("로그인 성공"),
+    AUTH_REISSUE_SUCCESS("Access 토큰 재발급 성공"),
 
     // 유저
     USER_UPDATE_PROFILE_SUCCESS("프로필 수정 성공"),
