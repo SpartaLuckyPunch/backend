@@ -1,0 +1,26 @@
+package com.example.burnchuck.domain.user.dto.response;
+
+import com.example.burnchuck.common.entity.Address;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public class UserGetAddressResponse {
+
+    private final String province;
+    private final String city;
+    private final String district;
+    private final Double latitude;
+    private final Double longitude;
+
+    public static UserGetAddressResponse from(Address address) {
+        return new UserGetAddressResponse(
+            address.getProvince(),
+            address.getCity(),
+            address.getDistrict(),
+            address.getLatitude(),
+            address.getLongitude()
+        );
+    }
+}
