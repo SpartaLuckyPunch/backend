@@ -100,7 +100,7 @@ public class MeetingService {
     @Transactional
     public Meeting createMeeting(User user, MeetingCreateRequest request) {
 
-        Category category = categoryRepository.findCategoryById(request.getCategoryId());
+        Category category = categoryRepository.findCategoryByCode(request.getCategoryCode());
 
         Point point = createPoint(request.getLatitude(), request.getLongitude());
 
@@ -231,13 +231,15 @@ public class MeetingService {
             throw new CustomException(ACCESS_DENIED);
         }
 
-        Category category = categoryRepository.findCategoryById(request.getCategoryId());
+        Category category = categoryRepository.findCategoryByCode(request.getCategoryCode());
 
         Point point = createPoint(request.getLatitude(), request.getLongitude());
 
-        meeting.updateMeeting(request, category, point);
+        if (!ObjectUtils.nullSafeEquals(meeting.getPoint(), point)) {
+            meetingCacheService.saveMeetingLocation(meeting);
+        }
 
-        meetingCacheService.saveMeetingLocation(meeting);
+        meeting.updateMeeting(request, category, point);
 
         eventPublisherService.publishMeetingUpdatedEvent(meeting);
 
