@@ -37,6 +37,7 @@ public enum SuccessMessage {
     LIKE_CREATE_SUCCESS("좋아요 성공"),
     LIKE_CANCEL_SUCCESS("좋아요 취소 성공"),
     LIKE_COUNT_SUCCESS("좋아요 수 조회 성공"),
+    LIKE_GET_EXISTENCE_SUCCESS("좋아요 여부 조회 성공"),
 
     // 카테고리
     CATEGORY_GET_SUCCESS("카테고리 조회 성공"),
