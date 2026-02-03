@@ -36,10 +36,10 @@ public class AuthController {
                     """
     )
     @PostMapping("/signup")
-    public ResponseEntity<CommonResponse<AuthSignupResponse>> signup(
+    public ResponseEntity<CommonResponse<AuthTokenResponse>> signup(
         @Valid @RequestBody AuthSignupRequest request
     ) {
-        AuthSignupResponse response = authService.signup(request);
+        AuthTokenResponse response = authService.signup(request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(CommonResponse.success(AUTH_SIGNUP_SUCCESS, response));
@@ -57,10 +57,10 @@ public class AuthController {
                     """
     )
     @PostMapping("/login")
-    public ResponseEntity<CommonResponse<AuthLoginResponse>> login(
+    public ResponseEntity<CommonResponse<AuthTokenResponse>> login(
         @Valid @RequestBody AuthLoginRequest request
     ) {
-        AuthLoginResponse response = authService.login(request);
+        AuthTokenResponse response = authService.login(request);
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(AUTH_LOGIN_SUCCESS, response));
