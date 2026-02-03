@@ -242,13 +242,13 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
             .fetch();
     }
 
-    private BooleanExpression categoryEq(String categoryName) {
+    private BooleanExpression categoryEq(String categoryCode) {
 
-        if (categoryName == null) {
+        if (categoryCode == null) {
             return null;
         }
 
-        return category1.category.eq(categoryName);
+        return category1.code.eq(categoryCode);
     }
 
     private BooleanExpression inMeetingIdList(List<Long> meetingIdList) {
