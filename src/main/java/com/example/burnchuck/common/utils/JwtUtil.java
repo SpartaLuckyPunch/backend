@@ -8,12 +8,13 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import javax.crypto.SecretKey;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 @Component
 public class JwtUtil {
@@ -81,6 +82,28 @@ public class JwtUtil {
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
+    }
+
+    public boolean expireInTwoDays(String token) {
+
+        Instant now = Instant.now();
+
+        long expireDate = extractAllClaims(token).getExpiration().getTime();
+        Instant expireAt = Instant.ofEpochMilli(expireDate);
+
+        long remainDays = Duration.between(now, expireAt).toDays();
+
+        if (remainDays < 2) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean isRefreshToken(String token) {
+
+        String type = extractAllClaims(token).get("type", String.class);
+        return ObjectUtils.nullSafeEquals(type, TOKEN_TYPE_REFRESH);
     }
 
     // 토큰 복호화
