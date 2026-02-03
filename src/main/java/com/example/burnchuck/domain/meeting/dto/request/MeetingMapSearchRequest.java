@@ -1,6 +1,6 @@
 package com.example.burnchuck.domain.meeting.dto.request;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +14,8 @@ public class MeetingMapSearchRequest {
 
     private String keyword;
     private String category;
-    private LocalDateTime startDatetime;
-    private LocalDateTime endDatetime;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private Integer startTime;
+    private Integer endTime;
 }
