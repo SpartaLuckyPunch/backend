@@ -61,7 +61,7 @@ public class JwtUtil {
     public String generateRefreshToken(Long userId) {
         Date now = new Date();
 
-        return BEARER_PREFIX + Jwts.builder()
+        return Jwts.builder()
             .issuedAt(now)
             .claim("type", TOKEN_TYPE_REFRESH)
             .claim("id", userId)
