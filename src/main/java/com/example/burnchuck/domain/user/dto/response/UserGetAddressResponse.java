@@ -16,7 +16,7 @@ public class UserGetAddressResponse {
 
     public static UserGetAddressResponse from(Address address) {
         return new UserGetAddressResponse(
-            address.getCity(),
+            address.getProvince(),
             address.getCity(),
             address.getDistrict(),
             address.getLatitude(),
