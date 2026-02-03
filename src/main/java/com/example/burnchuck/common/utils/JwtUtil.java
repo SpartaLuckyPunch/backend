@@ -2,6 +2,7 @@ package com.example.burnchuck.common.utils;
 
 import com.example.burnchuck.common.enums.UserRole;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -81,6 +82,16 @@ public class JwtUtil {
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
+        }
+    }
+
+    public boolean isExpired(String token){
+
+        try {
+            Date expDate = extractAllClaims(token).getExpiration();
+            return new Date().after(expDate);
+        } catch (ExpiredJwtException e){
+            return true;
         }
     }
 
