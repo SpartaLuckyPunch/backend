@@ -39,7 +39,7 @@ public class MeetingCacheService {
     private static final String VIEW_COUNT_KEY = "view::meeting::";
     private static final int VIEW_COUNT_TTL = 3; // 1일 단위
     private static final String VIEW_COUNT_LOG_KEY = "view::meeting::%s::%s";
-    private static final long VIEW_COUNT_LOG_TTL = 60 * 10 * 60; // TTL 1시간
+    private static final long VIEW_COUNT_LOG_TTL = 6 * 10 * 60; // TTL 1시간
 
     /**
      * 위치 정보 저장
