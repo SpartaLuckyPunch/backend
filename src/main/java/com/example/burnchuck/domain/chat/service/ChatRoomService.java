@@ -1,10 +1,20 @@
 package com.example.burnchuck.domain.chat.service;
 
+import static com.example.burnchuck.common.enums.ErrorCode.CANNOT_CHAT_WITH_SELF;
+import static com.example.burnchuck.common.enums.ErrorCode.CANNOT_LEAVE_CLOSED_MEETING;
+import static com.example.burnchuck.common.enums.ErrorCode.CHAT_ROOM_NOT_FOUND;
+import static com.example.burnchuck.common.enums.ErrorCode.CHAT_USER_NOT_FOUND;
+
 import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.common.entity.*;
+import com.example.burnchuck.common.entity.ChatMessage;
+import com.example.burnchuck.common.entity.ChatRoom;
+import com.example.burnchuck.common.entity.ChatRoomUser;
+import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.RoomType;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.domain.chat.dto.dto.ChatRoomCreationResult;
 import com.example.burnchuck.domain.chat.dto.dto.ChatRoomDto;
 import com.example.burnchuck.domain.chat.dto.dto.ChatRoomMemberDto;
@@ -15,16 +25,13 @@ import com.example.burnchuck.domain.chat.repository.ChatRoomRepository;
 import com.example.burnchuck.domain.chat.repository.ChatRoomUserRepository;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.example.burnchuck.common.enums.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -180,7 +187,7 @@ public class ChatRoomService {
                 .map(ChatRoomUser::getUser)
                 .filter(user -> !user.getId().equals(myId))
                 .findFirst()
-                .map(User::getNickname)
+                .map(UserDisplay::resolveNickname)
                 .orElse("알 수 없는 사용자");
     }
 
