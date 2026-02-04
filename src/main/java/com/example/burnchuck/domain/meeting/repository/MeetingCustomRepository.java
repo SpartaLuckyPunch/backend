@@ -22,6 +22,8 @@ public interface MeetingCustomRepository {
 
     Page<MeetingSummaryWithStatusResponse> findHostedMeetings(Long userId, Pageable pageable);
 
+    List<Meeting> findActiveHostedMeetings(Long userId);
+
     List<Meeting> findActivateMeetingsForNotification(LocalDateTime startDate, LocalDateTime endDate);
 
     List<MeetingMapPointResponse> findMeetingPointList(MeetingMapSearchRequest searchRequest, BoundingBox boundingBox, List<Long> meetingIdList);
