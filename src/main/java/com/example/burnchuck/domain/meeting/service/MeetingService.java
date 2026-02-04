@@ -215,10 +215,14 @@ public class MeetingService {
 
         String ipAddress = ClientInfoExtractor.extractIpAddress(httpServletRequest);
 
-        meetingCacheService.increaseViewCount(ipAddress, meetingId);
-        Long viewCount = meetingCacheService.getViewCount(meetingId).longValue();
+        try {
+            meetingCacheService.increaseViewCount(ipAddress, meetingId);
+            Long viewCount = meetingCacheService.getViewCount(meetingId).longValue();
 
-        meetingDetailResponse.increaseViews(viewCount);
+            meetingDetailResponse.increaseViews(viewCount);
+        } catch (RedisException | RedisConnectionFailureException e) {
+            log.error("Redis 예외 발생: {}", e.getMessage());
+        }
 
         return meetingDetailResponse;
     }
