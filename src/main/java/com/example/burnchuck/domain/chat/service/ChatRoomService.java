@@ -97,8 +97,7 @@ public class ChatRoomService {
      */
     @Transactional
     public void joinGroupChatRoom(Long meetingId, User user) {
-        ChatRoom chatRoom = chatRoomRepository.findByMeetingId(meetingId)
-                .orElseThrow(() -> new CustomException(CHAT_ROOM_NOT_FOUND));
+        ChatRoom chatRoom = chatRoomRepository.findChatRoomByMeetingId(meetingId);
 
         boolean isAlreadyMember = chatRoomUserRepository.existsByChatRoomAndUser(chatRoom, user);
         if (isAlreadyMember) {
@@ -150,7 +149,7 @@ public class ChatRoomService {
      */
     @Transactional(readOnly = true)
     public Slice<ChatMessageResponse> getChatMessages(Long roomId, Pageable pageable) {
-        chatRoomRepository.findById(roomId).orElseThrow(() -> new CustomException(CHAT_ROOM_NOT_FOUND));
+        chatRoomRepository.findChatRoomById(roomId);
 
         return chatMessageRepository.findByRoomIdOrderByCreatedDatetimeDesc(roomId, pageable)
                 .map(ChatMessageResponse::from);
@@ -163,8 +162,7 @@ public class ChatRoomService {
     public void leaveChatRoom(AuthUser authUser, Long roomId) {
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        ChatRoomUser chatRoomUser = chatRoomUserRepository.findByChatRoomIdAndUserId(roomId, user.getId())
-                .orElseThrow(() -> new CustomException(CHAT_USER_NOT_FOUND));
+        ChatRoomUser chatRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, user.getId());
 
         ChatRoom room = chatRoomUser.getChatRoom();
 
@@ -196,8 +194,7 @@ public class ChatRoomService {
      */
     @Transactional
     public void updateRoomName(AuthUser authUser, Long roomId, String newName) {
-        ChatRoomUser chatRoomUser = chatRoomUserRepository.findByChatRoomIdAndUserId(roomId, authUser.getId())
-                .orElseThrow(() -> new CustomException(CHAT_USER_NOT_FOUND));
+        ChatRoomUser chatRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, authUser.getId());
 
         chatRoomUser.updateCustomName(newName);
     }
@@ -209,8 +206,7 @@ public class ChatRoomService {
     public ChatRoomDetailResponse getChatRoomDetail(AuthUser authUser, Long roomId) {
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        ChatRoomUser myRoomUser = chatRoomUserRepository.findByChatRoomIdAndUserId(roomId, user.getId())
-                .orElseThrow(() -> new CustomException(CHAT_USER_NOT_FOUND));
+        ChatRoomUser myRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, user.getId());
 
         ChatRoom room = myRoomUser.getChatRoom();
 

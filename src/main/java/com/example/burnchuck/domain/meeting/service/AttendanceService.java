@@ -23,8 +23,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.example.burnchuck.common.enums.ErrorCode.CHAT_ROOM_NOT_FOUND;
-
 @Service
 @RequiredArgsConstructor
 public class AttendanceService {
@@ -94,8 +92,7 @@ public class AttendanceService {
 
         userMeetingRepository.delete(userMeeting);
 
-        ChatRoom chatRoom = chatRoomRepository.findByMeetingId(meetingId)
-                .orElseThrow(() -> new CustomException(CHAT_ROOM_NOT_FOUND));
+        ChatRoom chatRoom = chatRoomRepository.findChatRoomByMeetingId(meetingId);
 
         chatRoomService.leaveChatRoom(authUser, chatRoom.getId());
 
