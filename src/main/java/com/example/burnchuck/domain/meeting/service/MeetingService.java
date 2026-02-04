@@ -16,6 +16,7 @@ import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.ClientInfoExtractor;
+import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
@@ -68,11 +69,13 @@ public class MeetingService {
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
     private final AddressRepository addressRepository;
+
     private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
     private final MeetingCacheService meetingCacheService;
-    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     private final ChatRoomService chatRoomService;
+
+    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     // 서울 광화문 위치
     private final Double DEFAULT_LATITUDE = 37.57;
@@ -320,15 +323,15 @@ public class MeetingService {
             .filter(userMeeting -> !userMeeting.isHost())
             .map(userMeeting -> new AttendeeResponse(
                 userMeeting.getUser().getId(),
-                userMeeting.getUser().getProfileImgUrl(),
-                userMeeting.getUser().getNickname()
+                UserDisplay.resolveProfileImg(userMeeting.getUser()),
+                UserDisplay.resolveNickname(userMeeting.getUser())
             ))
             .toList();
 
         return new MeetingMemberResponse(
             host.getUser().getId(),
-            host.getUser().getProfileImgUrl(),
-            host.getUser().getNickname(),
+            UserDisplay.resolveProfileImg(host.getUser()),
+            UserDisplay.resolveNickname(host.getUser()),
             attendees
         );
     }

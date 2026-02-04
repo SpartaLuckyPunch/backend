@@ -1,6 +1,7 @@
 package com.example.burnchuck.domain.chat.dto.dto;
 
 import com.example.burnchuck.common.entity.User;
+import com.example.burnchuck.common.utils.UserDisplay;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -14,8 +15,8 @@ public class ChatRoomMemberDto {
     public static ChatRoomMemberDto from(User user) {
         return new ChatRoomMemberDto(
                 user.getId(),
-                user.getNickname(),
-                user.getProfileImgUrl()
+                UserDisplay.resolveNickname(user),
+                UserDisplay.resolveProfileImg(user)
         );
     }
 }
