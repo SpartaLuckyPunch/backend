@@ -66,11 +66,13 @@ public class MeetingService {
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
     private final AddressRepository addressRepository;
+
     private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
     private final MeetingCacheService meetingCacheService;
-    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     private final ChatRoomService chatRoomService;
+
+    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     // 서울 광화문 위치
     private final Double DEFAULT_LATITUDE = 37.57;

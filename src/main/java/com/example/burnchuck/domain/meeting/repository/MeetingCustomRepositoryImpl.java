@@ -224,6 +224,23 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     }
 
     /**
+     * 주최한 모임 중 COMPLETED 되지 않은 모임 조회
+     */
+    @Override
+    public List<Meeting> findActiveHostedMeetings(Long userId) {
+        return queryFactory
+            .select(userMeeting.meeting)
+            .from(userMeeting)
+            .join(userMeeting.meeting, meeting)
+            .where(
+                userMeeting.user.id.eq(userId),
+                userMeeting.meetingRole.eq(MeetingRole.HOST),
+                meeting.status.ne(MeetingStatus.COMPLETED)
+            )
+            .fetch();
+    }
+
+    /**
      * TaskSchedule 복구 대상 모임 조회
      */
     @Override
