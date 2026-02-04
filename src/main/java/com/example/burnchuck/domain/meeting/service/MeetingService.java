@@ -15,6 +15,7 @@ import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
@@ -311,15 +312,15 @@ public class MeetingService {
             .filter(userMeeting -> !userMeeting.isHost())
             .map(userMeeting -> new AttendeeResponse(
                 userMeeting.getUser().getId(),
-                userMeeting.getUser().getProfileImgUrl(),
-                userMeeting.getUser().getNickname()
+                UserDisplay.resolveProfileImg(userMeeting.getUser()),
+                UserDisplay.resolveNickname(userMeeting.getUser())
             ))
             .toList();
 
         return new MeetingMemberResponse(
             host.getUser().getId(),
-            host.getUser().getProfileImgUrl(),
-            host.getUser().getNickname(),
+            UserDisplay.resolveProfileImg(host.getUser()),
+            UserDisplay.resolveNickname(host.getUser()),
             attendees
         );
     }
