@@ -1,11 +1,11 @@
 package com.example.burnchuck.domain.meeting.dto.response;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class MeetingDetailResponse {
 
     private final Long meetingId;
@@ -20,5 +20,9 @@ public class MeetingDetailResponse {
     private final int currentAttendees;
     private final String meetingStatus;
     private final long likes;
-    private final long views;
+    private long views;
+
+    public void increaseViews(long views) {
+        this.views += views;
+    }
 }

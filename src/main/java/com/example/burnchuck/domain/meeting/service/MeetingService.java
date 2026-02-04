@@ -15,6 +15,7 @@ import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.common.utils.ClientInfoExtractor;
 import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
@@ -40,6 +41,7 @@ import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import io.lettuce.core.RedisException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -208,15 +210,24 @@ public class MeetingService {
     /**
      * 모임 단건 조회
      */
-    @Transactional
-    public MeetingDetailResponse getMeetingDetail(Long meetingId) {
+    @Transactional(readOnly = true)
+    public MeetingDetailResponse getMeetingDetail(Long meetingId, HttpServletRequest httpServletRequest) {
 
-        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+        MeetingDetailResponse meetingDetailResponse = meetingRepository.findMeetingDetail(meetingId)
+            .orElseThrow(() -> new CustomException(MEETING_NOT_FOUND));
 
-        meeting.increaseViews();
+        String ipAddress = ClientInfoExtractor.extractIpAddress(httpServletRequest);
 
-        return meetingRepository.findMeetingDetail(meetingId)
-                .orElseThrow(() -> new CustomException(MEETING_NOT_FOUND));
+        try {
+            meetingCacheService.increaseViewCount(ipAddress, meetingId);
+            Long viewCount = meetingCacheService.getViewCount(meetingId).longValue();
+
+            meetingDetailResponse.increaseViews(viewCount);
+        } catch (RedisException | RedisConnectionFailureException e) {
+            log.error("Redis 예외 발생: {}", e.getMessage());
+        }
+
+        return meetingDetailResponse;
     }
 
     /**
