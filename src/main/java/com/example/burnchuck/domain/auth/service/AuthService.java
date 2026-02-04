@@ -2,19 +2,24 @@ package com.example.burnchuck.domain.auth.service;
 
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.User;
+import com.example.burnchuck.common.entity.UserRefresh;
 import com.example.burnchuck.common.enums.ErrorCode;
+import com.example.burnchuck.common.enums.Gender;
 import com.example.burnchuck.common.enums.UserRole;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.JwtUtil;
-import com.example.burnchuck.domain.auth.dto.request.*;
-import com.example.burnchuck.domain.auth.dto.response.*;
-import com.example.burnchuck.common.enums.Gender;
+import com.example.burnchuck.domain.auth.dto.request.AuthLoginRequest;
+import com.example.burnchuck.domain.auth.dto.request.AuthReissueTokenRequest;
+import com.example.burnchuck.domain.auth.dto.request.AuthSignupRequest;
+import com.example.burnchuck.domain.auth.dto.response.AuthTokenResponse;
+import com.example.burnchuck.domain.auth.repository.UserRefreshRepository;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -22,14 +27,39 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
+    private final UserRefreshRepository userRefreshRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
     /**
      * 회원가입
      */
+    public AuthTokenResponse signup(AuthSignupRequest request) {
+
+        User user = createUser(request);
+
+        return generateToken(user);
+    }
+
+    /**
+     * 로그인
+     */
     @Transactional
-    public AuthSignupResponse signup(AuthSignupRequest request) {
+    public AuthTokenResponse login(AuthLoginRequest request) {
+
+        User user = userRepository.findActivateUserByEmail(request.getEmail());
+
+        boolean matches = passwordEncoder.matches(request.getPassword(), user.getPassword());
+
+        if (!matches) {
+            throw new CustomException(ErrorCode.INCORRECT_PASSWORD);
+        }
+
+        return generateToken(user);
+    }
+
+    @Transactional
+    public User createUser(AuthSignupRequest request) {
 
         String email = request.getEmail();
         String nickname = request.getNickname();
@@ -58,27 +88,63 @@ public class AuthService {
 
         userRepository.save(user);
 
-        String token = jwtUtil.generateToken(user.getId(), email, nickname, user.getRole());
-
-        return new AuthSignupResponse(token);
+        return user;
     }
 
-    /**
-     * 로그인
-     */
     @Transactional
-    public AuthLoginResponse login(AuthLoginRequest request) {
+    public AuthTokenResponse generateToken(User user) {
 
-        User user = userRepository.findActivateUserByEmail(request.getEmail());
+        Long userId = user.getId();
 
-        boolean matches = passwordEncoder.matches(request.getPassword(), user.getPassword());
+        String accessToken = jwtUtil.generateAccessToken(userId, user.getEmail(), user.getNickname(), user.getRole());
+        String refreshToken = jwtUtil.generateRefreshToken(userId);
 
-        if (!matches) {
-            throw new CustomException(ErrorCode.INCORRECT_PASSWORD);
+        boolean exist = userRefreshRepository.existsByUserId(userId);
+
+        UserRefresh userRefresh;
+
+        if (exist) {
+            userRefresh = userRefreshRepository.findUserRefreshByUserId(userId);
+            userRefresh.updateRefreshToken(refreshToken);
+        } else {
+            userRefresh = new UserRefresh(user, refreshToken);
         }
 
-        String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getNickname(), user.getRole());
+        userRefreshRepository.save(userRefresh);
 
-        return new AuthLoginResponse(token);
+        return new AuthTokenResponse(accessToken, refreshToken);
+    }
+
+    @Transactional
+    public AuthTokenResponse reissueToken(AuthReissueTokenRequest request) {
+
+        String refreshToken = request.getRefreshToken();
+
+        if (jwtUtil.isExpired(refreshToken)) {
+            throw new CustomException(ErrorCode.EXPIRED_TOKEN);
+        }
+
+        if (!jwtUtil.validateToken(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+        Long userId = jwtUtil.extractId(refreshToken);
+
+        UserRefresh userRefresh = userRefreshRepository.findUserRefreshByUserId(userId);
+
+        if (!ObjectUtils.nullSafeEquals(refreshToken, userRefresh.getRefreshToken())) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+        User user = userRefresh.getUser();
+
+        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), user.getNickname(), user.getRole());
+
+        if (jwtUtil.expireInTwoDays(refreshToken)) {
+            refreshToken = jwtUtil.generateRefreshToken(userId);
+            userRefresh.updateRefreshToken(refreshToken);
+        }
+
+        return new AuthTokenResponse(accessToken, refreshToken);
     }
 }

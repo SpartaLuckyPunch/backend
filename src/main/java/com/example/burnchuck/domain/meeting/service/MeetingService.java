@@ -72,6 +72,10 @@ public class MeetingService {
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     private final ChatRoomService chatRoomService;
 
+    // 서울 광화문 위치
+    private final Double DEFAULT_LATITUDE = 37.57;
+    private final Double DEFAULT_LONGITUDE = 126.98;
+
     /**
      * 모임 생성과 알림 생성 메서드를 호출하는 메서드
      */
@@ -96,7 +100,7 @@ public class MeetingService {
     @Transactional
     public Meeting createMeeting(User user, MeetingCreateRequest request) {
 
-        Category category = categoryRepository.findCategoryById(request.getCategoryId());
+        Category category = categoryRepository.findCategoryByCode(request.getCategoryCode());
 
         Point point = createPoint(request.getLatitude(), request.getLongitude());
 
@@ -127,8 +131,12 @@ public class MeetingService {
             LocationFilterRequest locationRequest,
             Pageable pageable
     ) {
-        User user = userRepository.findActivateUserWithAddress(authUser.getId());
-        Location location = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+        Location location = new Location(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+
+        if (authUser != null) {
+            User user = userRepository.findActivateUserWithAddress(authUser.getId());
+            location = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+        }
 
         if (locationRequest.notNull()) {
             Address address = addressRepository.findAddressByAddressInfo(locationRequest.getProvince(), locationRequest.getCity(), locationRequest.getDistrict());
@@ -223,13 +231,15 @@ public class MeetingService {
             throw new CustomException(ACCESS_DENIED);
         }
 
-        Category category = categoryRepository.findCategoryById(request.getCategoryId());
+        Category category = categoryRepository.findCategoryByCode(request.getCategoryCode());
 
         Point point = createPoint(request.getLatitude(), request.getLongitude());
 
-        meeting.updateMeeting(request, category, point);
+        if (!ObjectUtils.nullSafeEquals(meeting.getPoint(), point)) {
+            meetingCacheService.saveMeetingLocation(meeting);
+        }
 
-        meetingCacheService.saveMeetingLocation(meeting);
+        meeting.updateMeeting(request, category, point);
 
         eventPublisherService.publishMeetingUpdatedEvent(meeting);
 

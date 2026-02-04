@@ -1,12 +1,17 @@
 package com.example.burnchuck.domain.meeting.dto.request;
 
-import jakarta.validation.constraints.*;
+import static com.example.burnchuck.common.enums.ValidationMessage.*;
+
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
-
-import static com.example.burnchuck.common.enums.ValidationMessage.*;
 
 @Getter
 @AllArgsConstructor
@@ -47,6 +52,6 @@ public class MeetingCreateRequest {
     @Future(message = MEETING_DATETIME_FUTURE)
     private LocalDateTime meetingDateTime;
 
-    @NotNull(message = MEETING_CATEGORY_NOT_NULL)
-    private Long categoryId;
+    @NotBlank(message = MEETING_CATEGORY_NOT_NULL)
+    private String categoryCode;
 }
