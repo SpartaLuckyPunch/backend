@@ -42,20 +42,33 @@ public class UserService {
     private final S3UrlGenerator s3UrlGenerator;
 
     /**
-     * 프로필 사진 등록
+     * 프로필 이미지 업로드 Presigned URL 생성
      */
-    public GetS3Url getUploadProfileImgUrl(AuthUser authUser) {
+    public GetS3Url getUploadProfileImgUrl(AuthUser authUser, String filename) {
 
         String key = "profile/" + authUser.getId() + "/" + UUID.randomUUID();
-        return s3UrlGenerator.generateUploadImgUrl(key);
+        return s3UrlGenerator.generateUploadImgUrl(filename, key);
     }
 
     /**
-     * 프로필 사진 조회
+     * 프로필 이미지 등록
      */
-    public GetS3Url getViewProfileImgUrl(String key) {
+    public GetS3Url getViewProfileImgUrl(AuthUser authUser, String key) {
 
-        return s3UrlGenerator.generateViewImgUrl(key);
+        s3UrlGenerator.validateKeyOwnership(authUser.getId(), key);
+
+        if (!s3UrlGenerator.isFileExists(key)) {
+            return null;
+        }
+
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        GetS3Url result = s3UrlGenerator.generateViewImgUrl(key);
+
+        user.uploadProfileImg(result.getPreSignedUrl());
+        userRepository.saveAndFlush(user);
+
+        return result;
     }
 
     /**

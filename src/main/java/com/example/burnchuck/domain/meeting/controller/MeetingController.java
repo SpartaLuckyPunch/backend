@@ -42,24 +42,28 @@ public class MeetingController {
     private final MeetingService meetingService;
 
     /**
-     * 모임 이미지 등록
+     * 모임 이미지 업로드 Presigned URL 생성
      */
-    @GetMapping("/profileImg")
-    public ResponseEntity<CommonResponse<GetS3Url>> getUploadImgUrl() {
-        GetS3Url response = meetingService.getUploadMeetingImgUrl();
+    @GetMapping("/img")
+    public ResponseEntity<CommonResponse<GetS3Url>> getUploadImgUrl(
+            @RequestParam String filename
+    ) {
+        GetS3Url response = meetingService.getUploadMeetingImgUrl(filename);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_IMG_UPLOAD_LINK_SUCCESS, response));
     }
 
     /**
-     * 모임 이미지 조회
+     * 모임 이미지 등록
      */
-    @GetMapping("/profileImg/get")
+    @PatchMapping("/img/{meetingId}")
     public ResponseEntity<CommonResponse<GetS3Url>> getViewImgUrl(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long meetingId,
             @RequestParam String key
     ) {
-        GetS3Url response = meetingService.getViewMeetingImgUrl(key);
+        GetS3Url response = meetingService.getViewMeetingImgUrl(authUser, meetingId, key);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_IMG_VIEW_LINK_SUCCESS, response));

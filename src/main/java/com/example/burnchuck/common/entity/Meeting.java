@@ -38,7 +38,6 @@ public class Meeting extends BaseEntity {
     @Column(nullable = false)
     private String description;
 
-    @Column(nullable = false)
     private String imgUrl;
 
     @Column(nullable = false)
@@ -73,7 +72,6 @@ public class Meeting extends BaseEntity {
     public Meeting(MeetingCreateRequest request, Category category, Point point) {
         this.title = request.getTitle();
         this.description = request.getDescription();
-        this.imgUrl = request.getImgUrl();
         this.location = request.getLocation();
         this.latitude = request.getLatitude();
         this.longitude = request.getLongitude();
@@ -88,7 +86,6 @@ public class Meeting extends BaseEntity {
     public void updateMeeting(MeetingUpdateRequest request, Category category, Point point) {
         this.title = request.getTitle();
         this.description = request.getDescription();
-        this.imgUrl = request.getImgUrl();
         this.location = request.getLocation();
         this.latitude = request.getLatitude();
         this.longitude = request.getLongitude();
@@ -104,6 +101,10 @@ public class Meeting extends BaseEntity {
 
     public void updateStatus(MeetingStatus status) {
         this.status = status;
+    }
+
+    public void uploadMeetingImg(String imgUrl) {
+        this.imgUrl = imgUrl;
     }
 
     public boolean isOpen() {

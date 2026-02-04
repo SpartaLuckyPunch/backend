@@ -29,29 +29,35 @@ public class UserController {
     private final UserService userService;
 
     /**
-     * 프로필 이미지 등록
+     * 프로필 이미지 업로드 Presigned URL 생성
      */
     @GetMapping("/profileImg")
     public ResponseEntity<CommonResponse<GetS3Url>> getUploadImgUrl(
-            @AuthenticationPrincipal AuthUser authUser
+            @AuthenticationPrincipal AuthUser authUser,
+            @RequestParam String filename
     ) {
-        GetS3Url response = userService.getUploadProfileImgUrl(authUser);
+        GetS3Url response = userService.getUploadProfileImgUrl(authUser, filename);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(USER_PROFILE_IMG_UPLOAD_LINK_SUCCESS, response));
+                .body(CommonResponse.success(USER_UPLOAD_PROFILE_IMG_LINK_SUCCESS, response));
     }
 
     /**
-     * 프로필 이미지 조회
+     * 프로필 이미지 등록
      */
-    @GetMapping("/profileImg/get")
+    @PatchMapping("/profileImg")
     public ResponseEntity<CommonResponse<GetS3Url>> getViewImgUrl(
+            @AuthenticationPrincipal AuthUser authUser,
             @RequestParam String key
     ) {
-        GetS3Url response = userService.getViewProfileImgUrl(key);
+        GetS3Url response = userService.getViewProfileImgUrl(authUser, key);
+
+        if (response == null)
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(CommonResponse.success(USER_PROFILE_NO_CHANGE, null));
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(USER_PROFILE_IMG_VIEW_LINK_SUCCESS, response));
+                .body(CommonResponse.success(USER_UPDATE_PROFILE_IMG_SUCCESS, response));
     }
 
     /**

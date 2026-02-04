@@ -82,20 +82,38 @@ public class MeetingService {
     private final Double DEFAULT_LONGITUDE = 126.98;
 
     /**
-     * 모임 사진 등록
+     * 모임 이미지 업로드 Presigned URL 생성
      */
-    public GetS3Url getUploadMeetingImgUrl() {
+    public GetS3Url getUploadMeetingImgUrl(String filename) {
 
         String key = "meeting/" + UUID.randomUUID();
-        return s3UrlGenerator.generateUploadImgUrl(key);
+        return s3UrlGenerator.generateUploadImgUrl(filename, key);
     }
 
     /**
-     * 모임 사진 조회
+     * 모임 이미지 등록
      */
-    public GetS3Url getViewMeetingImgUrl(String key) {
+    public GetS3Url getViewMeetingImgUrl(AuthUser authUser, Long meetingId, String key) {
 
-        return s3UrlGenerator.generateViewImgUrl(key);
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+
+        UserMeeting meetingHost = userMeetingRepository.findHostByMeeting(meeting);
+        if (!ObjectUtils.nullSafeEquals(user.getId(), meetingHost.getUser().getId())) {
+            throw new CustomException(ACCESS_DENIED);
+        }
+
+        if (!s3UrlGenerator.isFileExists(key)) {
+            return null;
+        }
+
+        GetS3Url result = s3UrlGenerator.generateViewImgUrl(key);
+
+        meeting.uploadMeetingImg(result.getPreSignedUrl());
+        meetingRepository.saveAndFlush(meeting);
+
+        return result;
     }
 
     /**

@@ -7,7 +7,6 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -24,13 +23,6 @@ public class MeetingCreateRequest {
     @NotBlank(message = MEETING_DESCRIPTION_NOT_BLANK)
     @Size(max = 500, message = MEETING_DESCRIPTION_SIZE)
     private String description;
-
-    @NotBlank(message = MEETING_IMG_URL_NOT_BLANK)
-    @Pattern(
-            regexp = "^(http|https)://.*$",
-            message = MEETING_IMG_URL_FORMAT
-    )
-    private String imgUrl;
 
     @NotBlank(message = MEETING_LOCATION_NOT_BLANK)
     private String location;
