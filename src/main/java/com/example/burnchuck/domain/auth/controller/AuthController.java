@@ -5,9 +5,11 @@ import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_REISSUE_SUC
 import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_SIGNUP_SUCCESS;
 
 import com.example.burnchuck.common.dto.CommonResponse;
+import com.example.burnchuck.common.enums.Provider;
 import com.example.burnchuck.domain.auth.dto.request.AuthLoginRequest;
 import com.example.burnchuck.domain.auth.dto.request.AuthReissueTokenRequest;
 import com.example.burnchuck.domain.auth.dto.request.AuthSignupRequest;
+import com.example.burnchuck.domain.auth.dto.request.KakaoLoginRequest;
 import com.example.burnchuck.domain.auth.dto.response.AuthTokenResponse;
 import com.example.burnchuck.domain.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -78,4 +80,26 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(AUTH_REISSUE_SUCCESS, response));
     }
+
+    /**
+     * 카카오 소셜 로그인
+     */
+    @Operation(
+            summary = "카카오 로그인",
+            description = """
+                    카카오 액세스 토큰을 이용하여 로그인을 진행합니다. 
+                    신규 사용자의 경우 자동으로 회원가입이 진행됩니다.
+                    """
+    )
+    @PostMapping("/kakao")
+    public ResponseEntity<CommonResponse<AuthTokenResponse>> kakaoLogin(
+            @Valid @RequestBody KakaoLoginRequest request
+    ) {
+        AuthTokenResponse response = authService.socialLogin(request.getAccessToken(), Provider.KAKAO);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(AUTH_LOGIN_SUCCESS, response));
+    }
+
 }
+

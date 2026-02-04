@@ -13,6 +13,7 @@ import com.example.burnchuck.domain.auth.dto.request.AuthLoginRequest;
 import com.example.burnchuck.domain.auth.dto.request.AuthReissueTokenRequest;
 import com.example.burnchuck.domain.auth.dto.request.AuthSignupRequest;
 import com.example.burnchuck.domain.auth.dto.response.AuthTokenResponse;
+import com.example.burnchuck.domain.auth.dto.response.KakaoUserInfoResponse;
 import com.example.burnchuck.domain.auth.repository.UserRefreshRepository;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
@@ -33,7 +34,7 @@ public class AuthService {
     private final UserRefreshRepository userRefreshRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-
+    private final KakaoService kakaoService;
     /**
      * 회원가입
      */
@@ -156,7 +157,13 @@ public class AuthService {
      * 소셜로그인/회원가입 통합 처리 
      */
     @Transactional
-    public AuthTokenResponse socialLogin(String email, String nickname, Provider provider, String providerId) {
+    public AuthTokenResponse socialLogin(String accessToken, Provider provider) {
+
+        KakaoUserInfoResponse userInfo = kakaoService.getKakaoUserInfo(accessToken);
+
+        String email = userInfo.getEmail();
+        String nickname = userInfo.getNickname();
+        String providerId = String.valueOf(userInfo.getId());
 
         Optional<User> optionalUser = userRepository.findByProviderAndProviderIdAndIsDeletedFalse(provider, providerId);
 
