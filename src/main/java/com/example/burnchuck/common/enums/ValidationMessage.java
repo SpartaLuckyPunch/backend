@@ -16,6 +16,7 @@ public class ValidationMessage {
     public static final String CITY_NOT_BLANK = "시/군/구는 필수입니다.";
     public static final String GENDER_NOT_BLANK = "성별은 필수입니다.";
     public static final String GENDER_PATTERN = "성별은 '남' 또는 '여'만 입력 가능합니다.";
+    public static final String REFRESH_TOKEN_NOT_BLANK = "Refresh 토큰은 필수입니다.";
 
     // --- Review 관련 ---
     public static final String RATING_MIN = "별점은 최소 1점 이상이어야 합니다.";

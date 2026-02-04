@@ -1,13 +1,12 @@
 package com.example.burnchuck.common.filter;
 
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.UserRole;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.jwt.JwtAuthenticationToken;
 import com.example.burnchuck.common.utils.JwtUtil;
-import com.example.burnchuck.common.dto.AuthUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -44,6 +43,12 @@ public class JwtFilter extends OncePerRequestFilter {
         String jwt = authorizationHeader.substring(7);
 
         if (!jwtUtil.validateToken(jwt)) {
+            handleCustomException(response, new CustomException(ErrorCode.INVALID_TOKEN));
+            return;
+        }
+
+        // refresh 토큰으로 접근하는 경우
+        if (jwtUtil.isRefreshToken(jwt)) {
             handleCustomException(response, new CustomException(ErrorCode.INVALID_TOKEN));
             return;
         }
