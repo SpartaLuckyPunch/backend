@@ -1,6 +1,7 @@
 package com.example.burnchuck.domain.meeting.service;
 
 import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.common.entity.ChatRoom;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
@@ -9,6 +10,7 @@ import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.NotificationType;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.domain.chat.repository.ChatRoomRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.response.AttendanceGetMeetingListResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
@@ -23,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.example.burnchuck.common.enums.ErrorCode.CHAT_ROOM_NOT_FOUND;
+
 @Service
 @RequiredArgsConstructor
 public class AttendanceService {
@@ -32,6 +36,7 @@ public class AttendanceService {
     private final MeetingRepository meetingRepository;
     private final NotificationService notificationService;
     private final ChatRoomService chatRoomService;
+    private final ChatRoomRepository chatRoomRepository;
 
     /**
      * 모임 참여 신청
@@ -92,7 +97,10 @@ public class AttendanceService {
 
         userMeetingRepository.delete(userMeeting);
 
-        chatRoomService.leaveChatRoom(authUser, meetingId);
+        ChatRoom chatRoom = chatRoomRepository.findByMeetingId(meetingId)
+                .orElseThrow(() -> new CustomException(CHAT_ROOM_NOT_FOUND));
+
+        chatRoomService.leaveChatRoom(authUser, chatRoom.getId());
 
         if (meeting.isClosed()) {
             meeting.updateStatus(MeetingStatus.OPEN);
