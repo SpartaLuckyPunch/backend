@@ -6,7 +6,9 @@ import com.example.burnchuck.common.utils.GeometryUtil;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import io.lettuce.core.RedisException;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation;
 import org.springframework.data.redis.connection.RedisGeoCommands.GeoSearchCommandArgs;
 import org.springframework.data.redis.core.GeoOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.data.redis.domain.geo.BoundingBox;
 import org.springframework.data.redis.domain.geo.GeoReference;
 import org.springframework.stereotype.Service;
@@ -160,5 +163,16 @@ public class MeetingCacheService {
         Double viewCount = redisTemplate.opsForZSet().score(key, String.valueOf(meetingId));
 
         return viewCount == null ? 0 : viewCount;
+    }
+
+    public Set<TypedTuple<String>> getAllViewList(LocalDate localDate) {
+
+        String key = VIEW_COUNT_KEY + localDate;
+
+        if (!redisTemplate.hasKey(key)) {
+            return Collections.emptySet();
+        }
+
+        return redisTemplate.opsForZSet().rangeWithScores(key, 0, -1);
     }
 }
