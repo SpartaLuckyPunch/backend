@@ -109,7 +109,7 @@ public class ChatRoomService {
     public List<ChatRoomDto> getMyChatRooms(AuthUser authUser) {
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        List<ChatRoomUser> myRoomUsers = chatRoomUserRepository.findAllByUserId(user.getId());
+        List<ChatRoomUser> myRoomUsers = chatRoomUserRepository.findAllActiveByUserId(user.getId());
 
         return myRoomUsers.stream()
                 .map(myRoomUser -> convertToChatRoomDto(myRoomUser, user.getId()))
