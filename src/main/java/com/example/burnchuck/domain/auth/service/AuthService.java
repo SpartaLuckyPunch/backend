@@ -160,9 +160,6 @@ public class AuthService {
 
         Optional<User> optionalUser = userRepository.findByProviderAndProviderIdAndIsDeletedFalse(provider, providerId);
 
-        Address defaultAddress = addressRepository.findById(1L)
-                .orElseThrow(() -> new CustomException(ErrorCode.ADDRESS_NOT_FOUND));
-
         User user;
         if (optionalUser.isEmpty()) {
             // 유저 존재 X -> 신규 소셜 유저 생성
@@ -172,7 +169,7 @@ public class AuthService {
                     nickname,
                     null,
                     false,
-                    defaultAddress,
+                    null,
                     UserRole.USER,
                     provider,
                     providerId

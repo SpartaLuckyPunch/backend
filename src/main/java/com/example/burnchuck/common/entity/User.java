@@ -38,7 +38,7 @@ public class User extends BaseEntity {
     @Column
     private String profileImgUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id")
     private Address address;
 
