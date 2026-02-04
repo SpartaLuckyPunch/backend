@@ -2,8 +2,6 @@ package com.example.burnchuck.domain.chat.service;
 
 import static com.example.burnchuck.common.enums.ErrorCode.CANNOT_CHAT_WITH_SELF;
 import static com.example.burnchuck.common.enums.ErrorCode.CANNOT_LEAVE_CLOSED_MEETING;
-import static com.example.burnchuck.common.enums.ErrorCode.CHAT_ROOM_NOT_FOUND;
-import static com.example.burnchuck.common.enums.ErrorCode.CHAT_USER_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.entity.ChatMessage;
@@ -131,9 +129,19 @@ public class ChatRoomService {
 
         if (roomName == null) {
             roomName = room.getName();
-            if (room.getType() == RoomType.PRIVATE) {
-                roomName = getPartnerName(room, myUserId);
-            }
+        }
+
+        String chatroomImg = null;
+
+        if (room.isPrivate()) {
+            User user = getPartner(room, myUserId);
+            roomName = UserDisplay.resolveNickname(user);
+            chatroomImg = UserDisplay.resolveProfileImg(user);
+        }
+
+        if (room.isGroup()){
+            Meeting meeting = meetingRepository.findMeetingById(room.getMeetingId());
+            chatroomImg = meeting.getImgUrl();
         }
 
         ChatMessage lastMsg = chatMessageRepository.findFirstByRoomIdOrderByCreatedDatetimeDesc(room.getId())
@@ -141,7 +149,7 @@ public class ChatRoomService {
 
         int memberCount = chatRoomUserRepository.countByChatRoomId(room.getId());
 
-        return ChatRoomDto.of(room, roomName, lastMsg, memberCount);
+        return ChatRoomDto.of(room, roomName, lastMsg, chatroomImg, memberCount);
     }
 
     /**
@@ -166,7 +174,7 @@ public class ChatRoomService {
 
         ChatRoom room = chatRoomUser.getChatRoom();
 
-        if (room.getType() == RoomType.GROUP) {
+        if (room.isGroup()) {
             Meeting meeting = meetingRepository.findActivateMeetingById(room.getMeetingId());
 
             if (meeting.getStatus() == MeetingStatus.CLOSED) {
@@ -178,15 +186,14 @@ public class ChatRoomService {
     }
 
     /**
-     * 상대방 이름 조회
+     * 상대 유저 조회
      */
-    private String getPartnerName(ChatRoom room, Long myId) {
+    private User getPartner(ChatRoom room, Long myId) {
         return chatRoomUserRepository.findByChatRoomId(room.getId()).stream()
                 .map(ChatRoomUser::getUser)
                 .filter(user -> !user.getId().equals(myId))
                 .findFirst()
-                .map(UserDisplay::resolveNickname)
-                .orElse("알 수 없는 사용자");
+                .orElse(null);
     }
 
     /**
@@ -213,9 +220,11 @@ public class ChatRoomService {
         String roomName = myRoomUser.getCustomRoomName();
         if (roomName == null) {
             roomName = room.getName();
-            if (room.getType() == RoomType.PRIVATE) {
-                roomName = getPartnerName(room, user.getId());
-            }
+        }
+
+        if (room.isPrivate()) {
+            User partner = getPartner(room, user.getId());
+            roomName = UserDisplay.resolveNickname(partner);
         }
 
         List<ChatRoomUser> roomUsers = chatRoomUserRepository.findByChatRoomId(roomId);
