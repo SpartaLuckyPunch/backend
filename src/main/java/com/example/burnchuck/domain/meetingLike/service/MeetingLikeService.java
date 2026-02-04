@@ -71,4 +71,17 @@ public class MeetingLikeService {
 
         return MeetingLikeCountResponse.of(likes);
     }
+
+    /**
+     *  모임 좋아요 여부 확인
+     */
+    @Transactional(readOnly = true)
+    public boolean checkLikeExistence(Long meetingId, AuthUser authUser) {
+
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+
+        return meetingLikeRepository.existsByUserAndMeeting(user, meeting);
+    }
 }
