@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import java.util.Optional; // 추가
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -160,6 +160,9 @@ public class AuthService {
 
         Optional<User> optionalUser = userRepository.findByProviderAndProviderIdAndIsDeletedFalse(provider, providerId);
 
+        Address defaultAddress = addressRepository.findById(1L)
+                .orElseThrow(() -> new CustomException(ErrorCode.ADDRESS_NOT_FOUND));
+
         User user;
         if (optionalUser.isEmpty()) {
             // 유저 존재 X -> 신규 소셜 유저 생성
@@ -169,7 +172,7 @@ public class AuthService {
                     nickname,
                     null,
                     false,
-                    null,
+                    defaultAddress,
                     UserRole.USER,
                     provider,
                     providerId
