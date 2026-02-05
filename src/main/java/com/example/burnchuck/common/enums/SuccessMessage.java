@@ -8,6 +8,7 @@ public enum SuccessMessage {
     // 인증
     AUTH_SIGNUP_SUCCESS("유저 회원가입 성공"),
     AUTH_LOGIN_SUCCESS("로그인 성공"),
+    AUTH_REISSUE_SUCCESS("Access 토큰 재발급 성공"),
 
     // 유저
     USER_UPDATE_PROFILE_SUCCESS("프로필 수정 성공"),
@@ -25,6 +26,7 @@ public enum SuccessMessage {
     FOLLOW_GET_SUCCESS("조회 성공"),
     FOLLOW_GET_FOLLOWING_SUCCESS("팔로잉 목록 조회 성공"),
     FOLLOW_GET_FOLLOWER_SUCCESS("팔로워 목록 조회 성공"),
+    FOLLOW_GET_EXISTENCE_SUCCESS("팔로잉 여부 조회 성공"),
 
     // 리뷰
     REVIEW_CREATE_SUCCESS("후기 등록 성공"),
@@ -38,6 +40,7 @@ public enum SuccessMessage {
     LIKE_CREATE_SUCCESS("좋아요 성공"),
     LIKE_CANCEL_SUCCESS("좋아요 취소 성공"),
     LIKE_COUNT_SUCCESS("좋아요 수 조회 성공"),
+    LIKE_GET_EXISTENCE_SUCCESS("좋아요 여부 조회 성공"),
 
     // 카테고리
     CATEGORY_GET_SUCCESS("카테고리 조회 성공"),

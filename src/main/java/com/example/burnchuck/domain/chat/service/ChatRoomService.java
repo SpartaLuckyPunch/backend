@@ -1,10 +1,18 @@
 package com.example.burnchuck.domain.chat.service;
 
+import static com.example.burnchuck.common.enums.ErrorCode.CANNOT_CHAT_WITH_SELF;
+import static com.example.burnchuck.common.enums.ErrorCode.CANNOT_LEAVE_CLOSED_MEETING;
+
 import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.common.entity.*;
+import com.example.burnchuck.common.entity.ChatMessage;
+import com.example.burnchuck.common.entity.ChatRoom;
+import com.example.burnchuck.common.entity.ChatRoomUser;
+import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.RoomType;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.domain.chat.dto.dto.ChatRoomCreationResult;
 import com.example.burnchuck.domain.chat.dto.dto.ChatRoomDto;
 import com.example.burnchuck.domain.chat.dto.dto.ChatRoomMemberDto;
@@ -15,16 +23,13 @@ import com.example.burnchuck.domain.chat.repository.ChatRoomRepository;
 import com.example.burnchuck.domain.chat.repository.ChatRoomUserRepository;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.example.burnchuck.common.enums.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -90,8 +95,7 @@ public class ChatRoomService {
      */
     @Transactional
     public void joinGroupChatRoom(Long meetingId, User user) {
-        ChatRoom chatRoom = chatRoomRepository.findByMeetingId(meetingId)
-                .orElseThrow(() -> new CustomException(CHAT_ROOM_NOT_FOUND));
+        ChatRoom chatRoom = chatRoomRepository.findChatRoomByMeetingId(meetingId);
 
         boolean isAlreadyMember = chatRoomUserRepository.existsByChatRoomAndUser(chatRoom, user);
         if (isAlreadyMember) {
@@ -109,7 +113,7 @@ public class ChatRoomService {
     public List<ChatRoomDto> getMyChatRooms(AuthUser authUser) {
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        List<ChatRoomUser> myRoomUsers = chatRoomUserRepository.findAllByUserId(user.getId());
+        List<ChatRoomUser> myRoomUsers = chatRoomUserRepository.findAllActiveByUserId(user.getId());
 
         return myRoomUsers.stream()
                 .map(myRoomUser -> convertToChatRoomDto(myRoomUser, user.getId()))
@@ -125,9 +129,19 @@ public class ChatRoomService {
 
         if (roomName == null) {
             roomName = room.getName();
-            if (room.getType() == RoomType.PRIVATE) {
-                roomName = getPartnerName(room, myUserId);
-            }
+        }
+
+        String chatroomImg = null;
+
+        if (room.isPrivate()) {
+            User user = getPartner(room, myUserId);
+            roomName = UserDisplay.resolveNickname(user);
+            chatroomImg = UserDisplay.resolveProfileImg(user);
+        }
+
+        if (room.isGroup()){
+            Meeting meeting = meetingRepository.findMeetingById(room.getMeetingId());
+            chatroomImg = meeting.getImgUrl();
         }
 
         ChatMessage lastMsg = chatMessageRepository.findFirstByRoomIdOrderByCreatedDatetimeDesc(room.getId())
@@ -135,7 +149,7 @@ public class ChatRoomService {
 
         int memberCount = chatRoomUserRepository.countByChatRoomId(room.getId());
 
-        return ChatRoomDto.of(room, roomName, lastMsg, memberCount);
+        return ChatRoomDto.of(room, roomName, lastMsg, chatroomImg, memberCount);
     }
 
     /**
@@ -143,7 +157,7 @@ public class ChatRoomService {
      */
     @Transactional(readOnly = true)
     public Slice<ChatMessageResponse> getChatMessages(Long roomId, Pageable pageable) {
-        chatRoomRepository.findById(roomId).orElseThrow(() -> new CustomException(CHAT_ROOM_NOT_FOUND));
+        chatRoomRepository.findChatRoomById(roomId);
 
         return chatMessageRepository.findByRoomIdOrderByCreatedDatetimeDesc(roomId, pageable)
                 .map(ChatMessageResponse::from);
@@ -156,12 +170,11 @@ public class ChatRoomService {
     public void leaveChatRoom(AuthUser authUser, Long roomId) {
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        ChatRoomUser chatRoomUser = chatRoomUserRepository.findByChatRoomIdAndUserId(roomId, user.getId())
-                .orElseThrow(() -> new CustomException(CHAT_USER_NOT_FOUND));
+        ChatRoomUser chatRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, user.getId());
 
         ChatRoom room = chatRoomUser.getChatRoom();
 
-        if (room.getType() == RoomType.GROUP) {
+        if (room.isGroup()) {
             Meeting meeting = meetingRepository.findActivateMeetingById(room.getMeetingId());
 
             if (meeting.getStatus() == MeetingStatus.CLOSED) {
@@ -173,15 +186,14 @@ public class ChatRoomService {
     }
 
     /**
-     * 상대방 이름 조회
+     * 상대 유저 조회
      */
-    private String getPartnerName(ChatRoom room, Long myId) {
+    private User getPartner(ChatRoom room, Long myId) {
         return chatRoomUserRepository.findByChatRoomId(room.getId()).stream()
                 .map(ChatRoomUser::getUser)
                 .filter(user -> !user.getId().equals(myId))
                 .findFirst()
-                .map(User::getNickname)
-                .orElse("알 수 없는 사용자");
+                .orElse(null);
     }
 
     /**
@@ -189,8 +201,7 @@ public class ChatRoomService {
      */
     @Transactional
     public void updateRoomName(AuthUser authUser, Long roomId, String newName) {
-        ChatRoomUser chatRoomUser = chatRoomUserRepository.findByChatRoomIdAndUserId(roomId, authUser.getId())
-                .orElseThrow(() -> new CustomException(CHAT_USER_NOT_FOUND));
+        ChatRoomUser chatRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, authUser.getId());
 
         chatRoomUser.updateCustomName(newName);
     }
@@ -202,17 +213,18 @@ public class ChatRoomService {
     public ChatRoomDetailResponse getChatRoomDetail(AuthUser authUser, Long roomId) {
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        ChatRoomUser myRoomUser = chatRoomUserRepository.findByChatRoomIdAndUserId(roomId, user.getId())
-                .orElseThrow(() -> new CustomException(CHAT_USER_NOT_FOUND));
+        ChatRoomUser myRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, user.getId());
 
         ChatRoom room = myRoomUser.getChatRoom();
 
         String roomName = myRoomUser.getCustomRoomName();
         if (roomName == null) {
             roomName = room.getName();
-            if (room.getType() == RoomType.PRIVATE) {
-                roomName = getPartnerName(room, user.getId());
-            }
+        }
+
+        if (room.isPrivate()) {
+            User partner = getPartner(room, user.getId());
+            roomName = UserDisplay.resolveNickname(partner);
         }
 
         List<ChatRoomUser> roomUsers = chatRoomUserRepository.findByChatRoomId(roomId);
