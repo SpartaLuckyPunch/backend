@@ -8,8 +8,7 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
-kakao:
-  lient-id: ${KAKAO_CLIENT_ID}
+
   jpa:
     show-sql: true
     hibernate:
@@ -22,9 +21,15 @@ kakao:
   swagger-ui:
     tags-sorter: none
     operations-sorter: none
+
   data:
     mongodb:
       uri: ${MONGO_DB_URI}
+
+kakao:
+  client-id: ${KAKAO_CLIENT_ID}
+  redirect-uri: http://localhost:8080/api/auth/kakao
+
 jwt:
   secret:
     key: ${JWT_SECRET_KEY}

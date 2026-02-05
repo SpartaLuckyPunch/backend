@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class KakaoLoginRequest {
 
-    @Schema(description = "카카오 액세스 토큰", example = "카카오에서 받은 access_token")
-    @NotBlank(message = "액세스 토큰은 필수입니다.")
-    private String accessToken;
+    @Schema(description = "카카오 인가 코드", example = "카카오에서 받은 authorization_code")
+    @NotBlank(message = "인가 코드는 필수입니다.")
+    private String code;
 }

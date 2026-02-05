@@ -18,10 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -87,15 +84,15 @@ public class AuthController {
     @Operation(
             summary = "카카오 로그인",
             description = """
-                    카카오 액세스 토큰을 이용하여 로그인을 진행합니다. 
-                    신규 사용자의 경우 자동으로 회원가입이 진행됩니다.
+                    프론트엔드에서 전달받은 인가 코드(code)를 이용하여 로그인을 진행합니다. 
+                    백엔드에서 직접 카카오 토큰을 교환하여 보안을 강화했습니다.
                     """
     )
     @PostMapping("/kakao")
     public ResponseEntity<CommonResponse<AuthTokenResponse>> kakaoLogin(
             @Valid @RequestBody KakaoLoginRequest request
     ) {
-        AuthTokenResponse response = authService.socialLogin(request.getAccessToken(), Provider.KAKAO);
+        AuthTokenResponse response = authService.socialLogin(request.getCode(), Provider.KAKAO);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(AUTH_LOGIN_SUCCESS, response));

@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -157,7 +158,9 @@ public class AuthService {
      * 소셜로그인/회원가입 통합 처리 
      */
     @Transactional
-    public AuthTokenResponse socialLogin(String accessToken, Provider provider) {
+    public AuthTokenResponse socialLogin(String code, Provider provider) {
+
+        String accessToken = kakaoService.getKakaoAccessToken(code);
 
         KakaoUserInfoResponse userInfo = kakaoService.getKakaoUserInfo(accessToken);
 
@@ -169,14 +172,20 @@ public class AuthService {
 
         User user;
         if (optionalUser.isEmpty()) {
+
+            String tempPassword = passwordEncoder.encode(UUID.randomUUID().toString());
+
+            Address defaultAddress = addressRepository.findById(1L)
+                    .orElseThrow(() -> new CustomException(ErrorCode.ADDRESS_NOT_FOUND));
+
             // 유저 존재 X -> 신규 소셜 유저 생성
             user = new User(
                     email,
-                    null,
+                    tempPassword,
                     nickname,
                     null,
                     false,
-                    null,
+                    defaultAddress,
                     UserRole.USER,
                     provider,
                     providerId
