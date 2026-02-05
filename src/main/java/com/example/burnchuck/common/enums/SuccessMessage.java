@@ -47,7 +47,7 @@ public enum SuccessMessage {
 
     // 모임
     MEETING_IMG_UPLOAD_LINK_SUCCESS("모임 이미지 업로드 URL 생성 성공"),
-    MEETING_IMG_VIEW_LINK_SUCCESS("모임 이미지 조회 URL 생성 성공"),
+    MEETING_IMG_VIEW_LINK_SUCCESS("모임 이미지 등록 완료"),
     MEETING_CREATE_SUCCESS("모임 생성 성공"),
     MEETING_GET_SUCCESS("모임 조회 성공"),
     MEETING_DELETE_SUCCESS("모임 삭제 성공"),
