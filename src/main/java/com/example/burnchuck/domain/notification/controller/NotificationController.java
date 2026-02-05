@@ -8,7 +8,6 @@ import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.domain.notification.dto.response.NotificationGetListResponse;
 import com.example.burnchuck.domain.notification.dto.response.NotificationResponse;
 import com.example.burnchuck.domain.notification.service.NotificationService;
-import com.example.burnchuck.domain.notification.service.SseNotifyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class NotificationController {
 
     private final NotificationService notificationService;
-    private final SseNotifyService sseNotifyService;
 
     /**
      * 알림 목록 조회 (로그인한 유저 기준)
@@ -83,6 +81,6 @@ public class NotificationController {
     public SseEmitter subscribe(
         @AuthenticationPrincipal AuthUser authUser
     ) {
-        return sseNotifyService.subscribe(authUser);
+        return notificationService.subscribe(authUser);
     }
 }
