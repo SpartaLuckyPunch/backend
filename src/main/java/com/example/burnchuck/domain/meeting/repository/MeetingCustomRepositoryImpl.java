@@ -132,6 +132,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 meeting.longitude
             ))
             .from(meeting)
+            .leftJoin(meeting.category, category1)
             .where(
                 meeting.status.eq(MeetingStatus.OPEN),
                 keywordContains(request.getKeyword()),
