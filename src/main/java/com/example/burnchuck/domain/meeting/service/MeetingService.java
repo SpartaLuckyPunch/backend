@@ -74,6 +74,7 @@ public class MeetingService {
     private final EventPublisherService eventPublisherService;
     private final MeetingCacheService meetingCacheService;
     private final ChatRoomService chatRoomService;
+    private final ElasticSearchService elasticSearchService;
 
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -91,6 +92,7 @@ public class MeetingService {
         Meeting meeting = createMeeting(user, request);
 
         meetingCacheService.saveMeetingLocation(meeting);
+        elasticSearchService.saveMeeting(meeting);
 
         notificationService.notifyNewFollowerPost(meeting, user);
 
@@ -146,6 +148,10 @@ public class MeetingService {
         if (locationRequest.notNull()) {
             Address address = addressRepository.findAddressByAddressInfo(locationRequest.getProvince(), locationRequest.getCity(), locationRequest.getDistrict());
             location = new Location(address.getLatitude(), address.getLongitude());
+        }
+
+        if (searchRequest.getKeyword() != null) {
+
         }
 
         List<Long> meetingIdList = null;

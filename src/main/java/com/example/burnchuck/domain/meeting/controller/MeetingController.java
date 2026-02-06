@@ -10,6 +10,7 @@ import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_UPDATE_S
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.dto.PageResponse;
+import com.example.burnchuck.common.entity.MeetingDocument;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
@@ -23,6 +24,7 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
+import com.example.burnchuck.domain.meeting.service.ElasticSearchService;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,6 +46,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -53,6 +56,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MeetingController {
 
     private final MeetingService meetingService;
+    private final ElasticSearchService elasticSearchService;
 
     /**
      * 모임 생성
@@ -254,5 +258,12 @@ public class MeetingController {
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(MEETING_GET_MEMBER_LIST_SUCCESS, response));
+    }
+
+    @GetMapping("/test")
+    public List<MeetingDocument> test(
+        @RequestParam String keyword
+    ) {
+        return elasticSearchService.searchByName(keyword);
     }
 }
