@@ -39,7 +39,7 @@ public class User extends BaseEntity {
     private String profileImgUrl;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "address_id")
+    @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
     @Enumerated(EnumType.STRING)

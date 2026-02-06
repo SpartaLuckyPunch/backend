@@ -9,16 +9,20 @@ import com.example.burnchuck.common.enums.Provider;
 import com.example.burnchuck.domain.auth.dto.request.AuthLoginRequest;
 import com.example.burnchuck.domain.auth.dto.request.AuthReissueTokenRequest;
 import com.example.burnchuck.domain.auth.dto.request.AuthSignupRequest;
-import com.example.burnchuck.domain.auth.dto.request.KakaoLoginRequest;
 import com.example.burnchuck.domain.auth.dto.response.AuthTokenResponse;
 import com.example.burnchuck.domain.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,12 +43,15 @@ public class AuthController {
     )
     @PostMapping("/signup")
     public ResponseEntity<CommonResponse<AuthTokenResponse>> signup(
-        @Valid @RequestBody AuthSignupRequest request
+        @Valid @RequestBody AuthSignupRequest request,
+        HttpServletResponse response
     ) {
-        AuthTokenResponse response = authService.signup(request);
+        AuthTokenResponse authTokenResponse = authService.signup(request);
+
+        addCookies(response, authTokenResponse);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(CommonResponse.success(AUTH_SIGNUP_SUCCESS, response));
+            .body(CommonResponse.success(AUTH_SIGNUP_SUCCESS, authTokenResponse));
     }
 
     /**
@@ -60,43 +67,107 @@ public class AuthController {
     )
     @PostMapping("/login")
     public ResponseEntity<CommonResponse<AuthTokenResponse>> login(
-        @Valid @RequestBody AuthLoginRequest request
+        @Valid @RequestBody AuthLoginRequest request,
+        HttpServletResponse response
     ) {
-        AuthTokenResponse response = authService.login(request);
+        AuthTokenResponse authTokenResponse = authService.login(request);
+
+        addCookies(response, authTokenResponse);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(CommonResponse.success(AUTH_LOGIN_SUCCESS, response));
+            .body(CommonResponse.success(AUTH_LOGIN_SUCCESS, authTokenResponse));
     }
 
     @PostMapping("/reissue")
     public ResponseEntity<CommonResponse<AuthTokenResponse>> reissueToken(
-        @Valid @RequestBody AuthReissueTokenRequest request
+        @Valid @RequestBody AuthReissueTokenRequest request,
+        HttpServletResponse response
     ) {
-        AuthTokenResponse response = authService.reissueToken(request);
+        AuthTokenResponse authTokenResponse = authService.reissueToken(request);
+
+        addCookies(response, authTokenResponse);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(CommonResponse.success(AUTH_REISSUE_SUCCESS, response));
+            .body(CommonResponse.success(AUTH_REISSUE_SUCCESS, authTokenResponse));
+    }
+
+    /**
+     * 로그아웃 (쿠키 삭제)
+     */
+    @Operation(summary = "로그아웃", description = "쿠키를 만료시켜 로그아웃 처리합니다.")
+    @PostMapping("/logout")
+    public ResponseEntity<CommonResponse<Void>> logout(HttpServletResponse response) {
+
+        ResponseCookie atCookie = ResponseCookie.from("accessToken", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(0)
+                .build();
+
+        ResponseCookie rtCookie = ResponseCookie.from("refreshToken", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(0)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, atCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, rtCookie.toString());
+
+        return ResponseEntity.ok(CommonResponse.success(AUTH_LOGIN_SUCCESS, null));
     }
 
     /**
      * 카카오 소셜 로그인
      */
     @Operation(
-            summary = "카카오 로그인",
+            summary = "카카오 로그인 콜백",
             description = """
-                    프론트엔드에서 전달받은 인가 코드(code)를 이용하여 로그인을 진행합니다. 
-                    백엔드에서 직접 카카오 토큰을 교환하여 보안을 강화했습니다.
+                    인가 코드를 받아 로그인을 완료하고, 토큰을 쿠키에 담아 리다이렉트합니다.
                     """
     )
-    @PostMapping("/kakao")
-    public ResponseEntity<CommonResponse<AuthTokenResponse>> kakaoLogin(
-            @Valid @RequestBody KakaoLoginRequest request
-    ) {
-        AuthTokenResponse response = authService.socialLogin(request.getCode(), Provider.KAKAO);
+    @GetMapping("/kakao/callback")
+    public void kakaoLogin(
+            @RequestParam String code,
+            HttpServletResponse response
+    ) throws IOException {
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(AUTH_LOGIN_SUCCESS, response));
+        AuthTokenResponse authTokenResponse = authService.socialLogin(code, Provider.KAKAO);
+
+        addCookies(response, authTokenResponse);
+
+        response.sendRedirect("http://localhost:3000/oauth/callback");
     }
 
-}
+    /**
+     * 모든 메서드에서 공통으로 사용할 쿠키 생성기
+     */
+    private void addCookies(HttpServletResponse response, AuthTokenResponse tokenResponse) {
 
+        // 공백(' ') 에러 방지
+        String at = tokenResponse.getToken().replace("Bearer ", "");
+        String rt = tokenResponse.getRefreshToken().replace("Bearer ", "");
+
+        // Access Token 쿠키
+        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", at)
+                .path("/")
+                .httpOnly(true)
+                .secure(true)   // Local Test -> false 배포 -> true
+                .maxAge(3600) // 유효기간 1시간
+                .sameSite("Lax")
+                .build();
+
+        // Refresh Token 쿠키
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", rt)
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(604800) // 유효기간 7일
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+    }
+}

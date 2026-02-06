@@ -28,7 +28,7 @@ spring:
 
 kakao:
   client-id: ${KAKAO_CLIENT_ID}
-  redirect-uri: http://localhost:8080/api/auth/kakao
+  redirect-uri: ${KAKAO_REDIRECT_URI}
 
 jwt:
   secret:

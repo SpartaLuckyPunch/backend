@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -29,28 +30,27 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-         return path.startsWith("/api/auth") ||
-                path.startsWith("/swagger-ui") ||
-                path.startsWith("/v3/api-docs") ||
-                path.startsWith("/error");
-    }
+        String jwt = null;
+        Cookie[] cookies = request.getCookies();
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        if (cookies != null) {
+            for(Cookie cookie : cookies) {
+                if("accessToken".equals(cookie.getName())) {
+                    jwt= cookie.getValue();
+                    break;
+                }
+            }
 
-        // 토큰이 없는 경우
-        String authorizationHeader = request.getHeader("Authorization");
+        }
 
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+        // 토큰이 없는 경우 처리
+        if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        // 토큰이 유효하지 않은 경우
-        String jwt = authorizationHeader.substring(7);
 
         if (!jwtUtil.validateToken(jwt)) {
             handleCustomException(response, new CustomException(ErrorCode.INVALID_TOKEN));
