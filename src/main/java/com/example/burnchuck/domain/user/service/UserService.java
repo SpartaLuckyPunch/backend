@@ -2,13 +2,18 @@ package com.example.burnchuck.domain.user.service;
 
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.entity.Address;
+import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.Review;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
+import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
+import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
+import com.example.burnchuck.domain.meeting.service.AttendanceService;
+import com.example.burnchuck.domain.meeting.service.MeetingService;
 import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
-import com.example.burnchuck.domain.notification.repository.EmitterRepository;
+import com.example.burnchuck.domain.notification.service.EmitterService;
 import com.example.burnchuck.domain.review.repository.ReviewRepository;
 import com.example.burnchuck.domain.user.dto.request.UserUpdatePasswordRequest;
 import com.example.burnchuck.domain.user.dto.request.UserUpdateProfileRequest;
@@ -33,8 +38,14 @@ public class UserService {
     private final FollowRepository followRepository;
     private final MeetingLikeRepository meetingLikeRepository;
     private final ReviewRepository reviewRepository;
+    private final UserMeetingRepository userMeetingRepository;
+    private final MeetingRepository meetingRepository;
+
+    private final MeetingService meetingService;
+    private final AttendanceService attendanceService;
+    private final EmitterService emitterService;
+
     private final PasswordEncoder passwordEncoder;
-    private final EmitterRepository emitterRepository;
 
     /**
      * 내 정보 수정(닉네임, 주소)
@@ -102,15 +113,44 @@ public class UserService {
 
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        user.delete();
-        userRepository.saveAndFlush(user);
+        cancelAttendanceMeetings(authUser, user);
+        cancelHostedMeetings(authUser);
 
         meetingLikeRepository.deleteByUserId(user.getId());
 
         followRepository.deleteByFollowerId(user.getId());
         followRepository.deleteByFolloweeId(user.getId());
 
-        emitterRepository.disconnectAllEmittersByUserId(user.getId());
+        emitterService.disconnectAllEmittersByUserId(user.getId());
+
+        user.delete();
+        userRepository.saveAndFlush(user);
+    }
+
+    /**
+     * 참가 신청한 모임 중 COMPLETED 되지 않은 모임 참가 취소 처리
+     */
+    public void cancelAttendanceMeetings(AuthUser authUser, User user) {
+
+        List<Meeting> attendanceMeetingList = userMeetingRepository.findActiveMeetingsByUser(user);
+
+        for (Meeting meeting : attendanceMeetingList) {
+
+            attendanceService.cancelAttendance(authUser, meeting.getId());
+        }
+    }
+
+    /**
+     * 주최한 모임 중 COMPLETED 되지 않은 모임 취소 처리
+     */
+    public void cancelHostedMeetings(AuthUser authUser) {
+
+        List<Meeting> hostedMeetingList = meetingRepository.findActiveHostedMeetings(authUser.getId());
+
+        for (Meeting meeting : hostedMeetingList) {
+
+            meetingService.deleteMeeting(authUser, meeting.getId());
+        }
     }
 
     /**

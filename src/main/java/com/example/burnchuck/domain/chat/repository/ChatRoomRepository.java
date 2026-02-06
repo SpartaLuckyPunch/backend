@@ -1,6 +1,9 @@
 package com.example.burnchuck.domain.chat.repository;
 
+import static com.example.burnchuck.common.enums.ErrorCode.CHAT_ROOM_NOT_FOUND;
+
 import com.example.burnchuck.common.entity.ChatRoom;
+import com.example.burnchuck.common.exception.CustomException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,4 +19,14 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     Optional<ChatRoom> findPrivateChatRoom(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
 
     Optional<ChatRoom> findByMeetingId(Long meetingId);
+
+    default ChatRoom findChatRoomByMeetingId(Long meetingId) {
+        return findByMeetingId(meetingId)
+            .orElseThrow(() -> new CustomException(CHAT_ROOM_NOT_FOUND));
+    }
+
+    default ChatRoom findChatRoomById(Long Id) {
+        return findById(Id)
+            .orElseThrow(() -> new CustomException(CHAT_ROOM_NOT_FOUND));
+    }
 }

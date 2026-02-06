@@ -15,6 +15,8 @@ import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.common.utils.ClientInfoExtractor;
+import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
@@ -39,6 +41,7 @@ import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import io.lettuce.core.RedisException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -66,11 +69,13 @@ public class MeetingService {
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
     private final AddressRepository addressRepository;
+
     private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
     private final MeetingCacheService meetingCacheService;
-    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     private final ChatRoomService chatRoomService;
+
+    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     // 서울 광화문 위치
     private final Double DEFAULT_LATITUDE = 37.57;
@@ -205,15 +210,24 @@ public class MeetingService {
     /**
      * 모임 단건 조회
      */
-    @Transactional
-    public MeetingDetailResponse getMeetingDetail(Long meetingId) {
+    @Transactional(readOnly = true)
+    public MeetingDetailResponse getMeetingDetail(Long meetingId, HttpServletRequest httpServletRequest) {
 
-        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+        MeetingDetailResponse meetingDetailResponse = meetingRepository.findMeetingDetail(meetingId)
+            .orElseThrow(() -> new CustomException(MEETING_NOT_FOUND));
 
-        meeting.increaseViews();
+        String ipAddress = ClientInfoExtractor.extractIpAddress(httpServletRequest);
 
-        return meetingRepository.findMeetingDetail(meetingId)
-                .orElseThrow(() -> new CustomException(MEETING_NOT_FOUND));
+        try {
+            meetingCacheService.increaseViewCount(ipAddress, meetingId);
+            Long viewCount = meetingCacheService.getViewCount(meetingId).longValue();
+
+            meetingDetailResponse.increaseViews(viewCount);
+        } catch (RedisException | RedisConnectionFailureException e) {
+            log.error("Redis 예외 발생: {}", e.getMessage());
+        }
+
+        return meetingDetailResponse;
     }
 
     /**
@@ -309,15 +323,15 @@ public class MeetingService {
             .filter(userMeeting -> !userMeeting.isHost())
             .map(userMeeting -> new AttendeeResponse(
                 userMeeting.getUser().getId(),
-                userMeeting.getUser().getProfileImgUrl(),
-                userMeeting.getUser().getNickname()
+                UserDisplay.resolveProfileImg(userMeeting.getUser()),
+                UserDisplay.resolveNickname(userMeeting.getUser())
             ))
             .toList();
 
         return new MeetingMemberResponse(
             host.getUser().getId(),
-            host.getUser().getProfileImgUrl(),
-            host.getUser().getNickname(),
+            UserDisplay.resolveProfileImg(host.getUser()),
+            UserDisplay.resolveNickname(host.getUser()),
             attendees
         );
     }

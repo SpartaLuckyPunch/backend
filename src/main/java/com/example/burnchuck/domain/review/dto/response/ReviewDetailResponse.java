@@ -1,6 +1,7 @@
 package com.example.burnchuck.domain.review.dto.response;
 
 import com.example.burnchuck.common.entity.Review;
+import com.example.burnchuck.common.utils.UserDisplay;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -22,8 +23,8 @@ public class ReviewDetailResponse {
         return new ReviewDetailResponse(
                 review.getId(),
                 review.getReviewer().getId(),
-                review.getReviewer().getProfileImgUrl(),
-                review.getReviewer().getNickname(),
+                UserDisplay.resolveProfileImg(review.getReviewer()),
+                UserDisplay.resolveNickname(review.getReviewer()),
                 review.getRating(),
                 reactions,
                 review.getDetailedReview()
