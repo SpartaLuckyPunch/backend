@@ -23,6 +23,8 @@ spring:
   data:
     mongodb:
       uri: ${MONGO_DB_URI}
+  elasticsearch:
+    Uris: ${ELASTICSEARCH_URIS}
 jwt:
   secret:
     key: ${JWT_SECRET_KEY}
