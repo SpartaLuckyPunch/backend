@@ -25,14 +25,12 @@ public class EmitterRepository {
     }
 
     /**
-     * 해당 회원과 관련된 모든 emitter 조회
+     * emitter 조회
      */
-    public Map<String, SseEmitter> findAllEmitterStartWithByMemberId(Long userId) {
-
-        String key = SSE_EMITTER_PREFIX + userId + "_";
+    public Map<String, SseEmitter> findAllEmitterStartWith(String emitterId) {
 
         return emitters.entrySet().stream()
-            .filter(entry -> entry.getKey().startsWith(key))
+            .filter(entry -> entry.getKey().startsWith(emitterId))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
@@ -45,15 +43,13 @@ public class EmitterRepository {
     }
 
     /**
-     * 해당 회원과 관련된 모든 emitter 종료 후 삭제
+     * emitter 종료 후 삭제
      */
-    public void disconnectAllEmittersByUserId(Long userId) {
-
-        String userKey = SSE_EMITTER_PREFIX + userId + "_";
+    public void disconnectAllEmittersStartWith(String emitterId) {
 
         emitters.forEach(
             (key, emitter) -> {
-                if (key.startsWith(userKey)) {
+                if (key.startsWith(emitterId)) {
                     try {
                         emitter.complete();
                     } catch (Exception ignored) {
