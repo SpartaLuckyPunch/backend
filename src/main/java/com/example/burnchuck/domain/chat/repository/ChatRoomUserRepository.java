@@ -20,6 +20,9 @@ public interface ChatRoomUserRepository extends JpaRepository<ChatRoomUser, Long
             "AND cru.isDeleted = false")
     List<ChatRoomUser> findAllActiveByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT cru.user.id FROM ChatRoomUser cru WHERE cru.chatRoom.id = :chatRoomId AND cru.isDeleted = false")
+    List<Long> findAllActiveUserIdByChatRoomId(@Param("chatRoomId") Long chatRoomId);
+
     int countByChatRoomId(Long id);
 
     Optional<ChatRoomUser> findByChatRoomIdAndUserId(Long roomId, Long id);

@@ -51,6 +51,20 @@ public class ChatController {
     }
 
     /**
+     * 채팅방 읽음 처리 (입장 시, 혹은 스크롤 시 호출)
+     */
+    @PostMapping("/rooms/{roomId}/read")
+    public ResponseEntity<CommonResponse<Void>> readChatRoom(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long roomId
+    ) {
+        chatService.readMessage(authUser.getId(), roomId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.successNodata(CHAT_READ_SUCCESS));
+    }
+
+    /**
      * 1:1 채팅방 생성 (이미 생성돼 있으면 기존 방 입장)
      */
     @PostMapping("/rooms/private")
