@@ -13,6 +13,7 @@ import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
+import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.exception.CustomException;
@@ -96,32 +97,6 @@ public class MeetingService {
     }
 
     /**
-     * 모임 이미지 등록
-     */
-    public GetS3Url getViewMeetingImgUrl(AuthUser authUser, Long meetingId, String key) {
-
-        User user = userRepository.findActivateUserById(authUser.getId());
-
-        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
-
-        UserMeeting meetingHost = userMeetingRepository.findHostByMeeting(meeting);
-        if (!ObjectUtils.nullSafeEquals(user.getId(), meetingHost.getUser().getId())) {
-            throw new CustomException(ACCESS_DENIED);
-        }
-
-        if (!s3UrlGenerator.isFileExists(key)) {
-            return null;
-        }
-
-        GetS3Url result = s3UrlGenerator.generateViewImgUrl(key);
-
-        meeting.uploadMeetingImg(result.getPreSignedUrl());
-        meetingRepository.saveAndFlush(meeting);
-
-        return result;
-    }
-
-    /**
      * 모임 생성과 알림 생성 메서드를 호출하는 메서드
      */
     public MeetingCreateResponse createMeetingAndNotify(AuthUser authUser, MeetingCreateRequest request) {
@@ -144,6 +119,10 @@ public class MeetingService {
      */
     @Transactional
     public Meeting createMeeting(User user, MeetingCreateRequest request) {
+
+        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+        }
 
         Category category = categoryRepository.findCategoryByCode(request.getCategoryCode());
 
@@ -275,6 +254,10 @@ public class MeetingService {
      */
     @Transactional
     public MeetingUpdateResponse updateMeeting(AuthUser authUser, Long meetingId, MeetingUpdateRequest request) {
+
+        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+        }
 
         User user = userRepository.findActivateUserById(authUser.getId());
 

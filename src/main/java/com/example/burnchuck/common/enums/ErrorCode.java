@@ -22,6 +22,7 @@ public enum ErrorCode {
 
     // 유저
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "유저가 존재하지 않습니다."),
+    USER_IMG_NOT_FOUND(HttpStatus.NOT_FOUND, "프로필 사진이 존재하지 않습니다."),
     SAME_PASSWORD(HttpStatus.BAD_REQUEST, "현재 비밀번호와 새 비밀번호가 동일합니다."),
     INVALID_USER_ROLE(HttpStatus.BAD_REQUEST, "유효하지 않은 권한입니다."),
 
@@ -48,6 +49,7 @@ public enum ErrorCode {
     // 모임
     MEETING_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 번개입니다."),
     HOST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주최자입니다"),
+    MEETING_IMG_NOT_FOUND(HttpStatus.BAD_REQUEST, "모임 이미지가 존재하지 않습니다."),
 
     // 모임 참여
     ATTENDANCE_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 참여 신청한 번개입니다."),

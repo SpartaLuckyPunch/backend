@@ -35,7 +35,7 @@ public class S3UrlGenerator {
     );
 
     /**
-     * 이미지 업로드용 Presigned URL 생성
+     * 이미지 업로드용 Presigned URL, 조회용 CloudFront URL 생성
      */
     public GetS3Url generateUploadImgUrl(String filename, String key) {
 
@@ -46,15 +46,17 @@ public class S3UrlGenerator {
         Date expiration = getExpiration();
         GeneratePresignedUrlRequest request = createPresignedUrlRequest(key, HttpMethod.PUT, expiration);
         URL url = amazonS3Client.generatePresignedUrl(request);
+        String publicUrl = cloudFrontDomain + "/" + key;
 
         return GetS3Url.builder()
                 .preSignedUrl(url.toExternalForm())
+                .cloudFrontUrl(publicUrl)
                 .key(key)
                 .build();
     }
 
     /**
-     * 이미지 조회용 CloudFront 링크 생성
+     * 이미지 조회 CloudFront 링크 생성
      */
     public GetS3Url generateViewImgUrl(String key) {
         String publicUrl = cloudFrontDomain + "/" + key;

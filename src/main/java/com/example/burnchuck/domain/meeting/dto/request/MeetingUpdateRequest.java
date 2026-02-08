@@ -1,28 +1,9 @@
 package com.example.burnchuck.domain.meeting.dto.request;
 
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_CATEGORY_NOT_NULL;
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_DATETIME_FUTURE;
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_DATETIME_NOT_NULL;
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_DESCRIPTION_NOT_BLANK;
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_DESCRIPTION_SIZE;
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_IMG_URL_FORMAT;
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_IMG_URL_NOT_BLANK;
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_LATITUDE_NOT_NULL;
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_LATITUDE_RANGE;
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_LOCATION_NOT_BLANK;
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_LONGITUDE_NOT_NULL;
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_LONGITUDE_RANGE;
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_MAX_ATTENDEES_NOT_NULL;
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_TITLE_NOT_BLANK;
-import static com.example.burnchuck.common.enums.ValidationMessage.MEETING_TITLE_SIZE;
+import static com.example.burnchuck.common.enums.ValidationMessage.*;
 
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

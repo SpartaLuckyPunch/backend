@@ -52,10 +52,6 @@ public class UserController {
     ) {
         GetS3Url response = userService.getViewProfileImgUrl(authUser, key);
 
-        if (response == null)
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(CommonResponse.success(USER_PROFILE_NO_CHANGE, null));
-
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(USER_UPDATE_PROFILE_IMG_SUCCESS, response));
     }

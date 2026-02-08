@@ -2,12 +2,8 @@ package com.example.burnchuck.domain.meeting.dto.request;
 
 import static com.example.burnchuck.common.enums.ValidationMessage.*;
 
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,6 +19,13 @@ public class MeetingCreateRequest {
     @NotBlank(message = MEETING_DESCRIPTION_NOT_BLANK)
     @Size(max = 500, message = MEETING_DESCRIPTION_SIZE)
     private String description;
+
+    @NotBlank(message = MEETING_IMG_URL_NOT_BLANK)
+    @Pattern(
+            regexp = "^(http|https)://.*$",
+            message = MEETING_IMG_URL_FORMAT
+    )
+    private String imgUrl;
 
     @NotBlank(message = MEETING_LOCATION_NOT_BLANK)
     private String location;

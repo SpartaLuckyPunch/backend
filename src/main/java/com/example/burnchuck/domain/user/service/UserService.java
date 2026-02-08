@@ -69,7 +69,7 @@ public class UserService {
         s3UrlGenerator.validateKeyOwnership(authUser.getId(), key);
 
         if (!s3UrlGenerator.isFileExists(key)) {
-            return null;
+            throw new CustomException(ErrorCode.USER_IMG_NOT_FOUND);
         }
 
         User user = userRepository.findActivateUserById(authUser.getId());

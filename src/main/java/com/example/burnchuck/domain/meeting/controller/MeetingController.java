@@ -56,21 +56,6 @@ public class MeetingController {
     }
 
     /**
-     * 모임 이미지 등록
-     */
-    @PatchMapping("/img/{meetingId}")
-    public ResponseEntity<CommonResponse<GetS3Url>> getViewImgUrl(
-            @AuthenticationPrincipal AuthUser authUser,
-            @PathVariable Long meetingId,
-            @RequestParam String key
-    ) {
-        GetS3Url response = meetingService.getViewMeetingImgUrl(authUser, meetingId, key);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(MEETING_IMG_VIEW_LINK_SUCCESS, response));
-    }
-
-    /**
      * 모임 생성
      */
     @Operation(
