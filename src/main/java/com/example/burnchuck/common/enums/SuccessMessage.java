@@ -14,7 +14,6 @@ public enum SuccessMessage {
     USER_UPDATE_PROFILE_SUCCESS("프로필 수정 성공"),
     USER_UPLOAD_PROFILE_IMG_LINK_SUCCESS("프로필 이미지 업로드 URL 생성 성공"),
     USER_UPDATE_PROFILE_IMG_SUCCESS("프로필 이미지 등록 완료"),
-    USER_PROFILE_IMG_NO_CHANGE("프로필 이미지 변경사항 없음"),
     USER_UPDATE_PASSWORD_SUCCESS("비밀번호 변경 성공"),
     USER_DELETE_SUCCESS("회원 탈퇴 성공"),
     USER_GET_PROFILE_SUCCESS("회원 프로필 조회 성공"),
@@ -47,8 +46,6 @@ public enum SuccessMessage {
 
     // 모임
     MEETING_IMG_UPLOAD_LINK_SUCCESS("모임 이미지 업로드 URL 생성 성공"),
-    MEETING_IMG_VIEW_LINK_SUCCESS("모임 이미지 등록 완료"),
-    MEETING_IMG_NO_CHANGE("모임 이미지 변경사항 없음"),
     MEETING_CREATE_SUCCESS("모임 생성 성공"),
     MEETING_GET_SUCCESS("모임 조회 성공"),
     MEETING_DELETE_SUCCESS("모임 삭제 성공"),

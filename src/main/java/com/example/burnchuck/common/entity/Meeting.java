@@ -106,10 +106,6 @@ public class Meeting extends BaseEntity {
         this.status = status;
     }
 
-    public void updateMeetingImg(String imgUrl) {
-        this.imgUrl = imgUrl;
-    }
-
     public boolean isOpen() {
         return this.status == MeetingStatus.OPEN;
     }
