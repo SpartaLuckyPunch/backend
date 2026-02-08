@@ -1,12 +1,14 @@
 package com.example.burnchuck.domain.user.service;
 
 import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.Review;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.common.utils.S3UrlGenerator;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
@@ -23,6 +25,8 @@ import com.example.burnchuck.domain.user.dto.response.UserUpdateProfileResponse;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.List;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -46,10 +50,40 @@ public class UserService {
     private final EmitterService emitterService;
 
     private final PasswordEncoder passwordEncoder;
+    private final S3UrlGenerator s3UrlGenerator;
 
     /**
-     * 내 정보 수정(닉네임, 주소)
-     * 고도화 작업 시, 프로필 이미지 수정 항목 추가 예정
+     * 프로필 이미지 업로드 Presigned URL 생성
+     */
+    public GetS3Url getUploadProfileImgUrl(AuthUser authUser, String filename) {
+
+        String key = "profile/" + authUser.getId() + "/" + UUID.randomUUID();
+        return s3UrlGenerator.generateUploadImgUrl(filename, key);
+    }
+
+    /**
+     * 프로필 이미지 등록
+     */
+    public GetS3Url getViewProfileImgUrl(AuthUser authUser, String key) {
+
+        s3UrlGenerator.validateKeyOwnership(authUser.getId(), key);
+
+        if (!s3UrlGenerator.isFileExists(key)) {
+            throw new CustomException(ErrorCode.USER_IMG_NOT_FOUND);
+        }
+
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        GetS3Url result = s3UrlGenerator.generateViewImgUrl(key);
+
+        user.uploadProfileImg(result.getPreSignedUrl());
+        userRepository.saveAndFlush(user);
+
+        return result;
+    }
+
+    /**
+     * 내 정보 수정(닉네임, 주소, 프로필)
      */
     @Transactional
     public UserUpdateProfileResponse updateProfile(AuthUser authUser, UserUpdateProfileRequest request) {
@@ -72,7 +106,12 @@ public class UserService {
             request.getDistrict()
         );
 
+        if (!s3UrlGenerator.isFileExists(request.getProfileImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+        }
+
         user.updateProfile(newNickname, newAddress);
+        user.uploadProfileImg(request.getProfileImgUrl());
         userRepository.saveAndFlush(user);
 
         return UserUpdateProfileResponse.from(user, newAddress);
