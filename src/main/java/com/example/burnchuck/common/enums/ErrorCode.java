@@ -72,7 +72,8 @@ public enum ErrorCode {
 
     // 이미지
     UNAUTHORIZED_IMAGE_ACCESS(HttpStatus.UNAUTHORIZED, "해당 이미지에 대한 접근 권한이 없습니다."),
-    UNSUPPORTED_FILE_TYPE(HttpStatus.BAD_REQUEST, "지원되지 않는 파일 형식입니다.")
+    UNSUPPORTED_FILE_TYPE(HttpStatus.BAD_REQUEST, "지원되지 않는 파일 형식입니다."),
+    S3_INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 처리 중 오류가 발생했습니다.")
     ;
 
     private final HttpStatus status;

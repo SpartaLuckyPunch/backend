@@ -83,8 +83,7 @@ public class UserService {
     }
 
     /**
-     * 내 정보 수정(닉네임, 주소)
-     * 고도화 작업 시, 프로필 이미지 수정 항목 추가 예정
+     * 내 정보 수정(닉네임, 주소, 프로필)
      */
     @Transactional
     public UserUpdateProfileResponse updateProfile(AuthUser authUser, UserUpdateProfileRequest request) {
@@ -107,7 +106,12 @@ public class UserService {
             request.getDistrict()
         );
 
+        if (!s3UrlGenerator.isFileExists(request.getProfileImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+        }
+
         user.updateProfile(newNickname, newAddress);
+        user.uploadProfileImg(request.getProfileImgUrl());
         userRepository.saveAndFlush(user);
 
         return UserUpdateProfileResponse.from(user, newAddress);

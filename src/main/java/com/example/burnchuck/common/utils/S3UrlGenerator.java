@@ -1,25 +1,28 @@
 package com.example.burnchuck.common.utils;
 
-import com.amazonaws.HttpMethod;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
-import java.net.URL;
-import java.util.Date;
+import java.time.Duration;
 import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
 public class S3UrlGenerator {
 
-    private final AmazonS3 amazonS3Client;
+    private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -43,14 +46,39 @@ public class S3UrlGenerator {
             throw new CustomException(ErrorCode.UNSUPPORTED_FILE_TYPE);
         }
 
-        Date expiration = getExpiration();
-        GeneratePresignedUrlRequest request = createPresignedUrlRequest(key, HttpMethod.PUT, expiration);
-        URL url = amazonS3Client.generatePresignedUrl(request);
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .contentType(getContentType(filename))
+                .build();
+
+        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(10))
+                .putObjectRequest(putObjectRequest)
+                .build();
+
+        String preSignedUrl = s3Presigner
+                .presignPutObject(presignRequest)
+                .url()
+                .toExternalForm();
+
         String publicUrl = cloudFrontDomain + "/" + key;
 
         return GetS3Url.builder()
-                .preSignedUrl(url.toExternalForm())
+                .preSignedUrl(preSignedUrl)
                 .cloudFrontUrl(publicUrl)
+                .key(key)
+                .build();
+    }
+
+    /**
+     * 이미지 조회 CloudFront 링크 생성
+     */
+    public GetS3Url generateViewImgUrl(String key) {
+        String publicUrl = cloudFrontDomain + "/" + key;
+
+        return GetS3Url.builder()
+                .preSignedUrl(publicUrl)
                 .key(key)
                 .build();
     }
@@ -60,13 +88,17 @@ public class S3UrlGenerator {
      */
     public boolean isFileExists(String key) {
         try {
-            amazonS3Client.getObjectMetadata(bucket, key);
+            s3Client.headObject(
+                    HeadObjectRequest.builder()
+                            .bucket(bucket)
+                            .key(key)
+                            .build()
+            );
             return true;
-        } catch (AmazonS3Exception e) {
-            if (e.getStatusCode() == 404) {
-                return false;
-            }
-            throw e;
+        } catch (NoSuchKeyException e) {
+            return false;
+        } catch (SdkException e) {
+            throw new CustomException(ErrorCode.S3_INTERNAL_ERROR);
         }
     }
 
@@ -84,28 +116,23 @@ public class S3UrlGenerator {
      */
     private boolean validateFileType(String filename) {
         int lastDotIndex = filename.lastIndexOf('.');
-        String extension = filename.substring(lastDotIndex + 1).toLowerCase();
+        if (lastDotIndex < 0) {
+            return false;
+        }
 
+        String extension = filename.substring(lastDotIndex + 1).toLowerCase();
         return ALLOWED_EXTENSIONS.contains(extension);
     }
 
     /**
-     * Presigned URL 기본 생성 Method
+     * Content-Type 결정
      */
-    private GeneratePresignedUrlRequest createPresignedUrlRequest(String key, HttpMethod method, Date expiration) {
-        return new GeneratePresignedUrlRequest(bucket, key)
-                .withMethod(method)
-                .withExpiration(expiration);
-    }
-
-    /**
-     * 만료 시간 지정
-     */
-    private Date getExpiration() {
-        Date expiration = new Date();
-        long expTimeMillis = expiration.getTime();
-        expTimeMillis += 1000 * 60 * 10; // 10분으로 설정하기
-        expiration.setTime(expTimeMillis);
-        return expiration;
+    private String getContentType(String filename) {
+        String extension = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
+        return switch (extension) {
+            case "jpg", "jpeg" -> "image/jpeg";
+            case "png" -> "image/png";
+            default -> "application/octet-stream";
+        };
     }
 }
