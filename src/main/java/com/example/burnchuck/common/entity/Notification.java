@@ -9,7 +9,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "notifications")
+@Table(name = "notifications",
+    indexes = {
+        @Index(
+            name = "idx_user_read",
+            columnList = "user_id, is_read"
+        )
+    })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification {
