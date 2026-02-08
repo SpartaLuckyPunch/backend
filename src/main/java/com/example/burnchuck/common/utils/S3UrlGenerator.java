@@ -56,18 +56,6 @@ public class S3UrlGenerator {
     }
 
     /**
-     * 이미지 조회 CloudFront 링크 생성
-     */
-    public GetS3Url generateViewImgUrl(String key) {
-        String publicUrl = cloudFrontDomain + "/" + key;
-
-        return GetS3Url.builder()
-                .preSignedUrl(publicUrl)
-                .key(key)
-                .build();
-    }
-
-    /**
      * S3에 이미지 파일 존재 여부 확인
      */
     public boolean isFileExists(String key) {
