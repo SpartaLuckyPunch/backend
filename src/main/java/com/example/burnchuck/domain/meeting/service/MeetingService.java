@@ -6,18 +6,21 @@ import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.BoundingBox;
+import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
+import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.ClientInfoExtractor;
 import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.common.utils.MeetingDistance;
+import com.example.burnchuck.common.utils.S3UrlGenerator;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
@@ -45,6 +48,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
@@ -74,12 +79,22 @@ public class MeetingService {
     private final EventPublisherService eventPublisherService;
     private final MeetingCacheService meetingCacheService;
     private final ChatRoomService chatRoomService;
+    private final S3UrlGenerator s3UrlGenerator;
 
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     // 서울 광화문 위치
     private final Double DEFAULT_LATITUDE = 37.57;
     private final Double DEFAULT_LONGITUDE = 126.98;
+
+    /**
+     * 모임 이미지 업로드 Presigned URL 생성
+     */
+    public GetS3Url getUploadMeetingImgUrl(String filename) {
+
+        String key = "meeting/" + UUID.randomUUID();
+        return s3UrlGenerator.generateUploadImgUrl(filename, key);
+    }
 
     /**
      * 모임 생성과 알림 생성 메서드를 호출하는 메서드
@@ -104,6 +119,10 @@ public class MeetingService {
      */
     @Transactional
     public Meeting createMeeting(User user, MeetingCreateRequest request) {
+
+        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+        }
 
         Category category = categoryRepository.findCategoryByCode(request.getCategoryCode());
 
@@ -235,6 +254,10 @@ public class MeetingService {
      */
     @Transactional
     public MeetingUpdateResponse updateMeeting(AuthUser authUser, Long meetingId, MeetingUpdateRequest request) {
+
+        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+        }
 
         User user = userRepository.findActivateUserById(authUser.getId());
 
