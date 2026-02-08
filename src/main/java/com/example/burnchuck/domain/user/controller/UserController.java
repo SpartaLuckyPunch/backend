@@ -1,10 +1,11 @@
 package com.example.burnchuck.domain.user.controller;
 
-import static com.example.burnchuck.common.enums.SuccessMessage.*;
-
-import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.domain.user.dto.request.*;
+import com.example.burnchuck.common.dto.CommonResponse;
+import com.example.burnchuck.common.dto.GetS3Url;
+import com.example.burnchuck.domain.user.dto.request.UserUpdatePasswordRequest;
+import com.example.burnchuck.domain.user.dto.request.UserUpdateProfileRequest;
+import com.example.burnchuck.domain.user.dto.response.UserGetAddressResponse;
 import com.example.burnchuck.domain.user.dto.response.UserGetProfileReponse;
 import com.example.burnchuck.domain.user.dto.response.UserUpdateProfileResponse;
 import com.example.burnchuck.domain.user.service.UserService;
@@ -17,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import static com.example.burnchuck.common.enums.SuccessMessage.*;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
@@ -24,6 +27,34 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
+    /**
+     * 프로필 이미지 업로드 Presigned URL 생성
+     */
+    @GetMapping("/profileImg")
+    public ResponseEntity<CommonResponse<GetS3Url>> getUploadImgUrl(
+            @AuthenticationPrincipal AuthUser authUser,
+            @RequestParam String filename
+    ) {
+        GetS3Url response = userService.getUploadProfileImgUrl(authUser, filename);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(USER_UPLOAD_PROFILE_IMG_LINK_SUCCESS, response));
+    }
+
+    /**
+     * 프로필 이미지 등록
+     */
+    @PatchMapping("/profileImg")
+    public ResponseEntity<CommonResponse<GetS3Url>> getViewImgUrl(
+            @AuthenticationPrincipal AuthUser authUser,
+            @RequestParam String key
+    ) {
+        GetS3Url response = userService.getViewProfileImgUrl(authUser, key);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(USER_UPDATE_PROFILE_IMG_SUCCESS, response));
+    }
 
     /**
      * 내 정보 수정(닉네임, 주소)
@@ -103,5 +134,24 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(USER_GET_PROFILE_SUCCESS, response));
+    }
+
+    /**
+     * 주소 조회
+     */
+    @Operation(
+        summary = "주소 조회",
+        description = """
+                    로그인한 사용자의 주소을 조회할 수 있습니다.
+                    """
+    )
+    @GetMapping("/address")
+    public ResponseEntity<CommonResponse<UserGetAddressResponse>> getAddress(
+        @AuthenticationPrincipal AuthUser authUser
+    ) {
+        UserGetAddressResponse response = userService.getAddress(authUser);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.success(USER_GET_ADDRESS_SUCCESS, response));
     }
 }

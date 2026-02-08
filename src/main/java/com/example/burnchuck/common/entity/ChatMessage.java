@@ -32,14 +32,18 @@ public class ChatMessage {
     @Field("sender_profile")
     private String senderProfile;
 
+    @Field("sequence")
+    private Long sequence;
+
     @CreatedDate
     private LocalDateTime createdDatetime;
 
-    public ChatMessage(Long roomId, Long senderId, String content, String senderNickname, String senderProfile) {
+    public ChatMessage(Long roomId, Long senderId, String content, String senderNickname, String senderProfile, Long sequence) {
         this.roomId = roomId;
         this.senderId = senderId;
         this.content = content;
         this.senderNickname = senderNickname;
         this.senderProfile = senderProfile;
+        this.sequence = sequence;
     }
 }

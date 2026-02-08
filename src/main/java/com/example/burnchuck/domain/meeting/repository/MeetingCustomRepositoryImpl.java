@@ -25,6 +25,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberTemplate;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -52,7 +53,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     ) {
         MeetingSortOption sort = request.getOrder() == null ? MeetingSortOption.LATEST : request.getOrder();
 
-        if (request.getStartDatetime() != null || request.getEndDatetime() != null) {
+        if (request.getStartDate() != null || request.getEndDate() != null) {
             sort = MeetingSortOption.UPCOMING;
         }
 
@@ -85,8 +86,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                     meeting.status.eq(MeetingStatus.OPEN),
                     keywordContains(request.getKeyword()),
                     categoryEq(request.getCategory()),
-                    startAt(request.getStartDatetime()),
-                    endAt(request.getEndDatetime()),
+                    betweenDate(request.getStartDate(), request.getEndDate()),
+                    betweenTime(request.getStartTime(), request.getEndTime()),
                     locationInBoundingBox(boundingBox),
                     inMeetingIdList(meetingIdList)
             )
@@ -104,8 +105,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 meeting.status.eq(MeetingStatus.OPEN),
                 keywordContains(request.getKeyword()),
                 categoryEq(request.getCategory()),
-                startAt(request.getStartDatetime()),
-                endAt(request.getEndDatetime()),
+                betweenDate(request.getStartDate(), request.getEndDate()),
+                betweenTime(request.getStartTime(), request.getEndTime()),
                 locationInBoundingBox(boundingBox),
                 inMeetingIdList(meetingIdList)
             );
@@ -131,12 +132,13 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 meeting.longitude
             ))
             .from(meeting)
+            .leftJoin(meeting.category, category1)
             .where(
                 meeting.status.eq(MeetingStatus.OPEN),
                 keywordContains(request.getKeyword()),
                 categoryEq(request.getCategory()),
-                startAt(request.getStartDatetime()),
-                endAt(request.getEndDatetime()),
+                betweenDate(request.getStartDate(), request.getEndDate()),
+                betweenTime(request.getStartTime(), request.getEndTime()),
                 locationInBoundingBox(boundingBox),
                 inMeetingIdList(meetingIdList)
             )
@@ -223,6 +225,23 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     }
 
     /**
+     * 주최한 모임 중 COMPLETED 되지 않은 모임 조회
+     */
+    @Override
+    public List<Meeting> findActiveHostedMeetings(Long userId) {
+        return queryFactory
+            .select(userMeeting.meeting)
+            .from(userMeeting)
+            .join(userMeeting.meeting, meeting)
+            .where(
+                userMeeting.user.id.eq(userId),
+                userMeeting.meetingRole.eq(MeetingRole.HOST),
+                meeting.status.ne(MeetingStatus.COMPLETED)
+            )
+            .fetch();
+    }
+
+    /**
      * TaskSchedule 복구 대상 모임 조회
      */
     @Override
@@ -242,13 +261,13 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
             .fetch();
     }
 
-    private BooleanExpression categoryEq(String categoryName) {
+    private BooleanExpression categoryEq(String categoryCode) {
 
-        if (categoryName == null) {
+        if (categoryCode == null) {
             return null;
         }
 
-        return category1.category.eq(categoryName);
+        return category1.code.eq(categoryCode);
     }
 
     private BooleanExpression inMeetingIdList(List<Long> meetingIdList) {
@@ -266,14 +285,33 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                 ? meeting.title.containsIgnoreCase(keyword) : null;
     }
 
-    // 모임 시간 시작 범위
-    private BooleanExpression startAt(LocalDateTime startDatetime) {
-        return startDatetime != null ? meeting.meetingDateTime.after(startDatetime) : null;
+    // 모임 날짜 범위
+    private BooleanExpression betweenDate(LocalDate startDate, LocalDate endDate) {
+
+        if (startDate == null || endDate == null) {
+            return null;
+        }
+
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+
+        return meeting.meetingDateTime.between(startDateTime, endDateTime);
     }
 
-    // 모임 시간 끝 범위
-    private BooleanExpression endAt(LocalDateTime endDatetime) {
-        return endDatetime != null ? meeting.meetingDateTime.before(endDatetime) : null;
+    // 모임 시간 범위
+    private BooleanExpression betweenTime(Integer startTime, Integer endTime) {
+
+        if (startTime == null || endTime == null) {
+            return null;
+        }
+
+        NumberTemplate<Integer> timeTemplate = Expressions.numberTemplate(
+            Integer.class,
+            "HOUR({0})",
+            meeting.meetingDateTime
+        );
+
+        return timeTemplate.between(startTime, endTime);
     }
 
     /**

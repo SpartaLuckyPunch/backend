@@ -6,6 +6,7 @@ import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.BoundingBox;
+import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Category;
@@ -13,11 +14,15 @@ import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.RedisSyncFailure;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
+import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.enums.SyncType;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.common.utils.ClientInfoExtractor;
+import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.common.utils.MeetingDistance;
+import com.example.burnchuck.common.utils.S3UrlGenerator;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
@@ -42,9 +47,12 @@ import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import io.lettuce.core.RedisException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
@@ -75,8 +83,22 @@ public class MeetingService {
     private final EventPublisherService eventPublisherService;
     private final MeetingCacheService meetingCacheService;
     private final ChatRoomService chatRoomService;
+    private final S3UrlGenerator s3UrlGenerator;
 
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+
+    // 서울 광화문 위치
+    private final Double DEFAULT_LATITUDE = 37.57;
+    private final Double DEFAULT_LONGITUDE = 126.98;
+
+    /**
+     * 모임 이미지 업로드 Presigned URL 생성
+     */
+    public GetS3Url getUploadMeetingImgUrl(String filename) {
+
+        String key = "meeting/" + UUID.randomUUID();
+        return s3UrlGenerator.generateUploadImgUrl(filename, key);
+    }
 
     /**
      * 모임 생성과 알림 생성 메서드를 호출하는 메서드
@@ -109,7 +131,11 @@ public class MeetingService {
     @Transactional
     public Meeting createMeeting(User user, MeetingCreateRequest request) {
 
-        Category category = categoryRepository.findCategoryById(request.getCategoryId());
+        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+        }
+
+        Category category = categoryRepository.findCategoryByCode(request.getCategoryCode());
 
         Point point = createPoint(request.getLatitude(), request.getLongitude());
 
@@ -140,8 +166,12 @@ public class MeetingService {
             LocationFilterRequest locationRequest,
             Pageable pageable
     ) {
-        User user = userRepository.findActivateUserWithAddress(authUser.getId());
-        Location location = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+        Location location = new Location(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+
+        if (authUser != null) {
+            User user = userRepository.findActivateUserWithAddress(authUser.getId());
+            location = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+        }
 
         if (locationRequest.notNull()) {
             Address address = addressRepository.findAddressByAddressInfo(locationRequest.getProvince(), locationRequest.getCity(), locationRequest.getDistrict());
@@ -157,7 +187,7 @@ public class MeetingService {
 
         try {
             meetingIdList = meetingCacheService.findMeetingsByLocation(location, radius);
-        } catch (RedisException | DataAccessException e) {
+        } catch (RedisException | RedisConnectionFailureException e) {
             boundingBox = MeetingDistance.aroundUserBox(location, radius);
             redisError = true;
         }
@@ -188,7 +218,7 @@ public class MeetingService {
 
         try {
             meetingIdList = meetingCacheService.findMeetingsByViewPort(viewPort);
-        } catch (RedisException | DataAccessException e) {
+        } catch (RedisException | RedisConnectionFailureException e) {
             boundingBox = new BoundingBox(viewPort.getMinLat(), viewPort.getMaxLat(), viewPort.getMinLng(), viewPort.getMaxLng());
         }
 
@@ -210,15 +240,24 @@ public class MeetingService {
     /**
      * 모임 단건 조회
      */
-    @Transactional
-    public MeetingDetailResponse getMeetingDetail(Long meetingId) {
+    @Transactional(readOnly = true)
+    public MeetingDetailResponse getMeetingDetail(Long meetingId, HttpServletRequest httpServletRequest) {
 
-        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+        MeetingDetailResponse meetingDetailResponse = meetingRepository.findMeetingDetail(meetingId)
+            .orElseThrow(() -> new CustomException(MEETING_NOT_FOUND));
 
-        meeting.increaseViews();
+        String ipAddress = ClientInfoExtractor.extractIpAddress(httpServletRequest);
 
-        return meetingRepository.findMeetingDetail(meetingId)
-                .orElseThrow(() -> new CustomException(MEETING_NOT_FOUND));
+        try {
+            meetingCacheService.increaseViewCount(ipAddress, meetingId);
+            Long viewCount = meetingCacheService.getViewCount(meetingId).longValue();
+
+            meetingDetailResponse.increaseViews(viewCount);
+        } catch (RedisException | RedisConnectionFailureException e) {
+            log.error("Redis 예외 발생: {}", e.getMessage());
+        }
+
+        return meetingDetailResponse;
     }
 
     /**
@@ -226,6 +265,10 @@ public class MeetingService {
      */
     @Transactional
     public MeetingUpdateResponse updateMeeting(AuthUser authUser, Long meetingId, MeetingUpdateRequest request) {
+
+        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+        }
 
         User user = userRepository.findActivateUserById(authUser.getId());
 
@@ -236,9 +279,13 @@ public class MeetingService {
             throw new CustomException(ACCESS_DENIED);
         }
 
-        Category category = categoryRepository.findCategoryById(request.getCategoryId());
+        Category category = categoryRepository.findCategoryByCode(request.getCategoryCode());
 
         Point point = createPoint(request.getLatitude(), request.getLongitude());
+
+        if (!ObjectUtils.nullSafeEquals(meeting.getPoint(), point)) {
+            meetingCacheService.saveMeetingLocation(meeting);
+        }
 
         meeting.updateMeeting(request, category, point);
 
@@ -326,15 +373,15 @@ public class MeetingService {
             .filter(userMeeting -> !userMeeting.isHost())
             .map(userMeeting -> new AttendeeResponse(
                 userMeeting.getUser().getId(),
-                userMeeting.getUser().getProfileImgUrl(),
-                userMeeting.getUser().getNickname()
+                UserDisplay.resolveProfileImg(userMeeting.getUser()),
+                UserDisplay.resolveNickname(userMeeting.getUser())
             ))
             .toList();
 
         return new MeetingMemberResponse(
             host.getUser().getId(),
-            host.getUser().getProfileImgUrl(),
-            host.getUser().getNickname(),
+            UserDisplay.resolveProfileImg(host.getUser()),
+            UserDisplay.resolveNickname(host.getUser()),
             attendees
         );
     }

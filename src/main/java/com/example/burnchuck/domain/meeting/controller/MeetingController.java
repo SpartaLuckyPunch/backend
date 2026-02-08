@@ -1,19 +1,13 @@
 package com.example.burnchuck.domain.meeting.controller;
 
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_CREATE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_DELETE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_HOSTED_LIST_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_MEMBER_LIST_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_UPDATE_SUCCESS;
-
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
+import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
@@ -26,6 +20,7 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -35,15 +30,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -52,6 +41,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class MeetingController {
 
     private final MeetingService meetingService;
+
+    /**
+     * 모임 이미지 업로드 Presigned URL 생성
+     */
+    @GetMapping("/img")
+    public ResponseEntity<CommonResponse<GetS3Url>> getUploadImgUrl(
+            @RequestParam String filename
+    ) {
+        GetS3Url response = meetingService.getUploadMeetingImgUrl(filename);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(MEETING_IMG_UPLOAD_LINK_SUCCESS, response));
+    }
 
     /**
      * 모임 생성
@@ -145,9 +147,10 @@ public class MeetingController {
     )
     @GetMapping("/{meetingId}")
     public ResponseEntity<CommonResponse<MeetingDetailResponse>> getMeetingDetail(
-            @PathVariable Long meetingId
+            @PathVariable Long meetingId,
+            HttpServletRequest httpServletRequest
     ) {
-        MeetingDetailResponse response = meetingService.getMeetingDetail(meetingId);
+        MeetingDetailResponse response = meetingService.getMeetingDetail(meetingId, httpServletRequest);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_GET_SUCCESS, response));

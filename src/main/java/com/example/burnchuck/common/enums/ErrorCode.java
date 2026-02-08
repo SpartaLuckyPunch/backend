@@ -10,7 +10,9 @@ public enum ErrorCode {
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
     LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "유효 기간이 만료된 토큰입니다."),
     INCORRECT_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
+    REFRESH_NOT_FOUND(HttpStatus.NOT_FOUND, "리프레시 토큰이 존재하지 않습니다."),
 
     EMAIL_EXIST(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
     NICKNAME_EXIST(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
@@ -20,6 +22,7 @@ public enum ErrorCode {
 
     // 유저
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "유저가 존재하지 않습니다."),
+    USER_IMG_NOT_FOUND(HttpStatus.NOT_FOUND, "프로필 사진이 존재하지 않습니다."),
     SAME_PASSWORD(HttpStatus.BAD_REQUEST, "현재 비밀번호와 새 비밀번호가 동일합니다."),
     INVALID_USER_ROLE(HttpStatus.BAD_REQUEST, "유효하지 않은 권한입니다."),
 
@@ -46,6 +49,7 @@ public enum ErrorCode {
     // 모임
     MEETING_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 번개입니다."),
     HOST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주최자입니다"),
+    MEETING_IMG_NOT_FOUND(HttpStatus.BAD_REQUEST, "모임 이미지가 존재하지 않습니다."),
 
     // 모임 참여
     ATTENDANCE_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 참여 신청한 번개입니다."),
@@ -65,6 +69,11 @@ public enum ErrorCode {
     CHAT_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 참여자가 존재하지 않습니다."),
     CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 방이 존재하지 않습니다."),
     CANNOT_LEAVE_CLOSED_MEETING(HttpStatus.BAD_REQUEST, "마감된 모임의 채팅방은 나갈 수 없습니다."),
+
+    // 이미지
+    UNAUTHORIZED_IMAGE_ACCESS(HttpStatus.UNAUTHORIZED, "해당 이미지에 대한 접근 권한이 없습니다."),
+    UNSUPPORTED_FILE_TYPE(HttpStatus.BAD_REQUEST, "지원되지 않는 파일 형식입니다."),
+    S3_INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 처리 중 오류가 발생했습니다.")
     ;
 
     private final HttpStatus status;

@@ -39,4 +39,11 @@ public class ChatRoom extends BaseEntity {
         this.meetingId = null;
     }
 
+    public boolean isPrivate() {
+        return this.type == RoomType.PRIVATE;
+    }
+
+    public boolean isGroup() {
+        return this.type == RoomType.GROUP;
+    }
 }
