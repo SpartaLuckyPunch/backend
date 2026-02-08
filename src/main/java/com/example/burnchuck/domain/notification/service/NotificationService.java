@@ -11,6 +11,7 @@ import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.dto.response.NotificationGetListResponse;
 import com.example.burnchuck.domain.notification.dto.response.NotificationResponse;
+import com.example.burnchuck.domain.notification.dto.response.NotificationSseResponse;
 import com.example.burnchuck.domain.notification.repository.NotificationRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.ArrayList;
@@ -20,6 +21,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +33,60 @@ public class NotificationService {
     private final FollowRepository followRepository;
     private final UserMeetingRepository userMeetingRepository;
     private final UserRepository userRepository;
+
     private final SseNotifyService sseNotifyService;
+    private final RedisMessageService redisMessageService;
+    private final EmitterService emitterService;
+
+    /**
+     * 클라이언트와의 SSE 스트림 통신 연결
+     */
+    public SseEmitter subscribe(AuthUser authUser) {
+
+        Long userId = authUser.getId();
+
+        SseEmitter emitter = emitterService.createEmitter(userId);
+
+        emitter.onCompletion(() -> {
+            emitterService.deleteEmitter(userId);
+            redisMessageService.removeSubscribe(userId);
+        });
+        emitter.onTimeout(emitter::complete);
+
+        long unread = notificationRepository.countByUserIdAndIsReadFalse(userId);
+
+        sseNotifyService.send(emitter, userId, NotificationSseResponse.sseConnection(unread));
+
+        redisMessageService.subscribe(userId);
+
+        return emitter;
+    }
+
+    /**
+     * 해당 알림을 수신하는 모든 유저에게 전송
+     */
+    private void publishNotificationList(List<Notification> notificationList) {
+
+        for (Notification notification : notificationList) {
+
+            Long userId = notification.getUser().getId();
+            NotificationResponse notificationResponse = NotificationResponse.from(notification);
+
+            redisMessageService.publish(userId, notificationResponse);
+        }
+    }
+
+    /**
+     * 앞선 내용 커밋 후 실행
+     */
+    private void sendAllAfterCommit(List<Notification> notificationList) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                publishNotificationList(notificationList);
+            }
+        });
+    }
 
     /**
      * 유저가 모임을 생성했을 때 -> 해당 유저를 팔로우하는 사람에게 알림 발송
@@ -60,7 +117,7 @@ public class NotificationService {
 
         notificationRepository.saveAll(notificationList);
 
-        sseNotifyService.sendAllAfterCommit(notificationList);
+        sendAllAfterCommit(notificationList);
     }
 
     /**
@@ -84,7 +141,7 @@ public class NotificationService {
 
         notificationRepository.save(notification);
 
-        sseNotifyService.sendAfterCommit(notification);
+        sendAllAfterCommit(List.of(notification));
     }
 
     /**
@@ -116,7 +173,7 @@ public class NotificationService {
 
         notificationRepository.saveAll(notificationList);
 
-        sseNotifyService.sendAllAfterCommit(notificationList);
+        sendAllAfterCommit(notificationList);
     }
 
     /**

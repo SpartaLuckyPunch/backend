@@ -15,7 +15,7 @@ import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.meeting.service.AttendanceService;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
 import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
-import com.example.burnchuck.domain.notification.repository.EmitterRepository;
+import com.example.burnchuck.domain.notification.service.EmitterService;
 import com.example.burnchuck.domain.review.repository.ReviewRepository;
 import com.example.burnchuck.domain.user.dto.request.UserUpdatePasswordRequest;
 import com.example.burnchuck.domain.user.dto.request.UserUpdateProfileRequest;
@@ -42,12 +42,12 @@ public class UserService {
     private final FollowRepository followRepository;
     private final MeetingLikeRepository meetingLikeRepository;
     private final ReviewRepository reviewRepository;
-    private final EmitterRepository emitterRepository;
     private final UserMeetingRepository userMeetingRepository;
     private final MeetingRepository meetingRepository;
 
     private final MeetingService meetingService;
     private final AttendanceService attendanceService;
+    private final EmitterService emitterService;
 
     private final PasswordEncoder passwordEncoder;
     private final S3UrlGenerator s3UrlGenerator;
@@ -156,7 +156,7 @@ public class UserService {
         followRepository.deleteByFollowerId(user.getId());
         followRepository.deleteByFolloweeId(user.getId());
 
-        emitterRepository.disconnectAllEmittersByUserId(user.getId());
+        emitterService.disconnectAllEmittersByUserId(user.getId());
 
         user.delete();
         userRepository.saveAndFlush(user);
