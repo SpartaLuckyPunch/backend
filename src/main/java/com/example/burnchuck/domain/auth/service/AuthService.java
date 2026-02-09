@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -161,41 +160,46 @@ public class AuthService {
     public AuthTokenResponse socialLogin(String code, Provider provider) {
 
         String accessToken = kakaoService.getKakaoAccessToken(code);
-
         KakaoUserInfoResponse userInfo = kakaoService.getKakaoUserInfo(accessToken);
-
-        String email = userInfo.getEmail();
-        String nickname = userInfo.getNickname();
         String providerId = String.valueOf(userInfo.getId());
 
-        Optional<User> optionalUser = userRepository.findByProviderAndProviderIdAndIsDeletedFalse(provider, providerId);
+        User user = userRepository.findByProviderAndProviderId(provider, providerId)
+                .map(existingUser -> {
+                    if (existingUser.isDeleted()) {
+                        existingUser.reActivate();
+                    }
+                    return existingUser;
+                })
 
-        User user;
-        if (optionalUser.isEmpty()) {
-
-            String tempPassword = passwordEncoder.encode(UUID.randomUUID().toString());
-
-            Address defaultAddress = addressRepository.findById(1L)
-                    .orElseThrow(() -> new CustomException(ErrorCode.ADDRESS_NOT_FOUND));
-
-            // 유저 존재 X -> 신규 소셜 유저 생성
-            user = new User(
-                    email,
-                    tempPassword,
-                    nickname,
-                    null,
-                    false,
-                    defaultAddress,
-                    UserRole.USER,
-                    provider,
-                    providerId
-            );
-            userRepository.save(user);
-        } else {
-            // 유저 존재 O -> 기존 유저 정보 가져오기
-            user = optionalUser.get();
-        }
+                .orElseGet(() -> createSocialUser(userInfo, provider));
 
         return generateToken(user);
     }
-}
+
+    private User createSocialUser(KakaoUserInfoResponse userInfo, Provider provider) {
+
+        if (userRepository.existsByEmail(userInfo.getEmail())) {
+            throw new CustomException(ErrorCode.EMAIL_EXIST);
+        }
+        if (userRepository.existsByNickname(userInfo.getNickname())) {
+            throw new CustomException(ErrorCode.NICKNAME_EXIST);
+        }
+
+        String tempPassword = passwordEncoder.encode(UUID.randomUUID().toString());
+
+        Address defaultAddress = addressRepository.findById(1L)
+                .orElseThrow(() -> new CustomException(ErrorCode.ADDRESS_NOT_FOUND));
+
+        User newUser = new User(
+                userInfo.getEmail(),
+                tempPassword,
+                userInfo.getNickname(),
+                null,
+                false,
+                defaultAddress,
+                UserRole.USER,
+                provider,
+                String.valueOf(userInfo.getId())
+        );
+        return userRepository.save(newUser);
+    }}

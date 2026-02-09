@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public abstract class BaseEntity {
 
     @Column(nullable = false, columnDefinition = "TINYINT(1)")
-    private boolean isDeleted = false;
+    protected boolean isDeleted = false;
 
     @Column
     private LocalDateTime deletedDatetime;

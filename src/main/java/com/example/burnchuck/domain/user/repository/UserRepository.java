@@ -19,7 +19,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByIdAndIsDeletedFalse(Long id);
 
-    Optional<User> findByProviderAndProviderIdAndIsDeletedFalse(Provider provider, String providerId);
+    Optional<User> findByProviderAndProviderId(Provider provider, String providerId);
 
     @Query("""
         SELECT u
@@ -47,10 +47,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     default User findActivateUserWithAddress(Long id) {
         return findActiveUserByIdWithAddress(id)
             .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-    }
-
-    default User findActivateSocialUser(Provider provider, String providerId) {
-        return findByProviderAndProviderIdAndIsDeletedFalse(provider, providerId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 }
