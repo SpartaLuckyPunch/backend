@@ -164,16 +164,17 @@ public class AuthService {
         String providerId = String.valueOf(userInfo.getId());
 
         User user = userRepository.findByProviderAndProviderId(provider, providerId)
-                .map(existingUser -> {
-                    if (existingUser.isDeleted()) {
-                        existingUser.reActivate();
-                    }
-                    return existingUser;
-                })
-
+                .map(this::checkUserStatus)
                 .orElseGet(() -> createSocialUser(userInfo, provider));
 
         return generateToken(user);
+    }
+
+    private User checkUserStatus(User user) {
+        if (user.isDeleted()) {
+            throw new CustomException(ErrorCode.DELETED_USER);
+        }
+        return user;
     }
 
     private User createSocialUser(KakaoUserInfoResponse userInfo, Provider provider) {
