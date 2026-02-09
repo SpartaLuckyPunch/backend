@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @Table(name = "notifications",
     indexes = {
         @Index(
-            name = "idx_user_read",
-            columnList = "user_id, is_read"
+            name = "idx_unread_count",
+            columnList = "user_id, is_read, notified_datetime"
         )
     })
 @Getter
