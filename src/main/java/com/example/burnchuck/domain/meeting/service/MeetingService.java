@@ -11,11 +11,13 @@ import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.common.entity.RedisSyncFailure;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
+import com.example.burnchuck.common.enums.SyncType;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.ClientInfoExtractor;
 import com.example.burnchuck.common.utils.UserDisplay;
@@ -38,6 +40,7 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
+import com.example.burnchuck.domain.meeting.repository.RedisSyncFailureRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
@@ -49,13 +52,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -74,6 +77,7 @@ public class MeetingService {
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
     private final AddressRepository addressRepository;
+    private final RedisSyncFailureRepository redisSyncFailureRepository;
 
     private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
@@ -105,7 +109,14 @@ public class MeetingService {
 
         Meeting meeting = createMeeting(user, request);
 
-        meetingCacheService.saveMeetingLocation(meeting);
+        try {
+            meetingCacheService.saveMeetingLocation(meeting);
+        } catch (RedisException | DataAccessException e) {
+            log.error("Redis 예외 발생: {}", e.getMessage());
+
+            RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.CREATE);
+            redisSyncFailureRepository.save(redisSyncFailure);
+        }
 
         notificationService.notifyNewFollowerPost(meeting, user);
 
@@ -278,6 +289,15 @@ public class MeetingService {
 
         meeting.updateMeeting(request, category, point);
 
+        try {
+            meetingCacheService.saveMeetingLocation(meeting);
+        } catch (RedisException | DataAccessException e) {
+            log.error("Redis 예외 발생: {}", e.getMessage());
+
+            RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.CREATE);
+            redisSyncFailureRepository.save(redisSyncFailure);
+        }
+
         eventPublisherService.publishMeetingUpdatedEvent(meeting);
 
         return MeetingUpdateResponse.from(meeting);
@@ -300,7 +320,14 @@ public class MeetingService {
 
         meeting.delete();
 
-        meetingCacheService.deleteMeetingLocation(meeting.getId());
+        try {
+            meetingCacheService.deleteMeetingLocation(meeting.getId());
+        } catch (RedisException | DataAccessException e) {
+            log.error("Redis 예외 발생: {}", e.getMessage());
+
+            RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.DELETE);
+            redisSyncFailureRepository.save(redisSyncFailure);
+        }
 
         eventPublisherService.publishMeetingDeletedEvent(meeting);
     }
