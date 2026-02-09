@@ -80,10 +80,10 @@ public class AuthController {
 
     @PostMapping("/reissue")
     public ResponseEntity<CommonResponse<Void>> reissueToken(
-        @Valid @RequestBody AuthReissueTokenRequest request,
-        HttpServletResponse response
+            @CookieValue(name = "refreshToken") String refreshToken,
+            HttpServletResponse response
     ) {
-        AuthTokenResponse authTokenResponse = authService.reissueToken(request);
+        AuthTokenResponse authTokenResponse = authService.reissueToken(refreshToken);
 
         addCookies(response, authTokenResponse);
 
