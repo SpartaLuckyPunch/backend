@@ -13,6 +13,8 @@ spring:
       port: ${REDIS_PORT}
     mongodb:
       uri: ${MONGO_DB_URI}
+    hikari:
+      maximum-pool-size: 20
   jpa:
     show-sql: true
     hibernate:
