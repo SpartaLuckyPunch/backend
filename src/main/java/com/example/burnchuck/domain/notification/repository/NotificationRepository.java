@@ -29,7 +29,14 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
         """)
     List<NotificationResponse> findAllNotificationsInSevenDaysByUser(@Param("user") User user, @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo);
 
-    long countByUserIdAndIsReadFalse(Long userId);
+    @Query("""
+        SELECT count(1)
+        FROM Notification n
+        WHERE n.user.id = :userId
+            AND n.notifiedDatetime >= :sevenDaysAgo
+            AND n.isRead = false
+        """)
+    long countUnReadNotificationsInSevenDaysByUserId(@Param("userId") Long userId, @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo);
 
     default Notification findNotificationById(Long notificationId) {
         return findById(notificationId)

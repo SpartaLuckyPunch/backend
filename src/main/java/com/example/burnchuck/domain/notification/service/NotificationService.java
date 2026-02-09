@@ -55,7 +55,8 @@ public class NotificationService {
         });
         emitter.onTimeout(emitter::complete);
 
-        long unread = notificationRepository.countByUserIdAndIsReadFalse(userId);
+        LocalDateTime sevenDaysAgo = LocalDate.now().atStartOfDay().minusDays(7);
+        long unread = notificationRepository.countUnReadNotificationsInSevenDaysByUserId(userId, sevenDaysAgo);
 
         sseNotifyService.send(emitter, userId, NotificationSseResponse.sseConnection(unread));
 
