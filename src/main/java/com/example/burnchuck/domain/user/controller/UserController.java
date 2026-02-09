@@ -1,13 +1,8 @@
 package com.example.burnchuck.domain.user.controller;
 
-import static com.example.burnchuck.common.enums.SuccessMessage.USER_DELETE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.USER_GET_ADDRESS_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.USER_GET_PROFILE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.USER_UPDATE_PASSWORD_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.USER_UPDATE_PROFILE_SUCCESS;
-
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
+import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.domain.user.dto.request.UserUpdatePasswordRequest;
 import com.example.burnchuck.domain.user.dto.request.UserUpdateProfileRequest;
 import com.example.burnchuck.domain.user.dto.response.UserGetAddressResponse;
@@ -21,14 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,6 +27,34 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+
+    /**
+     * 프로필 이미지 업로드 Presigned URL 생성
+     */
+    @GetMapping("/profileImg")
+    public ResponseEntity<CommonResponse<GetS3Url>> getUploadImgUrl(
+            @AuthenticationPrincipal AuthUser authUser,
+            @RequestParam String filename
+    ) {
+        GetS3Url response = userService.getUploadProfileImgUrl(authUser, filename);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(USER_UPLOAD_PROFILE_IMG_LINK_SUCCESS, response));
+    }
+
+    /**
+     * 프로필 이미지 등록
+     */
+    @PatchMapping("/profileImg")
+    public ResponseEntity<CommonResponse<GetS3Url>> getViewImgUrl(
+            @AuthenticationPrincipal AuthUser authUser,
+            @RequestParam String key
+    ) {
+        GetS3Url response = userService.getViewProfileImgUrl(authUser, key);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(USER_UPDATE_PROFILE_IMG_SUCCESS, response));
+    }
 
     /**
      * 내 정보 수정(닉네임, 주소)
