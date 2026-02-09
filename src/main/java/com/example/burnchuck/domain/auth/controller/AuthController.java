@@ -42,7 +42,7 @@ public class AuthController {
                     """
     )
     @PostMapping("/signup")
-    public ResponseEntity<CommonResponse<AuthTokenResponse>> signup(
+    public ResponseEntity<CommonResponse<Void>> signup(
         @Valid @RequestBody AuthSignupRequest request,
         HttpServletResponse response
     ) {
@@ -51,7 +51,7 @@ public class AuthController {
         addCookies(response, authTokenResponse);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(CommonResponse.success(AUTH_SIGNUP_SUCCESS, authTokenResponse));
+            .body(CommonResponse.success(AUTH_SIGNUP_SUCCESS, null));
     }
 
     /**
@@ -66,7 +66,7 @@ public class AuthController {
                     """
     )
     @PostMapping("/login")
-    public ResponseEntity<CommonResponse<AuthTokenResponse>> login(
+    public ResponseEntity<CommonResponse<Void>> login(
         @Valid @RequestBody AuthLoginRequest request,
         HttpServletResponse response
     ) {
@@ -75,11 +75,11 @@ public class AuthController {
         addCookies(response, authTokenResponse);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(CommonResponse.success(AUTH_LOGIN_SUCCESS, authTokenResponse));
+            .body(CommonResponse.success(AUTH_LOGIN_SUCCESS, null));
     }
 
     @PostMapping("/reissue")
-    public ResponseEntity<CommonResponse<AuthTokenResponse>> reissueToken(
+    public ResponseEntity<CommonResponse<Void>> reissueToken(
         @Valid @RequestBody AuthReissueTokenRequest request,
         HttpServletResponse response
     ) {
@@ -88,7 +88,7 @@ public class AuthController {
         addCookies(response, authTokenResponse);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(CommonResponse.success(AUTH_REISSUE_SUCCESS, authTokenResponse));
+            .body(CommonResponse.success(AUTH_REISSUE_SUCCESS, null));
     }
 
     /**
@@ -145,25 +145,22 @@ public class AuthController {
      */
     private void addCookies(HttpServletResponse response, AuthTokenResponse tokenResponse) {
 
-        // 공백(' ') 에러 방지
         String at = tokenResponse.getToken().replace("Bearer ", "");
         String rt = tokenResponse.getRefreshToken().replace("Bearer ", "");
 
-        // Access Token 쿠키
         ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", at)
                 .path("/")
                 .httpOnly(true)
-                .secure(true)   // Local Test -> false 배포 -> true
-                .maxAge(3600) // 유효기간 1시간
+                .secure(true)
+                .maxAge(3600)
                 .sameSite("Lax")
                 .build();
 
-        // Refresh Token 쿠키
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", rt)
                 .path("/")
                 .httpOnly(true)
                 .secure(true)
-                .maxAge(604800) // 유효기간 7일
+                .maxAge(604800)
                 .sameSite("Lax")
                 .build();
 
