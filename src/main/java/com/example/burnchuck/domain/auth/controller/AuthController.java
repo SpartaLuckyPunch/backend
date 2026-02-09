@@ -51,7 +51,7 @@ public class AuthController {
         addCookies(response, authTokenResponse);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(CommonResponse.success(AUTH_SIGNUP_SUCCESS, null));
+            .body(CommonResponse.successNodata(AUTH_SIGNUP_SUCCESS));
     }
 
     /**
@@ -75,7 +75,7 @@ public class AuthController {
         addCookies(response, authTokenResponse);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(CommonResponse.success(AUTH_LOGIN_SUCCESS, null));
+            .body(CommonResponse.successNodata(AUTH_LOGIN_SUCCESS));
     }
 
     @PostMapping("/reissue")
@@ -88,7 +88,7 @@ public class AuthController {
         addCookies(response, authTokenResponse);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(CommonResponse.success(AUTH_REISSUE_SUCCESS, null));
+            .body(CommonResponse.successNodata(AUTH_REISSUE_SUCCESS));
     }
 
     /**
@@ -115,7 +115,7 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, atCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, rtCookie.toString());
 
-        return ResponseEntity.ok(CommonResponse.success(AUTH_LOGIN_SUCCESS, null));
+        return ResponseEntity.ok(CommonResponse.successNodata(AUTH_LOGIN_SUCCESS));
     }
 
     /**
