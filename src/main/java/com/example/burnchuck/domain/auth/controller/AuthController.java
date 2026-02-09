@@ -7,7 +7,6 @@ import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_SIGNUP_SUCC
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.enums.Provider;
 import com.example.burnchuck.domain.auth.dto.request.AuthLoginRequest;
-import com.example.burnchuck.domain.auth.dto.request.AuthReissueTokenRequest;
 import com.example.burnchuck.domain.auth.dto.request.AuthSignupRequest;
 import com.example.burnchuck.domain.auth.dto.response.AuthTokenResponse;
 import com.example.burnchuck.domain.auth.service.AuthService;
