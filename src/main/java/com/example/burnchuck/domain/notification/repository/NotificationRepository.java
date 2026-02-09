@@ -27,7 +27,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             AND n.notifiedDatetime >= :sevenDaysAgo
         ORDER BY n.notifiedDatetime DESC
         """)
-    List<NotificationResponse> findAllNotificationsByUser(@Param("user") User user, @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo);
+    List<NotificationResponse> findAllNotificationsInSevenDaysByUser(@Param("user") User user, @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo);
 
     long countByUserIdAndIsReadFalse(Long userId);
 

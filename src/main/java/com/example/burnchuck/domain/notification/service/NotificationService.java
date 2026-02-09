@@ -188,7 +188,7 @@ public class NotificationService {
 
         LocalDateTime sevenDaysAgo = LocalDate.now().atStartOfDay().minusDays(7);
 
-        List<NotificationResponse> notificaionList = notificationRepository.findAllNotificationsByUser(user, sevenDaysAgo);
+        List<NotificationResponse> notificaionList = notificationRepository.findAllNotificationsInSevenDaysByUser(user, sevenDaysAgo);
 
         return new NotificationGetListResponse(notificaionList);
     }
