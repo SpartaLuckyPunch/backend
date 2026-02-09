@@ -145,8 +145,8 @@ public class AuthController {
      */
     private void addCookies(HttpServletResponse response, AuthTokenResponse tokenResponse) {
 
-        String at = tokenResponse.getToken().replace("Bearer ", "");
-        String rt = tokenResponse.getRefreshToken().replace("Bearer ", "");
+        String at = tokenResponse.getToken();
+        String rt = tokenResponse.getRefreshToken();
 
         ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", at)
                 .path("/")
