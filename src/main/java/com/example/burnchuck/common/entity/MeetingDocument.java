@@ -19,8 +19,12 @@ public class MeetingDocument {
     @Field(type = FieldType.Text)
     private String title;
 
+    @Field(type = FieldType.Keyword)
+    private String categoryCode;
+
     public MeetingDocument(Meeting meeting) {
         this.id = String.valueOf(meeting.getId());
         this.title = meeting.getTitle();
+        this.categoryCode = meeting.getCategory().getCode();
     }
 }

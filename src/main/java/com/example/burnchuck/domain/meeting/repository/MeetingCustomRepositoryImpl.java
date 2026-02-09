@@ -53,6 +53,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     ) {
         MeetingSortOption sort = request.getOrder() == null ? MeetingSortOption.LATEST : request.getOrder();
 
+        // TODO : 이렇게 하면 일정 범위 검색할 때 어떤 정렬을 사용하고 싶어도 사용할 수 없음
         if (request.getStartDate() != null || request.getEndDate() != null) {
             sort = MeetingSortOption.UPCOMING;
         }
