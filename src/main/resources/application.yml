@@ -30,6 +30,19 @@ kakao:
   client-id: ${KAKAO_CLIENT_ID}
   redirect-uri: ${KAKAO_REDIRECT_URI}
 
+cloud:
+  aws:
+    s3:
+      bucket: ${BUCKET_NAME}
+    stack.auto: false
+    region:
+      static: ${BUCKET_REGION}
+    credentials:
+      access-key: ${ACCESS_KEY}
+      secret-key: ${SECRET_KEY}
+    cloudfront:
+      domain: ${CLOUDFRONT_DOMAIN}
+
 jwt:
   secret:
     key: ${JWT_SECRET_KEY}
