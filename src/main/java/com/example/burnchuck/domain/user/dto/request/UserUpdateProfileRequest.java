@@ -21,4 +21,6 @@ public class UserUpdateProfileRequest {
     private String city;
 
     private String district;
+
+    private String profileImgUrl;
 }
