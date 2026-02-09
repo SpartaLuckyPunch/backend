@@ -1,5 +1,6 @@
 package com.example.burnchuck.common.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -26,6 +27,7 @@ public class UserRefresh {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(nullable = false)
     private String refreshToken;
 
     public UserRefresh(User user, String refreshToken) {
