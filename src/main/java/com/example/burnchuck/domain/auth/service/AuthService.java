@@ -123,8 +123,6 @@ public class AuthService {
     @Transactional
     public AuthTokenResponse reissueToken(String refreshToken) {
 
-//        String refreshToken = request.getRefreshToken();
-
         if (jwtUtil.isExpired(refreshToken)) {
             throw new CustomException(ErrorCode.EXPIRED_TOKEN);
         }
