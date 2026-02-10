@@ -4,6 +4,8 @@ import com.example.burnchuck.domain.notification.dto.response.NotificationRespon
 import com.example.burnchuck.domain.notification.dto.response.NotificationSseResponse;
 import com.example.burnchuck.domain.notification.repository.NotificationRepository;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,7 +37,8 @@ public class SseNotifyService {
 
         Map<String, SseEmitter> emitters = emitterService.findAllEmittersByUserId(userId);
 
-        long unread = notificationRepository.countByUserIdAndIsReadFalse(userId);
+        LocalDateTime sevenDaysAgo = LocalDate.now().atStartOfDay().minusDays(7);
+        long unread = notificationRepository.countUnReadNotificationsInSevenDaysByUserId(userId, sevenDaysAgo);
 
         emitters.forEach(
             (key, emitter) -> send(emitter, userId, NotificationSseResponse.newNotification(unread, notification))
