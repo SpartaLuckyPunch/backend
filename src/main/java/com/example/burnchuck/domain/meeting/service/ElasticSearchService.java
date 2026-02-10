@@ -1,10 +1,12 @@
 package com.example.burnchuck.domain.meeting.service;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.MeetingDocument;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.repository.MeetingDocumentRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +30,10 @@ public class ElasticSearchService {
         meetingDocumentRepository.save(meetingDocument);
     }
 
-    public List<MeetingDocument> searchByName(MeetingSearchRequest searchRequest) {
+    public List<MeetingDocument> searchByName(MeetingSearchRequest searchRequest, Location location) {
 
         NativeQuery query = NativeQuery.builder()
-            .withQuery(buildSearchQuery(searchRequest))
+            .withQuery(buildSearchQuery(searchRequest, location))
             .build();
 
         SearchHits<MeetingDocument> search = elasticsearchOperations.search(query, MeetingDocument.class);
@@ -41,15 +43,25 @@ public class ElasticSearchService {
             .collect(Collectors.toList());
     }
 
-    private Query buildSearchQuery(MeetingSearchRequest searchRequest) {
-        return Query.of(q->q.bool(b-> {
+    private Query buildSearchQuery(MeetingSearchRequest searchRequest, Location location) {
 
-            Query name = nameContains(searchRequest.getKeyword());
-            if (name != null) b.must(name);
+        Query name = nameContains(searchRequest.getKeyword());
 
-            Query type = categoryEq(searchRequest.getCategory());
-            if (type != null) b.filter(type);
+        List<Query> filters = new ArrayList<>();
 
+        Query type = categoryEq(searchRequest.getCategory());
+        if (type != null) filters.add(type);
+
+        Query radiusDistance = inDistance(searchRequest.getDistance(), location);
+        if (radiusDistance != null) filters.add(radiusDistance);
+
+        return Query.of(q -> q.bool(b -> {
+            if (name != null) {
+                b.must(name);
+            }
+            if (!filters.isEmpty()) {
+                b.filter(filters);
+            }
             return b;
         }));
     }
@@ -64,5 +76,17 @@ public class ElasticSearchService {
         return categoryCode != null
             ? Query.of(q->q.term(t->t.field("categoryCode").value(categoryCode)))
             : null;
+    }
+
+    private Query inDistance(Double distance, Location location) {
+
+        return location != null
+            ? Query.of(q -> q.geoDistance(g -> g.field("geoPoint")
+            .distance(distance + "km")
+            .location(gl -> gl.latlon(ll -> ll
+                .lat(location.getLatitude())
+                .lon(location.getLongitude()))
+            )))
+            :null;
     }
 }

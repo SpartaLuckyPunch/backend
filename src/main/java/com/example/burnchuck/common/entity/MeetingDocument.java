@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -22,9 +23,12 @@ public class MeetingDocument {
     @Field(type = FieldType.Keyword)
     private String categoryCode;
 
+    private GeoPoint geoPoint;
+
     public MeetingDocument(Meeting meeting) {
         this.id = String.valueOf(meeting.getId());
         this.title = meeting.getTitle();
         this.categoryCode = meeting.getCategory().getCode();
+        this.geoPoint = new GeoPoint(meeting.getLatitude(), meeting.getLongitude());
     }
 }
