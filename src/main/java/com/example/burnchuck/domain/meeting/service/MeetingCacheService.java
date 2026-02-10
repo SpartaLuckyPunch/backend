@@ -17,7 +17,6 @@ import org.springframework.data.geo.Circle;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
-import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation;
 import org.springframework.data.redis.connection.RedisGeoCommands.GeoSearchCommandArgs;
@@ -50,11 +49,7 @@ public class MeetingCacheService {
 
         Point point = new Point(meeting.getLongitude(), meeting.getLatitude());
 
-        try {
-            geoOperations.add(CACHE_GEO_KEY, point, String.valueOf(meeting.getId()));
-        } catch (RedisException | RedisConnectionFailureException e) {
-            log.error("Redis 예외 발생: {}", e.getMessage());
-        }
+        geoOperations.add(CACHE_GEO_KEY, point, String.valueOf(meeting.getId()));
     }
 
     /**
@@ -104,11 +99,19 @@ public class MeetingCacheService {
      */
     public void deleteMeetingLocation(Long meetingId) {
 
-        try {
-            redisTemplate.opsForZSet().remove(CACHE_GEO_KEY, String.valueOf(meetingId));
-        } catch (RedisException | RedisConnectionFailureException e) {
-            log.error("Redis 예외 발생: {}", e.getMessage());
-        }
+        redisTemplate.opsForZSet().remove(CACHE_GEO_KEY, String.valueOf(meetingId));
+    }
+
+    /**
+     * 저장된 모든 내용 조회
+     */
+    public Set<Long> findAll() {
+
+        Set<String> members = redisTemplate.opsForZSet().range(CACHE_GEO_KEY, 0, -1);
+
+        return members.stream()
+            .map(Long::parseLong)
+            .collect(Collectors.toSet());
     }
 
     /**

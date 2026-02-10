@@ -6,18 +6,23 @@ import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.BoundingBox;
+import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.common.entity.RedisSyncFailure;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
+import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
+import com.example.burnchuck.common.enums.SyncType;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.ClientInfoExtractor;
 import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.common.utils.MeetingDistance;
+import com.example.burnchuck.common.utils.S3UrlGenerator;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
@@ -35,6 +40,7 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
+import com.example.burnchuck.domain.meeting.repository.RedisSyncFailureRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
@@ -45,12 +51,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -69,11 +77,13 @@ public class MeetingService {
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
     private final AddressRepository addressRepository;
+    private final RedisSyncFailureRepository redisSyncFailureRepository;
 
     private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
     private final MeetingCacheService meetingCacheService;
     private final ChatRoomService chatRoomService;
+    private final S3UrlGenerator s3UrlGenerator;
     private final ElasticSearchService elasticSearchService;
 
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
@@ -81,6 +91,15 @@ public class MeetingService {
     // 서울 광화문 위치
     private final Double DEFAULT_LATITUDE = 37.57;
     private final Double DEFAULT_LONGITUDE = 126.98;
+
+    /**
+     * 모임 이미지 업로드 Presigned URL 생성
+     */
+    public GetS3Url getUploadMeetingImgUrl(String filename) {
+
+        String key = "meeting/" + UUID.randomUUID();
+        return s3UrlGenerator.generateUploadImgUrl(filename, key);
+    }
 
     /**
      * 모임 생성과 알림 생성 메서드를 호출하는 메서드
@@ -91,7 +110,15 @@ public class MeetingService {
 
         Meeting meeting = createMeeting(user, request);
 
-        meetingCacheService.saveMeetingLocation(meeting);
+        try {
+            meetingCacheService.saveMeetingLocation(meeting);
+        } catch (RedisException | DataAccessException e) {
+            log.error("Redis 예외 발생: {}", e.getMessage());
+
+            RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.CREATE);
+            redisSyncFailureRepository.save(redisSyncFailure);
+        }
+
         elasticSearchService.saveMeeting(meeting);
 
         notificationService.notifyNewFollowerPost(meeting, user);
@@ -106,6 +133,10 @@ public class MeetingService {
      */
     @Transactional
     public Meeting createMeeting(User user, MeetingCreateRequest request) {
+
+        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+        }
 
         Category category = categoryRepository.findCategoryByCode(request.getCategoryCode());
 
@@ -148,10 +179,6 @@ public class MeetingService {
         if (locationRequest.notNull()) {
             Address address = addressRepository.findAddressByAddressInfo(locationRequest.getProvince(), locationRequest.getCity(), locationRequest.getDistrict());
             location = new Location(address.getLatitude(), address.getLongitude());
-        }
-
-        if (searchRequest.getKeyword() != null) {
-
         }
 
         List<Long> meetingIdList = null;
@@ -242,6 +269,10 @@ public class MeetingService {
     @Transactional
     public MeetingUpdateResponse updateMeeting(AuthUser authUser, Long meetingId, MeetingUpdateRequest request) {
 
+        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+        }
+
         User user = userRepository.findActivateUserById(authUser.getId());
 
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
@@ -256,7 +287,14 @@ public class MeetingService {
         Point point = createPoint(request.getLatitude(), request.getLongitude());
 
         if (!ObjectUtils.nullSafeEquals(meeting.getPoint(), point)) {
-            meetingCacheService.saveMeetingLocation(meeting);
+            try {
+                meetingCacheService.saveMeetingLocation(meeting);
+            } catch (RedisException | DataAccessException e) {
+                log.error("Redis 예외 발생: {}", e.getMessage());
+
+                RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.CREATE);
+                redisSyncFailureRepository.save(redisSyncFailure);
+            }
         }
 
         meeting.updateMeeting(request, category, point);
@@ -283,7 +321,14 @@ public class MeetingService {
 
         meeting.delete();
 
-        meetingCacheService.deleteMeetingLocation(meeting.getId());
+        try {
+            meetingCacheService.deleteMeetingLocation(meeting.getId());
+        } catch (RedisException | DataAccessException e) {
+            log.error("Redis 예외 발생: {}", e.getMessage());
+
+            RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.DELETE);
+            redisSyncFailureRepository.save(redisSyncFailure);
+        }
 
         eventPublisherService.publishMeetingDeletedEvent(meeting);
     }

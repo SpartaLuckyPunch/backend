@@ -24,6 +24,7 @@ import com.example.burnchuck.domain.chat.repository.ChatRoomUserRepository;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +41,8 @@ public class ChatRoomService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final MeetingRepository meetingRepository;
+
+    private final ChatCacheService chatCacheService;
 
     /**
      * 1:1 채팅방 생성 (이미 존재하면 기존 방 ID 반환)
@@ -74,6 +77,9 @@ public class ChatRoomService {
         chatRoomUserRepository.save(new ChatRoomUser(room, me));
         chatRoomUserRepository.save(new ChatRoomUser(room, target));
 
+        chatCacheService.updateLastReadSequence(room.getId(), me.getId(), 0L);
+        chatCacheService.updateLastReadSequence(room.getId(), target.getId(), 0L);
+
         return room.getId();
     }
 
@@ -104,6 +110,9 @@ public class ChatRoomService {
 
         ChatRoomUser chatRoomUser = new ChatRoomUser(chatRoom, user);
         chatRoomUserRepository.save(chatRoomUser);
+
+        Long currentSeq = chatCacheService.getRoomCurrentSequence(chatRoom.getId());
+        chatCacheService.updateLastReadSequence(chatRoom.getId(), user.getId(), currentSeq);
     }
 
     /**
@@ -115,15 +124,26 @@ public class ChatRoomService {
 
         List<ChatRoomUser> myRoomUsers = chatRoomUserRepository.findAllActiveByUserId(user.getId());
 
+        List<Long> roomIds = myRoomUsers.stream()
+                .map(roomUser -> roomUser.getChatRoom().getId())
+                .collect(Collectors.toList());
+
+        Map<Long, Long> unreadCounts = chatCacheService.getUnreadCountsBatch(user.getId(), roomIds);
+
+
         return myRoomUsers.stream()
-                .map(myRoomUser -> convertToChatRoomDto(myRoomUser, user.getId()))
+                .map(myRoomUser -> {
+                    Long roomId = myRoomUser.getChatRoom().getId();
+                    Long count = unreadCounts.getOrDefault(roomId, 0L);
+                    return convertToChatRoomDto(myRoomUser, user.getId(), count);
+                })
                 .collect(Collectors.toList());
     }
 
     /**
      * DTO 변환 로직
      */
-    private ChatRoomDto convertToChatRoomDto(ChatRoomUser myRoomUser, Long myUserId) {
+    private ChatRoomDto convertToChatRoomDto(ChatRoomUser myRoomUser, Long myUserId, Long unreadCount) {
         ChatRoom room = myRoomUser.getChatRoom();
         String roomName = myRoomUser.getCustomRoomName();
 
@@ -149,7 +169,7 @@ public class ChatRoomService {
 
         int memberCount = chatRoomUserRepository.countByChatRoomId(room.getId());
 
-        return ChatRoomDto.of(room, roomName, lastMsg, chatroomImg, memberCount);
+        return ChatRoomDto.of(room, roomName, lastMsg, chatroomImg, memberCount, unreadCount);
     }
 
     /**
@@ -183,6 +203,7 @@ public class ChatRoomService {
         }
 
         chatRoomUser.delete();
+        chatCacheService.deleteUserReadInfo(roomId, user.getId());
     }
 
     /**
@@ -232,6 +253,12 @@ public class ChatRoomService {
                 .map(roomUser -> ChatRoomMemberDto.from(roomUser.getUser()))
                 .collect(Collectors.toList());
 
-        return ChatRoomDetailResponse.from(room, roomName, members);
+        List<Long> memberIds = roomUsers.stream()
+                .map(ru -> ru.getUser().getId())
+                .collect(Collectors.toList());
+
+        Map<Long, Long> readStatuses = chatCacheService.getMembersLastReadSequence(roomId, memberIds);
+
+        return ChatRoomDetailResponse.from(room, roomName, members, readStatuses);
     }
 }

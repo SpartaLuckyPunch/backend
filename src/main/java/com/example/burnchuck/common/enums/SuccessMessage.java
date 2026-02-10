@@ -12,6 +12,8 @@ public enum SuccessMessage {
 
     // 유저
     USER_UPDATE_PROFILE_SUCCESS("프로필 수정 성공"),
+    USER_UPLOAD_PROFILE_IMG_LINK_SUCCESS("프로필 이미지 업로드 URL 생성 성공"),
+    USER_UPDATE_PROFILE_IMG_SUCCESS("프로필 이미지 등록 완료"),
     USER_UPDATE_PASSWORD_SUCCESS("비밀번호 변경 성공"),
     USER_DELETE_SUCCESS("회원 탈퇴 성공"),
     USER_GET_PROFILE_SUCCESS("회원 프로필 조회 성공"),
@@ -43,6 +45,7 @@ public enum SuccessMessage {
     CATEGORY_GET_SUCCESS("카테고리 조회 성공"),
 
     // 모임
+    MEETING_IMG_UPLOAD_LINK_SUCCESS("모임 이미지 업로드 URL 생성 성공"),
     MEETING_CREATE_SUCCESS("모임 생성 성공"),
     MEETING_GET_SUCCESS("모임 조회 성공"),
     MEETING_DELETE_SUCCESS("모임 삭제 성공"),
@@ -68,7 +71,8 @@ public enum SuccessMessage {
     CHAT_HISTORY_GET_SUCCESS("채팅 내역 조회 성공"),
     CHAT_ROOM_LEAVE_SUCCESS("채팅방 퇴장 성공"),
     CHAT_ROOM_NAME_UPDATE_SUCCESS("채팅방 제목 수정 성공"),
-    CHAT_ROOM_GET_SUCCESS("채팅방 단건 조회 성공")
+    CHAT_ROOM_GET_SUCCESS("채팅방 단건 조회 성공"),
+    CHAT_READ_SUCCESS("채팅 조회 성공")
     ;
 
     private final String message;
