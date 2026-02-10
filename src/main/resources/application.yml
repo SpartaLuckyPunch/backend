@@ -29,8 +29,8 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
-    elasticsearch:
-      Uris: ${ELASTICSEARCH_URIS}
+  elasticsearch:
+    Uris: ${ELASTICSEARCH_URIS}
 cloud:
   aws:
     s3:
