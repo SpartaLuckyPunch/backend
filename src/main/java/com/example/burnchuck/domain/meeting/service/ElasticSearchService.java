@@ -140,7 +140,7 @@ public class ElasticSearchService {
             ? Query.of(q -> q.range(r -> r
             .date(d -> d.field("meetingTime")
                 .gte(startTime.toString())
-                .lte(endTime.toString())
+                .lt(endTime.toString())
             )))
             : null;
     }
