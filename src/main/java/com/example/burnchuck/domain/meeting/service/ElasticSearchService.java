@@ -8,6 +8,7 @@ import com.example.burnchuck.common.entity.MeetingDocument;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.repository.MeetingDocumentRepository;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,6 +60,12 @@ public class ElasticSearchService {
 
         Query boundingBox = inBoundingBox(viewPort);
         if (boundingBox != null) filters.add(boundingBox);
+
+        Query date = dateBetween(searchRequest.getStartDate(), searchRequest.getEndDate());
+        if (date != null) filters.add(date);
+
+        Query time = timeBetween(searchRequest.getStartTime(), searchRequest.getEndTime());
+        if (time != null) filters.add(time);
 
         return Query.of(q -> q.bool(b -> {
             if (name != null) {
@@ -116,5 +123,25 @@ public class ElasticSearchService {
             .field("geoPoint")
             .boundingBox(bb -> bb.trbl(bounds))
         ));
+    }
+
+    private Query dateBetween(LocalDate startDate, LocalDate endDate) {
+        return startDate != null && endDate != null
+            ? Query.of(q -> q.range(r -> r
+            .date(d -> d.field("meetingDate")
+                .gte(startDate.toString())
+                .lte(endDate.toString())
+            )))
+            : null;
+    }
+
+    private Query timeBetween(Integer startTime, Integer endTime) {
+        return startTime != null && endTime != null
+            ? Query.of(q -> q.range(r -> r
+            .date(d -> d.field("meetingTime")
+                .gte(startTime.toString())
+                .lte(endTime.toString())
+            )))
+            : null;
     }
 }

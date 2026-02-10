@@ -1,5 +1,6 @@
 package com.example.burnchuck.common.entity;
 
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,10 +26,18 @@ public class MeetingDocument {
 
     private GeoPoint geoPoint;
 
+    @Field(type = FieldType.Date)
+    private LocalDate meetingDate;
+
+    @Field(type = FieldType.Integer)
+    private Integer meetingTime;
+
     public MeetingDocument(Meeting meeting) {
         this.id = String.valueOf(meeting.getId());
         this.title = meeting.getTitle();
         this.categoryCode = meeting.getCategory().getCode();
         this.geoPoint = new GeoPoint(meeting.getLatitude(), meeting.getLongitude());
+        this.meetingDate = meeting.getMeetingDateTime().toLocalDate();
+        this.meetingTime = meeting.getMeetingDateTime().getHour();
     }
 }
