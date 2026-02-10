@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserCategoryService {
@@ -26,12 +28,20 @@ public class UserCategoryService {
 
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        Category category = categoryRepository.findCategoryByCode(request.getCategoryCode());
+        List<String> requestCategoryList = request.getCategoryCodeList();
 
-        UserCategory userCategory = new UserCategory(user, category);
+        if (requestCategoryList != null) {
 
-        userCategoryRepository.save(userCategory);
+            List<Category> categoryList = categoryRepository.findAll();
 
-        return null;
+            List<UserCategory> userCategoryList = categoryList.stream()
+                    .filter(category -> requestCategoryList.contains(category.getCode()))
+                    .map(category -> new UserCategory(user, category))
+                    .toList();
+
+            userCategoryRepository.saveAll(userCategoryList);
+        }
+
+        return new UserCategoryCreateResponse(requestCategoryList);
     }
 }
