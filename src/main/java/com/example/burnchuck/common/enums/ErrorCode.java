@@ -23,7 +23,7 @@ public enum ErrorCode {
     // 유저
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "유저가 존재하지 않습니다."),
     USER_IMG_NOT_FOUND(HttpStatus.NOT_FOUND, "프로필 사진이 존재하지 않습니다."),
-    DELETED_USER(HttpStatus.FORBIDDEN, "탈퇴한 계정입니다. 고객센터에 문의하세요."),
+    DELETED_USER(HttpStatus.FORBIDDEN, "탈퇴한 계정입니다."),
     SAME_PASSWORD(HttpStatus.BAD_REQUEST, "현재 비밀번호와 새 비밀번호가 동일합니다."),
     INVALID_USER_ROLE(HttpStatus.BAD_REQUEST, "유효하지 않은 권한입니다."),
 
