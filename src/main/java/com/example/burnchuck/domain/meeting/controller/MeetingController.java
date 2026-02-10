@@ -279,6 +279,7 @@ public class MeetingController {
     @GetMapping("/test")
     public List<MeetingDocument> test(
         @ModelAttribute MeetingSearchRequest searchRequest,
+        @ModelAttribute MeetingMapViewPortRequest viewPort,
         @RequestParam(required = false) Double latitude,
         @RequestParam(required = false) Double longitude
     ) {
@@ -287,6 +288,6 @@ public class MeetingController {
             location = new Location(latitude, longitude);
         }
 
-        return elasticSearchService.searchByName(searchRequest, location);
+        return elasticSearchService.searchByName(searchRequest, viewPort, location);
     }
 }
