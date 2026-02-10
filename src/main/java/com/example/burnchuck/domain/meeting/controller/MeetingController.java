@@ -11,9 +11,7 @@ import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_UPDATE_S
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.dto.GetS3Url;
-import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.dto.PageResponse;
-import com.example.burnchuck.common.entity.MeetingDocument;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
@@ -274,20 +272,5 @@ public class MeetingController {
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(MEETING_GET_MEMBER_LIST_SUCCESS, response));
-    }
-
-    @GetMapping("/test")
-    public List<MeetingDocument> test(
-        @ModelAttribute MeetingSearchRequest searchRequest,
-        @ModelAttribute MeetingMapViewPortRequest viewPort,
-        @RequestParam(required = false) Double latitude,
-        @RequestParam(required = false) Double longitude
-    ) {
-        Location location = null;
-        if (latitude != null && longitude != null) {
-            location = new Location(latitude, longitude);
-        }
-
-        return elasticSearchService.searchByName(searchRequest, viewPort, location);
     }
 }
