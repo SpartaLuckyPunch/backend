@@ -1,8 +1,6 @@
 package com.example.burnchuck.domain.meeting.repository;
 
-import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.entity.Meeting;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
@@ -16,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface MeetingCustomRepository {
 
-    Page<MeetingSummaryResponse> findMeetingList(MeetingSearchRequest searchRequest, Pageable pageable, BoundingBox boundingBox, List<Long> meetingIdList);
+    Page<MeetingSummaryResponse> findMeetingList(MeetingSearchRequest searchRequest, List<Long> meetingIdList, Pageable pageable);
 
     Optional<MeetingDetailResponse> findMeetingDetail(Long meetingId);
 
@@ -26,5 +24,5 @@ public interface MeetingCustomRepository {
 
     List<Meeting> findActivateMeetingsForNotification(LocalDateTime startDate, LocalDateTime endDate);
 
-    List<MeetingMapPointResponse> findMeetingPointList(MeetingMapSearchRequest searchRequest, BoundingBox boundingBox, List<Long> meetingIdList);
+    List<MeetingMapPointResponse> findMeetingPointList(List<Long> meetingIdList);
 }

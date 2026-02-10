@@ -5,6 +5,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.MeetingDocument;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.repository.MeetingDocumentRepository;
@@ -33,20 +34,29 @@ public class ElasticSearchService {
         meetingDocumentRepository.save(meetingDocument);
     }
 
-    public List<MeetingDocument> searchByName(MeetingSearchRequest searchRequest, MeetingMapViewPortRequest viewPort,Location location) {
+    // TODO: 메서드 합치기
+
+    /**
+     * 모임 목록 조회
+     */
+    public List<Long> searchInListFormat(MeetingSearchRequest searchRequest, Location location) {
 
         NativeQuery query = NativeQuery.builder()
-            .withQuery(buildSearchQuery(searchRequest, viewPort,location))
+            .withQuery(buildSearchQueryForListSearch(searchRequest, location))
             .build();
 
         SearchHits<MeetingDocument> search = elasticsearchOperations.search(query, MeetingDocument.class);
 
         return search.stream()
             .map(SearchHit::getContent)
+            .map(meetingDocument -> Long.parseLong(meetingDocument.getId()))
             .collect(Collectors.toList());
     }
 
-    private Query buildSearchQuery(MeetingSearchRequest searchRequest, MeetingMapViewPortRequest viewPort,Location location) {
+    /**
+     * 키워드 검색(제목), 카테고리, 일정 범위, 유저 위치 반경 범위
+     */
+    private Query buildSearchQueryForListSearch(MeetingSearchRequest searchRequest, Location location) {
 
         Query name = nameContains(searchRequest.getKeyword());
 
@@ -57,6 +67,52 @@ public class ElasticSearchService {
 
         Query radiusDistance = inDistance(searchRequest.getDistance(), location);
         if (radiusDistance != null) filters.add(radiusDistance);
+
+        Query date = dateBetween(searchRequest.getStartDate(), searchRequest.getEndDate());
+        if (date != null) filters.add(date);
+
+        Query time = timeBetween(searchRequest.getStartTime(), searchRequest.getEndTime());
+        if (time != null) filters.add(time);
+
+        return Query.of(q -> q.bool(b -> {
+            if (name != null) {
+                b.must(name);
+            }
+            if (!filters.isEmpty()) {
+                b.filter(filters);
+            }
+            return b;
+        }));
+    }
+
+    /**
+     * 모임 지도 조회
+     */
+    public List<Long> searchInMapFormat(MeetingMapSearchRequest searchRequest, MeetingMapViewPortRequest viewPort) {
+
+        NativeQuery query = NativeQuery.builder()
+            .withQuery(buildSearchQueryForListSearch(searchRequest, viewPort))
+            .build();
+
+        SearchHits<MeetingDocument> search = elasticsearchOperations.search(query, MeetingDocument.class);
+
+        return search.stream()
+            .map(SearchHit::getContent)
+            .map(meetingDocument -> Long.parseLong(meetingDocument.getId()))
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 키워드 검색(제목), 카테고리, 일정 범위, 지도 Viewport
+     */
+    private Query buildSearchQueryForListSearch(MeetingMapSearchRequest searchRequest, MeetingMapViewPortRequest viewPort) {
+
+        Query name = nameContains(searchRequest.getKeyword());
+
+        List<Query> filters = new ArrayList<>();
+
+        Query type = categoryEq(searchRequest.getCategory());
+        if (type != null) filters.add(type);
 
         Query boundingBox = inBoundingBox(viewPort);
         if (boundingBox != null) filters.add(boundingBox);
@@ -91,9 +147,12 @@ public class ElasticSearchService {
     }
 
     private Query inDistance(Double distance, Location location) {
+
+        double finalDistance = distance == null ? 5.0 : distance;
+
         return location != null
             ? Query.of(q -> q.geoDistance(g -> g.field("geoPoint")
-            .distance(distance + "km")
+            .distance(finalDistance + "km")
             .location(gl -> gl.latlon(ll -> ll
                 .lat(location.getLatitude())
                 .lon(location.getLongitude()))

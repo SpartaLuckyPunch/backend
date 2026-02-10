@@ -5,7 +5,6 @@ import static com.example.burnchuck.common.enums.ErrorCode.HOST_NOT_FOUND;
 import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Address;
@@ -20,9 +19,9 @@ import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.enums.SyncType;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.ClientInfoExtractor;
-import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.common.utils.S3UrlGenerator;
+import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
@@ -181,23 +180,11 @@ public class MeetingService {
             location = new Location(address.getLatitude(), address.getLongitude());
         }
 
-        List<Long> meetingIdList = null;
-        BoundingBox boundingBox = null;
+        List<Long> meetingIdList = elasticSearchService.searchInListFormat(searchRequest, location);
 
-        boolean redisError = false;
+        Page<MeetingSummaryResponse> meetingPage = meetingRepository.findMeetingList(searchRequest, meetingIdList, pageable);
 
-        Double radius = searchRequest.getDistance() == null ? 5.0 : searchRequest.getDistance();
-
-        try {
-            meetingIdList = meetingCacheService.findMeetingsByLocation(location, radius);
-        } catch (RedisException | RedisConnectionFailureException e) {
-            boundingBox = MeetingDistance.aroundUserBox(location, radius);
-            redisError = true;
-        }
-
-        Page<MeetingSummaryResponse> meetingPage = meetingRepository.findMeetingList(searchRequest, pageable, boundingBox, meetingIdList);
-
-        if (redisError && searchRequest.getOrder() == MeetingSortOption.NEAREST) {
+        if (searchRequest.getOrder() == MeetingSortOption.NEAREST) {
 
             List<MeetingSummaryResponse> meetingSummaryList = new ArrayList<>(meetingPage.getContent());
             sortMeetingsByDistance(meetingSummaryList, location);
@@ -216,16 +203,9 @@ public class MeetingService {
         MeetingMapSearchRequest searchRequest,
         MeetingMapViewPortRequest viewPort
     ) {
-        List<Long> meetingIdList = null;
-        BoundingBox boundingBox = null;
+        List<Long> meetingIdList = elasticSearchService.searchInMapFormat(searchRequest, viewPort);
 
-        try {
-            meetingIdList = meetingCacheService.findMeetingsByViewPort(viewPort);
-        } catch (RedisException | RedisConnectionFailureException e) {
-            boundingBox = new BoundingBox(viewPort.getMinLat(), viewPort.getMaxLat(), viewPort.getMinLng(), viewPort.getMaxLng());
-        }
-
-        return meetingRepository.findMeetingPointList(searchRequest, boundingBox, meetingIdList);
+        return meetingRepository.findMeetingPointList(meetingIdList);
     }
 
     /**

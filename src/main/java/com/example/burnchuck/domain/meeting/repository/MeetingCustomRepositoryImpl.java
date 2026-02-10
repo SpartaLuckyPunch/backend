@@ -6,13 +6,11 @@ import static com.example.burnchuck.common.entity.QMeetingLike.meetingLike;
 import static com.example.burnchuck.common.entity.QNotification.notification;
 import static com.example.burnchuck.common.entity.QUserMeeting.userMeeting;
 
-import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.NotificationType;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
@@ -25,7 +23,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberTemplate;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -47,9 +44,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     @Override
     public Page<MeetingSummaryResponse> findMeetingList(
             MeetingSearchRequest request,
-            Pageable pageable,
-            BoundingBox boundingBox,
-            List<Long> meetingIdList
+            List<Long> meetingIdList,
+            Pageable pageable
     ) {
         MeetingSortOption sort = request.getOrder() == null ? MeetingSortOption.LATEST : request.getOrder();
 
@@ -61,7 +57,7 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
         OrderSpecifier<?> orderSpecifier =
             switch (sort) {
                 case POPULAR -> meetingLike.id.countDistinct().desc();
-                case NEAREST -> orderByListOrder(meetingIdList);
+                case NEAREST -> meeting.id.asc();
                 case UPCOMING -> meeting.meetingDateTime.asc();
                 case LATEST -> meeting.createdDatetime.desc();
             };
@@ -85,11 +81,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
             .leftJoin(meeting.category, category1)
             .where(
                     meeting.status.eq(MeetingStatus.OPEN),
-                    keywordContains(request.getKeyword()),
-                    categoryEq(request.getCategory()),
-                    betweenDate(request.getStartDate(), request.getEndDate()),
-                    betweenTime(request.getStartTime(), request.getEndTime()),
-                    locationInBoundingBox(boundingBox),
                     inMeetingIdList(meetingIdList)
             )
             .groupBy(meeting.id)
@@ -104,11 +95,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
             .leftJoin(meeting.category, category1)
             .where(
                 meeting.status.eq(MeetingStatus.OPEN),
-                keywordContains(request.getKeyword()),
-                categoryEq(request.getCategory()),
-                betweenDate(request.getStartDate(), request.getEndDate()),
-                betweenTime(request.getStartTime(), request.getEndTime()),
-                locationInBoundingBox(boundingBox),
                 inMeetingIdList(meetingIdList)
             );
 
@@ -120,8 +106,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
      */
     @Override
     public List<MeetingMapPointResponse> findMeetingPointList(
-        MeetingMapSearchRequest request,
-        BoundingBox boundingBox,
         List<Long> meetingIdList
     ) {
         return queryFactory
@@ -136,11 +120,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
             .leftJoin(meeting.category, category1)
             .where(
                 meeting.status.eq(MeetingStatus.OPEN),
-                keywordContains(request.getKeyword()),
-                categoryEq(request.getCategory()),
-                betweenDate(request.getStartDate(), request.getEndDate()),
-                betweenTime(request.getStartTime(), request.getEndTime()),
-                locationInBoundingBox(boundingBox),
                 inMeetingIdList(meetingIdList)
             )
             .fetch();
@@ -262,15 +241,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
             .fetch();
     }
 
-    private BooleanExpression categoryEq(String categoryCode) {
-
-        if (categoryCode == null) {
-            return null;
-        }
-
-        return category1.code.eq(categoryCode);
-    }
-
     private BooleanExpression inMeetingIdList(List<Long> meetingIdList) {
 
         if (meetingIdList == null) {
@@ -278,64 +248,6 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
         }
 
         return meeting.id.in(meetingIdList);
-    }
-
-    // 키워드 검색
-    private BooleanExpression keywordContains(String keyword) {
-        return (keyword != null && !keyword.isBlank())
-                ? meeting.title.containsIgnoreCase(keyword) : null;
-    }
-
-    // 모임 날짜 범위
-    private BooleanExpression betweenDate(LocalDate startDate, LocalDate endDate) {
-
-        if (startDate == null || endDate == null) {
-            return null;
-        }
-
-        LocalDateTime startDateTime = startDate.atStartOfDay();
-        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
-
-        return meeting.meetingDateTime.between(startDateTime, endDateTime);
-    }
-
-    // 모임 시간 범위
-    private BooleanExpression betweenTime(Integer startTime, Integer endTime) {
-
-        if (startTime == null || endTime == null) {
-            return null;
-        }
-
-        NumberTemplate<Integer> timeTemplate = Expressions.numberTemplate(
-            Integer.class,
-            "HOUR({0})",
-            meeting.meetingDateTime
-        );
-
-        return timeTemplate.between(startTime, endTime);
-    }
-
-    /**
-     * BoundingBox 이내의 모임인지 확인
-     */
-    private BooleanExpression locationInBoundingBox(BoundingBox boundingBox) {
-
-        if (boundingBox == null) {
-            return null;
-        }
-
-        String lineString = String.format(
-            "LINESTRING(%f %f, %f %f)",
-            boundingBox.getMinLat(), boundingBox.getMinLng(),
-            boundingBox.getMaxLat(), boundingBox.getMaxLng()
-        );
-
-        return Expressions.numberTemplate(
-            Integer.class,
-            "MBRContains(ST_LINESTRINGFROMTEXT({0}, 4326), {1})",
-            lineString,
-            meeting.point
-        ).eq(1);
     }
 
     /**
