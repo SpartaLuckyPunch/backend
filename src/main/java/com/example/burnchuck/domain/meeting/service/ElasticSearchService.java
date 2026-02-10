@@ -11,17 +11,22 @@ import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingDocumentRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHitSupport;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.SearchPage;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -43,7 +48,7 @@ public class ElasticSearchService {
     /**
      * 모임 목록 조회
      */
-    public List<Long> searchInListFormat(MeetingSearchRequest searchRequest, Location location, Pageable pageable) {
+    public Page<MeetingSummaryResponse> searchInListFormat(MeetingSearchRequest searchRequest, Location location, Pageable pageable) {
 
         MeetingSortOption sort = searchRequest.getOrder() == null ? MeetingSortOption.LATEST : searchRequest.getOrder();
 
@@ -59,11 +64,15 @@ public class ElasticSearchService {
             .build();
 
         SearchHits<MeetingDocument> search = elasticsearchOperations.search(query, MeetingDocument.class);
+        SearchPage<MeetingDocument> searchPage = SearchHitSupport.searchPageFor(search, query.getPageable());
 
-        return search.stream()
+        List<MeetingSummaryResponse> content = searchPage.getSearchHits().stream()
             .map(SearchHit::getContent)
-            .map(meetingDocument -> Long.parseLong(meetingDocument.getId()))
+            .map(MeetingSummaryResponse::new)
             .collect(Collectors.toList());
+        long totalHits = searchPage.getTotalElements();
+
+        return new PageImpl<>(content, pageable, totalHits);
     }
 
     private SortOptions sortLATEST() {

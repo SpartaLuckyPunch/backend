@@ -133,9 +133,9 @@ public class MeetingService {
     @Transactional
     public Meeting createMeeting(User user, MeetingCreateRequest request) {
 
-        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
-            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
-        }
+//        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+//            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+//        }
 
         Category category = categoryRepository.findCategoryByCode(request.getCategoryCode());
 
@@ -180,9 +180,9 @@ public class MeetingService {
             location = new Location(address.getLatitude(), address.getLongitude());
         }
 
-        List<Long> meetingIdList = elasticSearchService.searchInListFormat(searchRequest, location);
+        Page<MeetingSummaryResponse> meetingPage = elasticSearchService.searchInListFormat(searchRequest, location, pageable);
 
-        Page<MeetingSummaryResponse> meetingPage = meetingRepository.findMeetingList(searchRequest, meetingIdList, pageable);
+        // TODO : 현재 참여 인원 추가 필요
 
         if (searchRequest.getOrder() == MeetingSortOption.NEAREST) {
 
