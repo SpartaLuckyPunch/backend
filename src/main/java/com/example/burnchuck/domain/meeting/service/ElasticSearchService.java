@@ -1,10 +1,13 @@
 package com.example.burnchuck.domain.meeting.service;
 
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.TopRightBottomLeftGeoBounds;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.MeetingDocument;
+import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
@@ -14,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
@@ -39,10 +43,19 @@ public class ElasticSearchService {
     /**
      * 모임 목록 조회
      */
-    public List<Long> searchInListFormat(MeetingSearchRequest searchRequest, Location location) {
+    public List<Long> searchInListFormat(MeetingSearchRequest searchRequest, Location location, Pageable pageable) {
+
+        MeetingSortOption sort = searchRequest.getOrder() == null ? MeetingSortOption.LATEST : searchRequest.getOrder();
+
+        SortOptions sortOptions =
+            switch (sort) {
+                default -> sortLATEST();
+            };
 
         NativeQuery query = NativeQuery.builder()
             .withQuery(buildSearchQueryForListSearch(searchRequest, location))
+            .withSort(sortOptions)
+            .withPageable(pageable)
             .build();
 
         SearchHits<MeetingDocument> search = elasticsearchOperations.search(query, MeetingDocument.class);
@@ -51,6 +64,11 @@ public class ElasticSearchService {
             .map(SearchHit::getContent)
             .map(meetingDocument -> Long.parseLong(meetingDocument.getId()))
             .collect(Collectors.toList());
+    }
+
+    private SortOptions sortLATEST() {
+        return new SortOptions.Builder()
+            .field(f -> f.field("createdDatetime").order(SortOrder.Desc)).build();
     }
 
     /**
@@ -187,7 +205,7 @@ public class ElasticSearchService {
     private Query dateBetween(LocalDate startDate, LocalDate endDate) {
         return startDate != null && endDate != null
             ? Query.of(q -> q.range(r -> r
-            .date(d -> d.field("meetingDate")
+            .date(d -> d.field("meetingDatetime")
                 .gte(startDate.toString())
                 .lte(endDate.toString())
             )))
