@@ -1,5 +1,7 @@
 package com.example.burnchuck.domain.meeting.service;
 
+import co.elastic.clients.elasticsearch._types.DistanceUnit;
+import co.elastic.clients.elasticsearch._types.SortMode;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.TopRightBottomLeftGeoBounds;
@@ -54,6 +56,7 @@ public class ElasticSearchService {
 
         SortOptions sortOptions =
             switch (sort) {
+                case NEAREST -> sortNEAREST(location);
                 default -> sortLATEST();
             };
 
@@ -78,6 +81,21 @@ public class ElasticSearchService {
     private SortOptions sortLATEST() {
         return new SortOptions.Builder()
             .field(f -> f.field("createdDatetime").order(SortOrder.Desc)).build();
+    }
+
+    private SortOptions sortNEAREST(Location location) {
+
+        return new SortOptions.Builder()
+            .geoDistance(gd -> gd
+                .field("geoPoint")
+                .location(gl -> gl.latlon(ll -> ll
+                    .lat(location.getLatitude())
+                    .lon(location.getLongitude())))
+                .order(SortOrder.Asc)
+                .unit(DistanceUnit.Kilometers)
+                .mode(SortMode.Min)
+            )
+            .build();
     }
 
     /**
