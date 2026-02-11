@@ -5,13 +5,14 @@ import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserRefresh;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.Gender;
+import com.example.burnchuck.common.enums.Provider;
 import com.example.burnchuck.common.enums.UserRole;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.JwtUtil;
 import com.example.burnchuck.domain.auth.dto.request.AuthLoginRequest;
-import com.example.burnchuck.domain.auth.dto.request.AuthReissueTokenRequest;
 import com.example.burnchuck.domain.auth.dto.request.AuthSignupRequest;
 import com.example.burnchuck.domain.auth.dto.response.AuthTokenResponse;
+import com.example.burnchuck.domain.auth.dto.response.KakaoUserInfoResponse;
 import com.example.burnchuck.domain.auth.repository.UserRefreshRepository;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
@@ -20,6 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +33,7 @@ public class AuthService {
     private final UserRefreshRepository userRefreshRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-
+    private final KakaoService kakaoService;
     /**
      * 회원가입
      */
@@ -79,11 +82,12 @@ public class AuthService {
         Address address = addressRepository.findAddressByAddressInfo(request.getProvince(), request.getCity(), request.getDistrict());
 
         User user = new User(
-            email, encodedPassword, nickname,
-            request.getBirthDate(),
-            gender.isValue(),
-            address,
-            UserRole.USER
+                email, encodedPassword, nickname,
+                request.getBirthDate(),
+                gender.isValue(),
+                address,
+                UserRole.USER,
+                Provider.LOCAL,null
         );
 
         userRepository.save(user);
@@ -116,9 +120,7 @@ public class AuthService {
     }
 
     @Transactional
-    public AuthTokenResponse reissueToken(AuthReissueTokenRequest request) {
-
-        String refreshToken = request.getRefreshToken();
+    public AuthTokenResponse reissueToken(String refreshToken) {
 
         if (jwtUtil.isExpired(refreshToken)) {
             throw new CustomException(ErrorCode.EXPIRED_TOKEN);
@@ -147,4 +149,55 @@ public class AuthService {
 
         return new AuthTokenResponse(accessToken, refreshToken);
     }
-}
+
+    /**
+     * 소셜로그인/회원가입 통합 처리 
+     */
+    @Transactional
+    public AuthTokenResponse socialLogin(String code, Provider provider) {
+
+        String accessToken = kakaoService.getKakaoAccessToken(code);
+        KakaoUserInfoResponse userInfo = kakaoService.getKakaoUserInfo(accessToken);
+        String providerId = String.valueOf(userInfo.getId());
+
+        User user = userRepository.findByProviderAndProviderId(provider, providerId)
+                .map(this::checkUserStatus)
+                .orElseGet(() -> createSocialUser(userInfo, provider));
+
+        return generateToken(user);
+    }
+
+    private User checkUserStatus(User user) {
+        if (user.isDeleted()) {
+            throw new CustomException(ErrorCode.DELETED_USER);
+        }
+        return user;
+    }
+
+    private User createSocialUser(KakaoUserInfoResponse userInfo, Provider provider) {
+
+        if (userRepository.existsByEmail(userInfo.getEmail())) {
+            throw new CustomException(ErrorCode.EMAIL_EXIST);
+        }
+        if (userRepository.existsByNickname(userInfo.getNickname())) {
+            throw new CustomException(ErrorCode.NICKNAME_EXIST);
+        }
+
+        String tempPassword = passwordEncoder.encode(UUID.randomUUID().toString());
+
+        Address defaultAddress = addressRepository.findById(1L)
+                .orElseThrow(() -> new CustomException(ErrorCode.ADDRESS_NOT_FOUND));
+
+        User newUser = new User(
+                userInfo.getEmail(),
+                tempPassword,
+                userInfo.getNickname(),
+                null,
+                false,
+                defaultAddress,
+                UserRole.USER,
+                provider,
+                String.valueOf(userInfo.getId())
+        );
+        return userRepository.save(newUser);
+    }}

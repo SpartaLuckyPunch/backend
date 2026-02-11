@@ -31,6 +31,9 @@ spring:
       port: ${REDIS_PORT}
   elasticsearch:
     Uris: ${ELASTICSEARCH_URIS}
+kakao:
+  client-id: ${KAKAO_CLIENT_ID}
+  redirect-uri: ${KAKAO_REDIRECT_URI}
 cloud:
   aws:
     s3:
