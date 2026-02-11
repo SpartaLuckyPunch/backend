@@ -1,7 +1,9 @@
 package com.example.burnchuck.domain.meetingLike.service;
 
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -33,5 +35,27 @@ public class MeetingLikeCacheService {
 
     public String generateKey(Long meetingId) {
         return String.format(LIKE_COUNT_KEY, LocalDate.now(), meetingId);
+    }
+
+    public Set<Long> getLikeKeyList() {
+
+        Set<String> keys = redisTemplate.keys("like::meeting::" + LocalDate.now());
+
+        return keys.stream()
+            .map(this::getMeetingId)
+            .collect(Collectors.toSet());
+    }
+
+    private Long getMeetingId(String key) {
+
+        String prefix = "like::meeting::" + LocalDate.now();
+        return Long.parseLong(key.substring(prefix.length()));
+    }
+
+    public void clearLikeKey(Set<Long> meetingIdList) {
+
+        for (Long meetingId : meetingIdList) {
+            redisTemplate.delete(generateKey(meetingId));
+        }
     }
 }

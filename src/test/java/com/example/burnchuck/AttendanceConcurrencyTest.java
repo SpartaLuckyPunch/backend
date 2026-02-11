@@ -1,7 +1,13 @@
 package com.example.burnchuck;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.common.entity.*;
+import com.example.burnchuck.common.entity.Address;
+import com.example.burnchuck.common.entity.Category;
+import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.common.entity.User;
+import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.UserRole;
@@ -14,6 +20,13 @@ import com.example.burnchuck.domain.meeting.service.RedissonLockAttendanceFacade
 import com.example.burnchuck.domain.notification.repository.NotificationRepository;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,16 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -78,7 +81,7 @@ class AttendanceConcurrencyTest {
         MeetingCreateRequest meetingRequest = new MeetingCreateRequest(
                 "동시성 테스트 모임", "100명 신청 테스트", "https://test.img",
                 "서울 강서구 발산동", 37.5665, 126.9780, MAX_ATTENDEES,
-                LocalDateTime.now().plusDays(1), category.getId()
+                LocalDateTime.now().plusDays(1), category.getCode()
         );
 
         GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
