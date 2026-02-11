@@ -6,6 +6,7 @@ import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.TopRightBottomLeftGeoBounds;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.MeetingDocument;
 import com.example.burnchuck.common.enums.MeetingSortOption;
@@ -21,8 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -48,7 +47,7 @@ public class ElasticSearchService {
     /**
      * 모임 목록 조회
      */
-    public Page<MeetingSummaryResponse> searchInListFormat(
+    public PageResponse<MeetingSummaryResponse> searchInListFormat(
         MeetingSearchRequest searchRequest,
         UserLocationRequest userLocationRequest,
         MeetingSortOption order,
@@ -77,7 +76,7 @@ public class ElasticSearchService {
             .collect(Collectors.toList());
         long totalHits = searchPage.getTotalElements();
 
-        return new PageImpl<>(content, pageable, totalHits);
+        return new PageResponse<>(content, totalHits, searchPage.getTotalPages(), pageable.getPageSize(), pageable.getPageNumber());
     }
 
     /**

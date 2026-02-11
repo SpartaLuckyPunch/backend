@@ -109,10 +109,10 @@ public class MeetingController {
             @RequestParam(required = false) MeetingSortOption order,
             @PageableDefault(size = 6) Pageable pageable
     ) {
-        Page<MeetingSummaryResponse> page = meetingService.getMeetingPage(authUser, searchRequest, locationRequest, userLocationRequest, order, pageable);
+        PageResponse<MeetingSummaryResponse> response = meetingService.getMeetingPage(authUser, searchRequest, locationRequest, userLocationRequest, order, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));
+                .body(CommonResponse.success(MEETING_GET_SUCCESS, response));
     }
 
     /**

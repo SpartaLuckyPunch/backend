@@ -7,6 +7,7 @@ import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.common.dto.Location;
+import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
@@ -49,7 +50,10 @@ import io.lettuce.core.RedisException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
@@ -160,7 +164,7 @@ public class MeetingService {
      * 모임 조회
      */
     @Transactional(readOnly = true)
-    public Page<MeetingSummaryResponse> getMeetingPage(
+    public PageResponse<MeetingSummaryResponse> getMeetingPage(
             AuthUser authUser,
             MeetingSearchRequest searchRequest,
             LocationFilterRequest locationRequest,
@@ -182,9 +186,29 @@ public class MeetingService {
             userLocationRequest.setLocation(address);
         }
 
-        Page<MeetingSummaryResponse> meetingPage = elasticSearchService.searchInListFormat(searchRequest, userLocationRequest, order, pageable);
+        PageResponse<MeetingSummaryResponse> meetingPage = elasticSearchService.searchInListFormat(searchRequest, userLocationRequest, order, pageable);
 
-        // TODO : 현재 참여 인원 추가 필요
+        List<MeetingSummaryResponse> responseList = meetingPage.getContent();
+
+        List<Object[]> objects = userMeetingRepository.countAllByMeeting();
+        Map<Long, Long> countByMeetingResult = objects.stream()
+            .collect(Collectors.toMap(
+                row -> (Long) row[0],
+                row -> (Long) row[1]
+            ));
+
+        for (MeetingSummaryResponse response : responseList) {
+
+            Long meetingId = response.getMeetingId();
+
+            int countResult = Optional.ofNullable(countByMeetingResult.get(meetingId))
+                .map(Long::intValue)
+                .orElse(0);
+
+            response.setCurrentAttendees(countResult);
+        }
+
+        meetingPage.setContent(responseList);
 
         return meetingPage;
     }
