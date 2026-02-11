@@ -26,10 +26,10 @@ import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.UserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.AttendeeResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
@@ -47,7 +47,6 @@ import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import io.lettuce.core.RedisException;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -59,7 +58,6 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
@@ -166,31 +164,27 @@ public class MeetingService {
             AuthUser authUser,
             MeetingSearchRequest searchRequest,
             LocationFilterRequest locationRequest,
+            UserLocationRequest userLocationRequest,
+            MeetingSortOption order,
             Pageable pageable
     ) {
-        Location location = new Location(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+        if (userLocationRequest.noCurrentLocation()) {
+            userLocationRequest.setLocation(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+        }
 
-        if (authUser != null) {
+        if (userLocationRequest.noCurrentLocation() && authUser != null) {
             User user = userRepository.findActivateUserWithAddress(authUser.getId());
-            location = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+            userLocationRequest.setLocation(user.getAddress());
         }
 
         if (locationRequest.notNull()) {
             Address address = addressRepository.findAddressByAddressInfo(locationRequest.getProvince(), locationRequest.getCity(), locationRequest.getDistrict());
-            location = new Location(address.getLatitude(), address.getLongitude());
+            userLocationRequest.setLocation(address);
         }
 
-        Page<MeetingSummaryResponse> meetingPage = elasticSearchService.searchInListFormat(searchRequest, location, pageable);
+        Page<MeetingSummaryResponse> meetingPage = elasticSearchService.searchInListFormat(searchRequest, userLocationRequest, order, pageable);
 
         // TODO : 현재 참여 인원 추가 필요
-
-        if (searchRequest.getOrder() == MeetingSortOption.NEAREST) {
-
-            List<MeetingSummaryResponse> meetingSummaryList = new ArrayList<>(meetingPage.getContent());
-            sortMeetingsByDistance(meetingSummaryList, location);
-
-            return new PageImpl<>(meetingSummaryList, pageable, meetingPage.getTotalElements());
-        }
 
         return meetingPage;
     }
@@ -200,7 +194,7 @@ public class MeetingService {
      */
     @Transactional(readOnly = true)
     public List<MeetingMapPointResponse> getMeetingPointList(
-        MeetingMapSearchRequest searchRequest,
+        MeetingSearchRequest searchRequest,
         MeetingMapViewPortRequest viewPort
     ) {
         List<Long> meetingIdList = elasticSearchService.searchInMapFormat(searchRequest, viewPort);

@@ -12,12 +12,13 @@ import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.common.dto.PageResponse;
+import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.UserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
@@ -104,9 +105,11 @@ public class MeetingController {
             @AuthenticationPrincipal AuthUser authUser,
             @ModelAttribute MeetingSearchRequest searchRequest,
             @ModelAttribute LocationFilterRequest locationRequest,
+            @ModelAttribute UserLocationRequest userLocationRequest,
+            @RequestParam(required = false) MeetingSortOption order,
             @PageableDefault(size = 6) Pageable pageable
     ) {
-        Page<MeetingSummaryResponse> page = meetingService.getMeetingPage(authUser, searchRequest, locationRequest, pageable);
+        Page<MeetingSummaryResponse> page = meetingService.getMeetingPage(authUser, searchRequest, locationRequest, userLocationRequest, order, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));
@@ -123,7 +126,7 @@ public class MeetingController {
     )
     @GetMapping("/map")
     public ResponseEntity<CommonResponse<List<MeetingMapPointResponse>>> getMeetingPointList(
-        @ModelAttribute MeetingMapSearchRequest searchRequest,
+        @ModelAttribute MeetingSearchRequest searchRequest,
         @ModelAttribute MeetingMapViewPortRequest viewPort
     ) {
         List<MeetingMapPointResponse> pointList = meetingService.getMeetingPointList(searchRequest, viewPort);

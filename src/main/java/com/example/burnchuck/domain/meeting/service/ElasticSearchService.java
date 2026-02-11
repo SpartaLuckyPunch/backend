@@ -6,13 +6,12 @@ import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.TopRightBottomLeftGeoBounds;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.MeetingDocument;
 import com.example.burnchuck.common.enums.MeetingSortOption;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
+import com.example.burnchuck.domain.meeting.dto.request.UserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingDocumentRepository;
 import java.time.LocalDate;
@@ -39,29 +38,30 @@ public class ElasticSearchService {
     private final MeetingDocumentRepository meetingDocumentRepository;
     private final ElasticsearchOperations elasticsearchOperations;
 
-
     public void saveMeeting(Meeting meeting) {
         MeetingDocument meetingDocument = new MeetingDocument(meeting);
         meetingDocumentRepository.save(meetingDocument);
     }
 
-    // TODO: 메서드 합치기
-
     /**
      * 모임 목록 조회
      */
-    public Page<MeetingSummaryResponse> searchInListFormat(MeetingSearchRequest searchRequest, Location location, Pageable pageable) {
-
-        MeetingSortOption sort = searchRequest.getOrder() == null ? MeetingSortOption.LATEST : searchRequest.getOrder();
+    public Page<MeetingSummaryResponse> searchInListFormat(
+        MeetingSearchRequest searchRequest,
+        UserLocationRequest userLocationRequest,
+        MeetingSortOption order,
+        Pageable pageable
+    ) {
+        MeetingSortOption sort = order == null ? MeetingSortOption.LATEST : order;
 
         SortOptions sortOptions =
             switch (sort) {
-                case NEAREST -> sortNEAREST(location);
+                case NEAREST -> sortNEAREST(userLocationRequest);
                 default -> sortLATEST();
             };
 
         NativeQuery query = NativeQuery.builder()
-            .withQuery(buildSearchQueryForListSearch(searchRequest, location))
+            .withQuery(build(searchRequest, null, userLocationRequest))
             .withSort(sortOptions)
             .withPageable(pageable)
             .build();
@@ -78,65 +78,13 @@ public class ElasticSearchService {
         return new PageImpl<>(content, pageable, totalHits);
     }
 
-    private SortOptions sortLATEST() {
-        return new SortOptions.Builder()
-            .field(f -> f.field("createdDatetime").order(SortOrder.Desc)).build();
-    }
-
-    private SortOptions sortNEAREST(Location location) {
-
-        return new SortOptions.Builder()
-            .geoDistance(gd -> gd
-                .field("geoPoint")
-                .location(gl -> gl.latlon(ll -> ll
-                    .lat(location.getLatitude())
-                    .lon(location.getLongitude())))
-                .order(SortOrder.Asc)
-                .unit(DistanceUnit.Kilometers)
-                .mode(SortMode.Min)
-            )
-            .build();
-    }
-
-    /**
-     * 키워드 검색(제목), 카테고리, 일정 범위, 유저 위치 반경 범위
-     */
-    private Query buildSearchQueryForListSearch(MeetingSearchRequest searchRequest, Location location) {
-
-        Query name = nameContains(searchRequest.getKeyword());
-
-        List<Query> filters = new ArrayList<>();
-
-        Query type = categoryEq(searchRequest.getCategory());
-        if (type != null) filters.add(type);
-
-        Query radiusDistance = inDistance(searchRequest.getDistance(), location);
-        if (radiusDistance != null) filters.add(radiusDistance);
-
-        Query date = dateBetween(searchRequest.getStartDate(), searchRequest.getEndDate());
-        if (date != null) filters.add(date);
-
-        Query time = timeBetween(searchRequest.getStartTime(), searchRequest.getEndTime());
-        if (time != null) filters.add(time);
-
-        return Query.of(q -> q.bool(b -> {
-            if (name != null) {
-                b.must(name);
-            }
-            if (!filters.isEmpty()) {
-                b.filter(filters);
-            }
-            return b;
-        }));
-    }
-
     /**
      * 모임 지도 조회
      */
-    public List<Long> searchInMapFormat(MeetingMapSearchRequest searchRequest, MeetingMapViewPortRequest viewPort) {
+    public List<Long> searchInMapFormat(MeetingSearchRequest searchRequest, MeetingMapViewPortRequest viewPort) {
 
         NativeQuery query = NativeQuery.builder()
-            .withQuery(buildSearchQueryForListSearch(searchRequest, viewPort))
+            .withQuery(build(searchRequest, viewPort, null))
             .build();
 
         SearchHits<MeetingDocument> search = elasticsearchOperations.search(query, MeetingDocument.class);
@@ -148,9 +96,9 @@ public class ElasticSearchService {
     }
 
     /**
-     * 키워드 검색(제목), 카테고리, 일정 범위, 지도 Viewport
+     * 키워드 검색(제목), 카테고리, 일정 범위, 유저 위치 반경 범위
      */
-    private Query buildSearchQueryForListSearch(MeetingMapSearchRequest searchRequest, MeetingMapViewPortRequest viewPort) {
+    private Query build(MeetingSearchRequest searchRequest, MeetingMapViewPortRequest viewPort, UserLocationRequest userLocationRequest) {
 
         Query name = nameContains(searchRequest.getKeyword());
 
@@ -158,6 +106,9 @@ public class ElasticSearchService {
 
         Query type = categoryEq(searchRequest.getCategory());
         if (type != null) filters.add(type);
+
+        Query radiusDistance = inDistance(userLocationRequest);
+        if (radiusDistance != null) filters.add(radiusDistance);
 
         Query boundingBox = inBoundingBox(viewPort);
         if (boundingBox != null) filters.add(boundingBox);
@@ -191,23 +142,25 @@ public class ElasticSearchService {
             : null;
     }
 
-    private Query inDistance(Double distance, Location location) {
+    private Query inDistance(UserLocationRequest userLocationRequest) {
 
-        double finalDistance = distance == null ? 5.0 : distance;
+        if (userLocationRequest == null) {
+            return null;
+        }
 
-        return location != null
-            ? Query.of(q -> q.geoDistance(g -> g.field("geoPoint")
+        double finalDistance = userLocationRequest.getDistance() == null ? 5.0 : userLocationRequest.getDistance();
+
+        return Query.of(q -> q.geoDistance(g -> g.field("geoPoint")
             .distance(finalDistance + "km")
             .location(gl -> gl.latlon(ll -> ll
-                .lat(location.getLatitude())
-                .lon(location.getLongitude()))
-            )))
-            :null;
+                .lat(userLocationRequest.getLatitude())
+                .lon(userLocationRequest.getLongitude()))
+            )));
     }
 
     private Query inBoundingBox(MeetingMapViewPortRequest viewPort) {
 
-        if (!viewPort.notNull()) {
+        if (viewPort == null || !viewPort.notNull()) {
             return null;
         }
 
@@ -247,5 +200,25 @@ public class ElasticSearchService {
                 .lt(endTime.toString())
             )))
             : null;
+    }
+
+    private SortOptions sortLATEST() {
+        return new SortOptions.Builder()
+            .field(f -> f.field("createdDatetime").order(SortOrder.Desc)).build();
+    }
+
+    private SortOptions sortNEAREST(UserLocationRequest userLocationRequest) {
+
+        return new SortOptions.Builder()
+            .geoDistance(gd -> gd
+                .field("geoPoint")
+                .location(gl -> gl.latlon(ll -> ll
+                    .lat(userLocationRequest.getLatitude())
+                    .lon(userLocationRequest.getLongitude())))
+                .order(SortOrder.Asc)
+                .unit(DistanceUnit.Kilometers)
+                .mode(SortMode.Min)
+            )
+            .build();
     }
 }
