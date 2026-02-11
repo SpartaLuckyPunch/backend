@@ -21,6 +21,8 @@ public enum SuccessMessage {
     USER_DELETE_SUCCESS("회원 탈퇴 성공"),
     USER_GET_PROFILE_SUCCESS("회원 프로필 조회 성공"),
     USER_GET_ADDRESS_SUCCESS("회원 주소 조회 성공"),
+    USER_POST_FAVORITE_CATEGORY_SUCCESS("관심 카테고리 등록 완료"),
+    USER_GET_FAVORITE_CATEGORY_SUCCESS("관심 카테고리 조회 완료"),
 
     // 팔로우
     FOLLOW_CREATE_SUCCESS("팔로우 성공"),
