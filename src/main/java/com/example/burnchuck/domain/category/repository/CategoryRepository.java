@@ -18,4 +18,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
         return findByCode(code)
             .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
     }
+
+    List<Category> findByCodeIn(List<String> categoryCodeList);
 }

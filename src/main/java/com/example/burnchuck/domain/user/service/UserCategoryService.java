@@ -4,9 +4,11 @@ import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserCategory;
+import com.example.burnchuck.common.enums.ErrorCode;
+import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.user.dto.request.UserCategoryCreateRequest;
-import com.example.burnchuck.domain.user.dto.response.UserCategoryCreateResponse;
+import com.example.burnchuck.domain.user.dto.response.UserCategoryGetResponse;
 import com.example.burnchuck.domain.user.repository.UserCategoryRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,25 +27,57 @@ public class UserCategoryService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
 
+    /**
+     * 관심 카테고리 등록
+     */
     @Transactional
-    public UserCategoryCreateResponse createUserFavoriteCategory(AuthUser authUser, UserCategoryCreateRequest request) {
+    public void createUserFavoriteCategory(AuthUser authUser, UserCategoryCreateRequest request) {
 
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        List<String> requestCategoryList = request.getCategoryCodeList();
+        List<Category> categories = categoryRepository.findByCodeIn(request.getCategoryCodeList());
 
-        if (requestCategoryList != null) {
-
-            List<Category> categoryList = categoryRepository.findAll();
-
-            List<UserCategory> userCategoryList = categoryList.stream()
-                    .filter(category -> requestCategoryList.contains(category.getCode()))
-                    .map(category -> new UserCategory(user, category))
-                    .toList();
-
-            userCategoryRepository.saveAll(userCategoryList);
+        if (categories.size() != request.getCategoryCodeList().size()) {
+            throw new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
         }
 
-        return new UserCategoryCreateResponse(requestCategoryList);
+        List<UserCategory> existUserCategory = userCategoryRepository.findByUser(user);
+        Set<String> existCategory = existUserCategory.stream()
+                .map(uc -> uc.getCategory().getCode())
+                .collect(Collectors.toSet());
+
+        Set<String> requestCategory = categories.stream()
+                .map(Category::getCode)
+                .collect(Collectors.toSet());
+
+        List<UserCategory> toDelete = existUserCategory.stream()
+                .filter(uc -> !requestCategory.contains(uc.getCategory().getCode()))
+                .toList();
+
+        List<UserCategory> toAdd = categories.stream()
+                .filter(category -> !existCategory.contains(category.getCode()))
+                .map(category -> new UserCategory(user, category))
+                .toList();
+
+        userCategoryRepository.deleteAll(toDelete);
+        userCategoryRepository.saveAll(toAdd);
+        userCategoryRepository.flush();
+    }
+
+    /**
+     * 관심 카테고리 목록 조회
+     */
+    @Transactional
+    public UserCategoryGetResponse getUserFavoriteCategory(Long userId) {
+
+        User user = userRepository.findActivateUserById(userId);
+
+        List<UserCategory> userCategories = userCategoryRepository.findByUser(user);
+
+        List<String> categoryCodeList = userCategories.stream()
+                .map(uc -> uc.getCategory().getCode())
+                .toList();
+
+        return new UserCategoryGetResponse(categoryCodeList);
     }
 }
