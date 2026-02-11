@@ -3,7 +3,6 @@ package com.example.burnchuck.domain.auth.controller;
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.domain.auth.dto.request.EmailConfirmRequest;
 import com.example.burnchuck.domain.auth.dto.request.EmailRequest;
-import com.example.burnchuck.domain.auth.dto.request.NicknameRequest;
 import com.example.burnchuck.domain.auth.service.EmailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,35 +25,23 @@ public class EmailController {
      * 이메일 인증 번호 발송
      */
     @PostMapping("/email-verifications")
-    public ResponseEntity<CommonResponse<Void>> sendVerificationEmail(
+    public ResponseEntity<CommonResponse<Boolean>> sendVerificationEmail(
             @Valid @RequestBody EmailRequest request
     ) {
-        emailService.sendVerificationEmail(request.getEmail());
+        boolean result = emailService.sendVerificationEmail(request.getEmail());
 
-        return ResponseEntity.ok(CommonResponse.successNodata(AUTH_EMAIL_SEND_SUCCESS));
+        return ResponseEntity.ok(CommonResponse.success(AUTH_EMAIL_SEND_SUCCESS, result));
     }
 
     /**
      * 이메일 인증 번호 확인
      */
     @PostMapping("/email-verifications/confirm")
-    public ResponseEntity<CommonResponse<Void>> confirmCode(
+    public ResponseEntity<CommonResponse<Boolean>> confirmCode(
             @Valid @RequestBody EmailConfirmRequest request
     ) {
-        emailService.verifyCode(request.getEmail(), request.getVerificationCode());
+        boolean isVerified = emailService.verifyCode(request.getEmail(), request.getVerificationCode());
 
-        return ResponseEntity.ok(CommonResponse.successNodata(AUTH_EMAIL_VERIFY_SUCCESS));
-    }
-
-    /**
-     * 닉네임 중복 확인
-     */
-    @PostMapping("/nickname-availability")
-    public ResponseEntity<CommonResponse<Void>> checkNickname(
-            @Valid @RequestBody NicknameRequest request
-    ) {
-        emailService.checkNicknameAvailable(request.getNickname());
-
-        return ResponseEntity.ok(CommonResponse.successNodata(AUTH_NICKNAME_AVAILABLE));
+        return ResponseEntity.ok(CommonResponse.success(AUTH_EMAIL_VERIFY_SUCCESS, isVerified));
     }
 }

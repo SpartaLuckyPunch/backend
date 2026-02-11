@@ -1,15 +1,13 @@
 package com.example.burnchuck.domain.auth.controller;
 
-import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_LOGIN_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_REISSUE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_SIGNUP_SUCCESS;
-
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.enums.Provider;
 import com.example.burnchuck.domain.auth.dto.request.AuthLoginRequest;
 import com.example.burnchuck.domain.auth.dto.request.AuthSignupRequest;
+import com.example.burnchuck.domain.auth.dto.request.NicknameRequest;
 import com.example.burnchuck.domain.auth.dto.response.AuthTokenResponse;
 import com.example.burnchuck.domain.auth.service.AuthService;
+import com.example.burnchuck.domain.auth.service.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
+import static com.example.burnchuck.common.enums.SuccessMessage.*;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
@@ -30,6 +30,7 @@ import java.io.IOException;
 public class AuthController {
 
     private final AuthService authService;
+    private final EmailService emailService;
 
     /**
      * 회원가입
@@ -115,6 +116,19 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, rtCookie.toString());
 
         return ResponseEntity.ok(CommonResponse.successNodata(AUTH_LOGIN_SUCCESS));
+    }
+
+    /**
+     * 닉네임 중복 확인
+     */
+    @PostMapping("/nickname-availability")
+    public ResponseEntity<CommonResponse<Boolean>> checkNickname(
+            @Valid @RequestBody NicknameRequest request
+    ) {
+        boolean isAvailable = authService.checkNicknameAvailable(request.getNickname());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(AUTH_NICKNAME_AVAILABLE, isAvailable));
     }
 
     /**

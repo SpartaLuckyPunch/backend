@@ -26,11 +26,10 @@ public class EmailService {
     /**
      * 이메일 인증 번호 발송
      */
-    @Async("CustomTaskExecutor")
-    public void sendVerificationEmail(String email) {
+    public boolean sendVerificationEmail(String email) {
 
         if (userRepository.existsByEmail(email)) {
-            throw new CustomException(ErrorCode.EMAIL_EXIST);
+            return false;
         }
         try {
             String verificationCode = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
@@ -44,6 +43,8 @@ public class EmailService {
             helper.setText("인증 번호는 <b>" + verificationCode + "</b> 입니다.<br>5분 이내에 입력해주세요.", true);
 
             mailSender.send(message);
+
+            return true;
         } catch (MessagingException e) {
 
             throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
@@ -53,24 +54,15 @@ public class EmailService {
     /**
      * 이메일 인증 번호 확인
      */
-    public void verifyCode(String email, String code) {
+    public boolean verifyCode(String email, String code) {
         String savedCode = redisTemplate.opsForValue().get(email);
 
         if (savedCode == null || !savedCode.equals(code)) {
-
-            throw new CustomException(ErrorCode.INVALID_VERIFICATION_CODE);
+            return false;
         }
 
         redisTemplate.delete(email);
-    }
-
-    /**
-     * 닉네임 중복 확인
-     */
-    public void checkNicknameAvailable(String nickname) {
-        // 이미 존재하면 예외 발생
-        if (userRepository.existsByNickname(nickname)) {
-            throw new CustomException(ErrorCode.NICKNAME_EXIST);
-        }
+        return true;
     }
 }
+
