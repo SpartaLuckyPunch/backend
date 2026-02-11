@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +35,7 @@ public class EmailService {
         if (userRepository.existsByEmail(email)) {
             return false;
         }
+
         try {
             String verificationCode = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
             redisTemplate.opsForValue().set(email, verificationCode, 5, TimeUnit.MINUTES);
@@ -48,8 +50,8 @@ public class EmailService {
             mailSender.send(message);
 
             return true;
-        } catch (MessagingException e) {
 
+        } catch (MessagingException e) {
             throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
         }
     }
@@ -64,7 +66,7 @@ public class EmailService {
 
         String savedCode = redisTemplate.opsForValue().get(email);
 
-        if (savedCode == null || !savedCode.equals(code)) {
+        if (savedCode == null || ObjectUtils.nullSafeEquals(savedCode, code)) {
             return false;
         }
 
