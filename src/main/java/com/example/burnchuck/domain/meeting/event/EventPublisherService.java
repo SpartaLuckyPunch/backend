@@ -36,4 +36,10 @@ public class EventPublisherService {
         MeetingStatusChangeEvent event = new MeetingStatusChangeEvent(meetingId, status);
         publisher.publishEvent(event);
     }
+
+    public void publishMeetingAttendeesChangeEvent(Meeting meeting) {
+
+        MeetingAttendeesChangeEvent event = new MeetingAttendeesChangeEvent(meeting);
+        publisher.publishEvent(event);
+    }
 }

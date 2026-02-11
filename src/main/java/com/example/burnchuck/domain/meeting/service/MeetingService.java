@@ -166,13 +166,13 @@ public class MeetingService {
             MeetingSortOption order,
             Pageable pageable
     ) {
-        if (userLocationRequest.noCurrentLocation()) {
-            userLocationRequest.setLocation(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
-        }
-
         if (userLocationRequest.noCurrentLocation() && authUser != null) {
             User user = userRepository.findActivateUserWithAddress(authUser.getId());
             userLocationRequest.setLocation(user.getAddress());
+        }
+
+        if (userLocationRequest.noCurrentLocation()) {
+            userLocationRequest.setLocation(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
         }
 
         if (locationRequest.notNull()) {

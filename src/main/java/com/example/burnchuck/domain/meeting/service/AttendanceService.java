@@ -74,6 +74,8 @@ public class AttendanceService {
         chatRoomService.joinGroupChatRoom(meetingId, user);
 
         notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
+
+        eventPublisherService.publishMeetingAttendeesChangeEvent(meeting);
     }
 
     /**
@@ -108,6 +110,8 @@ public class AttendanceService {
         }
 
         notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_LEFT, meeting, user);
+
+        eventPublisherService.publishMeetingAttendeesChangeEvent(meeting);
     }
 
     /**

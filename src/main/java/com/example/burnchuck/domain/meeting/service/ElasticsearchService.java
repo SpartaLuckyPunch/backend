@@ -21,11 +21,6 @@ public class ElasticsearchService {
     private final ElasticsearchOperations elasticsearchOperations;
 
     public void saveMeeting(Meeting meeting) {
-        MeetingDocument meetingDocument = new MeetingDocument(meeting, 0);
-        meetingDocumentRepository.save(meetingDocument);
-    }
-
-    public void updateMeeting(Meeting meeting) {
 
         int currentAttendees = userMeetingRepository.countByMeeting(meeting);
 
@@ -43,6 +38,20 @@ public class ElasticsearchService {
         document.put("status", status.toString());
 
         UpdateQuery updateQuery = UpdateQuery.builder(meetingId.toString())
+            .withDocument(document)
+            .build();
+
+        elasticsearchOperations.update(updateQuery, IndexCoordinates.of("meetings"));
+    }
+
+    public void updateMeetingCurrentAttendees(Meeting meeting) {
+
+        int currentAttendees = userMeetingRepository.countByMeeting(meeting);
+
+        Document document = Document.create();
+        document.put("currentAttendees", currentAttendees);
+
+        UpdateQuery updateQuery = UpdateQuery.builder(meeting.getId().toString())
             .withDocument(document)
             .build();
 
