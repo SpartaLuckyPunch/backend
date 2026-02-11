@@ -14,6 +14,7 @@ import com.example.burnchuck.domain.chat.repository.ChatRoomRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.response.AttendanceGetMeetingListResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
+import com.example.burnchuck.domain.meeting.event.EventPublisherService;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
@@ -32,9 +33,10 @@ public class AttendanceService {
     private final UserMeetingRepository userMeetingRepository;
     private final UserRepository userRepository;
     private final MeetingRepository meetingRepository;
+    private final ChatRoomRepository chatRoomRepository;
     private final NotificationService notificationService;
     private final ChatRoomService chatRoomService;
-    private final ChatRoomRepository chatRoomRepository;
+    private final EventPublisherService eventPublisherService;
 
     /**
      * 모임 참여 신청
@@ -66,6 +68,7 @@ public class AttendanceService {
 
         if (currentAttendees +1 == maxAttendees) {
             meeting.updateStatus(MeetingStatus.CLOSED);
+            eventPublisherService.publishMeetingStatusChangeEvent(meeting.getId(), MeetingStatus.CLOSED);
         }
 
         chatRoomService.joinGroupChatRoom(meetingId, user);
@@ -101,6 +104,7 @@ public class AttendanceService {
 
         if (meeting.isClosed()) {
             meeting.updateStatus(MeetingStatus.OPEN);
+            eventPublisherService.publishMeetingStatusChangeEvent(meeting.getId(), MeetingStatus.OPEN);
         }
 
         notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_LEFT, meeting, user);

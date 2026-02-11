@@ -5,6 +5,7 @@ import static com.example.burnchuck.domain.scheduler.repository.SchedulingReposi
 
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingStatus;
+import com.example.burnchuck.domain.meeting.event.EventPublisherService;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.scheduler.dto.SchedulingTask;
@@ -28,6 +29,7 @@ public class SchedulingService {
     private final MeetingRepository meetingRepository;
     private final SchedulingRepository schedulingRepository;
     private final NotificationService notificationService;
+    private final EventPublisherService eventPublisherService;
 
     private <T> void scheduleTask(
         T target,
@@ -57,6 +59,7 @@ public class SchedulingService {
             e -> {
                 Meeting targetMeeting = meetingRepository.findActivateMeetingById(meeting.getId());
                 targetMeeting.updateStatus(MeetingStatus.COMPLETED);
+                eventPublisherService.publishMeetingStatusChangeEvent(meeting.getId(), MeetingStatus.COMPLETED);
             },
             meeting.getMeetingDateTime().minusMinutes(10)
         );

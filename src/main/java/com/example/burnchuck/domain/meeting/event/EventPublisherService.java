@@ -1,6 +1,7 @@
 package com.example.burnchuck.domain.meeting.event;
 
 import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.MeetingTaskType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -27,6 +28,12 @@ public class EventPublisherService {
     public void publishMeetingDeletedEvent(Meeting meeting) {
 
         MeetingEvent event = new MeetingEvent(MeetingTaskType.DELETE, meeting);
+        publisher.publishEvent(event);
+    }
+
+    public void publishMeetingStatusChangeEvent(Long meetingId, MeetingStatus status) {
+
+        MeetingStatusChangeEvent event = new MeetingStatusChangeEvent(meetingId, status);
         publisher.publishEvent(event);
     }
 }
