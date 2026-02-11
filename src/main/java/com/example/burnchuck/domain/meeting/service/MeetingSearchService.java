@@ -206,7 +206,7 @@ public class MeetingSearchService {
 
     private SortOptions sortPOPULAR() {
         return new SortOptions.Builder()
-            .field(f -> f.field("popularityScore").order(SortOrder.Desc)).build();
+            .field(f -> f.field("likes").order(SortOrder.Desc)).build();
     }
 
     private SortOptions sortLATEST() {

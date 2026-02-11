@@ -42,7 +42,7 @@ public class MeetingDocument {
     private String status;
 
     @Field(type = FieldType.Long)
-    private Long popularityScore;
+    private Long likes;
 
     @Field(type = FieldType.Keyword)
     private String imgUrl;
@@ -56,7 +56,7 @@ public class MeetingDocument {
     @Field(type = FieldType.Integer)
     private int currentAttendees;
 
-    public MeetingDocument(Meeting meeting, int currentAttendees) {
+    public MeetingDocument(Meeting meeting, long likes, int currentAttendees) {
         this.id = meeting.getId();
         this.title = meeting.getTitle();
         this.categoryCode = meeting.getCategory().getCode();
@@ -65,8 +65,7 @@ public class MeetingDocument {
         this.meetingHour = meeting.getMeetingDateTime().getHour();
         this.createdDatetime = meeting.getCreatedDatetime();
         this.status = meeting.getStatus().toString();
-        // TODO : 모임 수정 시 내용 찾아와야 함
-        this.popularityScore = 0L;
+        this.likes = likes;
         this.imgUrl = meeting.getImgUrl();
         this.location = meeting.getLocation();
         this.maxAttendees = meeting.getMaxAttendees();

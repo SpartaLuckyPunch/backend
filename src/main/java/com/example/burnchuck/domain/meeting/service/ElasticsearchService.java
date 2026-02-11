@@ -5,6 +5,7 @@ import com.example.burnchuck.common.entity.MeetingDocument;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.domain.meeting.repository.MeetingDocumentRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
+import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.document.Document;
@@ -18,13 +19,15 @@ public class ElasticsearchService {
 
     private final MeetingDocumentRepository meetingDocumentRepository;
     private final UserMeetingRepository userMeetingRepository;
+    private final MeetingLikeRepository meetingLikeRepository;
     private final ElasticsearchOperations elasticsearchOperations;
 
     public void saveMeeting(Meeting meeting) {
 
+        long likes = meetingLikeRepository.countByMeeting(meeting);
         int currentAttendees = userMeetingRepository.countByMeeting(meeting);
 
-        MeetingDocument meetingDocument = new MeetingDocument(meeting, currentAttendees);
+        MeetingDocument meetingDocument = new MeetingDocument(meeting, likes, currentAttendees);
         meetingDocumentRepository.save(meetingDocument);
     }
 
