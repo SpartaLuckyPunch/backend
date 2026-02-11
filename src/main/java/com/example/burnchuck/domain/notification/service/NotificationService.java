@@ -14,6 +14,8 @@ import com.example.burnchuck.domain.notification.dto.response.NotificationRespon
 import com.example.burnchuck.domain.notification.dto.response.NotificationSseResponse;
 import com.example.burnchuck.domain.notification.repository.NotificationRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +55,8 @@ public class NotificationService {
         });
         emitter.onTimeout(emitter::complete);
 
-        long unread = notificationRepository.countByUserIdAndIsReadFalse(userId);
+        LocalDateTime sevenDaysAgo = LocalDate.now().atStartOfDay().minusDays(7);
+        long unread = notificationRepository.countUnReadNotificationsInSevenDaysByUserId(userId, sevenDaysAgo);
 
         sseNotifyService.send(emitter, userId, NotificationSseResponse.sseConnection(unread));
 
@@ -184,7 +187,9 @@ public class NotificationService {
 
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        List<NotificationResponse> notificaionList = notificationRepository.findAllNotificationsByUser(user);
+        LocalDateTime sevenDaysAgo = LocalDate.now().atStartOfDay().minusDays(7);
+
+        List<NotificationResponse> notificaionList = notificationRepository.findAllNotificationsInSevenDaysByUser(user, sevenDaysAgo);
 
         return new NotificationGetListResponse(notificaionList);
     }

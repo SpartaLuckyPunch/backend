@@ -23,6 +23,7 @@ public enum ErrorCode {
     // 유저
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "유저가 존재하지 않습니다."),
     USER_IMG_NOT_FOUND(HttpStatus.NOT_FOUND, "프로필 사진이 존재하지 않습니다."),
+    DELETED_USER(HttpStatus.FORBIDDEN, "탈퇴한 계정입니다."),
     SAME_PASSWORD(HttpStatus.BAD_REQUEST, "현재 비밀번호와 새 비밀번호가 동일합니다."),
     INVALID_USER_ROLE(HttpStatus.BAD_REQUEST, "유효하지 않은 권한입니다."),
 
@@ -57,12 +58,16 @@ public enum ErrorCode {
     ATTENDANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "번개 참여 신청이 존재하지 않습니다."),
     ATTENDANCE_HOST_CANNOT_CANCEL(HttpStatus.BAD_REQUEST, "호스트는 번개 참여를 취소할 수 없습니다."),
     ATTENDANCE_CANNOT_CANCEL_WHEN_MEETING_CLOSED(HttpStatus.BAD_REQUEST, "번개 시작 10분 전에는 취소할 수 없습니다."),
+    ATTENDANCE_MAX_CAPACITY_REACHED(HttpStatus.BAD_REQUEST, "모임의 정원이 모두 찼습니다."),
 
     // 카테고리
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리가 존재하지 않습니다."),
 
     // 알림
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림이 존재하지 않습니다."),
+
+    // 락
+    LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "락 획득을 실패하였습니다."),
 
     // 채팅
     CANNOT_CHAT_WITH_SELF(HttpStatus.CONFLICT, "자기 자신과 채팅할 수 없습니다."),

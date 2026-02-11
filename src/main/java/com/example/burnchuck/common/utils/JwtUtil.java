@@ -45,7 +45,7 @@ public class JwtUtil {
     public String generateAccessToken(Long id, String email, String nickname, UserRole userRole) {
         Date now = new Date();
 
-        return BEARER_PREFIX + Jwts.builder()
+        return Jwts.builder()
             .claim("type", TOKEN_TYPE_ACCESS)
             .claim("id", id)
             .claim("email", email)
