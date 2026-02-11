@@ -11,12 +11,11 @@ import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
-import com.example.burnchuck.common.entity.RedisSyncFailure;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
+import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
-import com.example.burnchuck.common.enums.SyncType;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.ClientInfoExtractor;
 import com.example.burnchuck.common.utils.MeetingDistance;
@@ -40,7 +39,6 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatu
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.event.EventPublisherService;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
-import com.example.burnchuck.domain.meeting.repository.RedisSyncFailureRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
@@ -56,7 +54,6 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.RedisConnectionFailureException;
@@ -74,7 +71,6 @@ public class MeetingService {
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
     private final AddressRepository addressRepository;
-    private final RedisSyncFailureRepository redisSyncFailureRepository;
 
     private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
@@ -107,15 +103,6 @@ public class MeetingService {
 
         Meeting meeting = createMeeting(user, request);
 
-        try {
-            meetingCacheService.saveMeetingLocation(meeting);
-        } catch (RedisException | DataAccessException e) {
-            log.error("Redis 예외 발생: {}", e.getMessage());
-
-            RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.CREATE);
-            redisSyncFailureRepository.save(redisSyncFailure);
-        }
-
         notificationService.notifyNewFollowerPost(meeting, user);
 
         eventPublisherService.publishMeetingCreatedEvent(meeting);
@@ -129,9 +116,9 @@ public class MeetingService {
     @Transactional
     public Meeting createMeeting(User user, MeetingCreateRequest request) {
 
-//        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
-//            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
-//        }
+        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+        }
 
         Category category = categoryRepository.findCategoryByCode(request.getCategoryCode());
 
@@ -252,17 +239,6 @@ public class MeetingService {
 
         Point point = createPoint(request.getLatitude(), request.getLongitude());
 
-        if (!ObjectUtils.nullSafeEquals(meeting.getPoint(), point)) {
-            try {
-                meetingCacheService.saveMeetingLocation(meeting);
-            } catch (RedisException | DataAccessException e) {
-                log.error("Redis 예외 발생: {}", e.getMessage());
-
-                RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.CREATE);
-                redisSyncFailureRepository.save(redisSyncFailure);
-            }
-        }
-
         meeting.updateMeeting(request, category, point);
 
         eventPublisherService.publishMeetingUpdatedEvent(meeting);
@@ -286,15 +262,6 @@ public class MeetingService {
         }
 
         meeting.delete();
-
-        try {
-            meetingCacheService.deleteMeetingLocation(meeting.getId());
-        } catch (RedisException | DataAccessException e) {
-            log.error("Redis 예외 발생: {}", e.getMessage());
-
-            RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.DELETE);
-            redisSyncFailureRepository.save(redisSyncFailure);
-        }
 
         eventPublisherService.publishMeetingDeletedEvent(meeting);
     }
