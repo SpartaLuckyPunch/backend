@@ -1,6 +1,5 @@
 package com.example.burnchuck.common.entity;
 
-import com.example.burnchuck.common.enums.MeetingStatus;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -10,17 +9,19 @@ import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.Setting;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Document(indexName = "meetings")
+@Setting(settingPath = "elasticsearch/settings.json")
 public class MeetingDocument {
 
     @Id
     private String id;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "title_analyzer")
     private String title;
 
     @Field(type = FieldType.Keyword)
@@ -38,7 +39,7 @@ public class MeetingDocument {
     private LocalDateTime createdDatetime;
 
     @Field(type = FieldType.Keyword)
-    private MeetingStatus status;
+    private String status;
 
     @Field(type = FieldType.Keyword)
     private String imgUrl;
@@ -57,7 +58,7 @@ public class MeetingDocument {
         this.meetingDatetime = meeting.getMeetingDateTime();
         this.meetingHour = meeting.getMeetingDateTime().getHour();
         this.createdDatetime = meeting.getCreatedDatetime();
-        this.status = meeting.getStatus();
+        this.status = meeting.getStatus().toString();
         this.imgUrl = meeting.getImgUrl();
         this.location = meeting.getLocation();
         this.maxAttendees = meeting.getMaxAttendees();

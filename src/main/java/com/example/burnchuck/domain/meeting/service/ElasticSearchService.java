@@ -9,6 +9,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.MeetingDocument;
 import com.example.burnchuck.common.enums.MeetingSortOption;
+import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.UserLocationRequest;
@@ -107,6 +108,9 @@ public class ElasticSearchService {
         Query type = categoryEq(searchRequest.getCategory());
         if (type != null) filters.add(type);
 
+        Query status = statusOpen();
+        if (status != null) filters.add(status);
+
         Query radiusDistance = inDistance(userLocationRequest);
         if (radiusDistance != null) filters.add(radiusDistance);
 
@@ -140,6 +144,10 @@ public class ElasticSearchService {
         return categoryCode != null
             ? Query.of(q->q.term(t->t.field("categoryCode").value(categoryCode)))
             : null;
+    }
+
+    private Query statusOpen(){
+        return Query.of(q->q.term(t->t.field("status").value(MeetingStatus.OPEN.toString())));
     }
 
     private Query inDistance(UserLocationRequest userLocationRequest) {
