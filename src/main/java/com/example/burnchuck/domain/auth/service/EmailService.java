@@ -26,7 +26,7 @@ public class EmailService {
     /**
      * 이메일 인증 번호 발송
      */
-    @Async
+    @Async("CustomTaskExecutor")
     public void sendVerificationEmail(String email) {
         try {
             String verificationCode = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
