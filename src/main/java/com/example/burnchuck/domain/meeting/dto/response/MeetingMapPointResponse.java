@@ -15,7 +15,7 @@ public class MeetingMapPointResponse {
 
     public static MeetingMapPointResponse from(MeetingDocument meetingDocument) {
         return new MeetingMapPointResponse(
-            Long.parseLong(meetingDocument.getId()),
+            meetingDocument.getId(),
             meetingDocument.getTitle(),
             meetingDocument.getGeoPoint().getLat(),
             meetingDocument.getGeoPoint().getLon()

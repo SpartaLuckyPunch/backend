@@ -23,7 +23,7 @@ public class MeetingSummaryResponse {
     private int currentAttendees;
 
     public MeetingSummaryResponse(MeetingDocument meetingDocument) {
-        this.meetingId = Long.parseLong(meetingDocument.getId());
+        this.meetingId = meetingDocument.getId();
         this.meetingTitle = meetingDocument.getTitle();
         this.imgUrl = meetingDocument.getImgUrl();
         this.location = meetingDocument.getLocation();

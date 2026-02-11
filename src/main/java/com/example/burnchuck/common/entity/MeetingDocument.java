@@ -19,7 +19,7 @@ import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 public class MeetingDocument {
 
     @Id
-    private String id;
+    private Long id;
 
     @Field(type = FieldType.Text, analyzer = "title_analyzer")
     private String title;
@@ -54,7 +54,7 @@ public class MeetingDocument {
     private int maxAttendees;
 
     public MeetingDocument(Meeting meeting) {
-        this.id = String.valueOf(meeting.getId());
+        this.id = meeting.getId();
         this.title = meeting.getTitle();
         this.categoryCode = meeting.getCategory().getCode();
         this.geoPoint = new GeoPoint(meeting.getLatitude(), meeting.getLongitude());
