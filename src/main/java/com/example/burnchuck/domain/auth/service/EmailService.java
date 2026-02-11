@@ -28,6 +28,10 @@ public class EmailService {
      */
     @Async("CustomTaskExecutor")
     public void sendVerificationEmail(String email) {
+
+        if (userRepository.existsByEmail(email)) {
+            throw new CustomException(ErrorCode.EMAIL_EXIST);
+        }
         try {
             String verificationCode = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
             redisTemplate.opsForValue().set(email, verificationCode, 5, TimeUnit.MINUTES);
