@@ -57,8 +57,10 @@ public class ElasticSearchService {
 
         SortOptions sortOptions =
             switch (sort) {
+                case POPULAR -> sortPOPULAR();
+                case LATEST -> sortLATEST();
+                case UPCOMING -> sortUPCOMING();
                 case NEAREST -> sortNEAREST(userLocationRequest);
-                default -> sortLATEST();
             };
 
         NativeQuery query = NativeQuery.builder()
@@ -210,9 +212,19 @@ public class ElasticSearchService {
             : null;
     }
 
+    private SortOptions sortPOPULAR() {
+        return new SortOptions.Builder()
+            .field(f -> f.field("popularityScore").order(SortOrder.Desc)).build();
+    }
+
     private SortOptions sortLATEST() {
         return new SortOptions.Builder()
             .field(f -> f.field("createdDatetime").order(SortOrder.Desc)).build();
+    }
+
+    private SortOptions sortUPCOMING() {
+        return new SortOptions.Builder()
+            .field(f -> f.field("meetingDatetime").order(SortOrder.Asc)).build();
     }
 
     private SortOptions sortNEAREST(UserLocationRequest userLocationRequest) {

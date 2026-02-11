@@ -41,6 +41,9 @@ public class MeetingDocument {
     @Field(type = FieldType.Keyword)
     private String status;
 
+    @Field(type = FieldType.Long)
+    private Long popularityScore;
+
     @Field(type = FieldType.Keyword)
     private String imgUrl;
 
@@ -59,6 +62,7 @@ public class MeetingDocument {
         this.meetingHour = meeting.getMeetingDateTime().getHour();
         this.createdDatetime = meeting.getCreatedDatetime();
         this.status = meeting.getStatus().toString();
+        this.popularityScore = 0L;
         this.imgUrl = meeting.getImgUrl();
         this.location = meeting.getLocation();
         this.maxAttendees = meeting.getMaxAttendees();
