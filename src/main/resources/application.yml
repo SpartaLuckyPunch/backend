@@ -63,4 +63,6 @@ jwt:
   secret:
     key: ${JWT_SECRET_KEY}
 
-
+app:
+  frontend:
+    url: ${FRONTEND_URL}
