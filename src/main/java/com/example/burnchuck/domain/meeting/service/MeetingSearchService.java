@@ -208,7 +208,7 @@ public class MeetingSearchService {
     private Query timeBetween(Integer startTime, Integer endTime) {
         return startTime != null && endTime != null
             ? Query.of(q -> q.range(r -> r
-            .date(d -> d.field("meetingTime")
+            .date(d -> d.field("meetingHour")
                 .gte(startTime.toString())
                 .lt(endTime.toString())
             )))
