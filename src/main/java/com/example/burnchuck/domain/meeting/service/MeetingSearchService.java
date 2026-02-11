@@ -7,7 +7,6 @@ import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.TopRightBottomLeftGeoBounds;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import com.example.burnchuck.common.dto.PageResponse;
-import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.MeetingDocument;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.enums.MeetingStatus;
@@ -16,7 +15,6 @@ import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.UserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
-import com.example.burnchuck.domain.meeting.repository.MeetingDocumentRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,19 +32,9 @@ import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
-public class ElasticSearchService {
+public class MeetingSearchService {
 
-    private final MeetingDocumentRepository meetingDocumentRepository;
     private final ElasticsearchOperations elasticsearchOperations;
-
-    public void saveMeeting(Meeting meeting) {
-        MeetingDocument meetingDocument = new MeetingDocument(meeting);
-        meetingDocumentRepository.save(meetingDocument);
-    }
-
-    public void deleteMeeting(Meeting meeting) {
-        meetingDocumentRepository.deleteById(meeting.getId());
-    }
 
     /**
      * 모임 목록 조회
