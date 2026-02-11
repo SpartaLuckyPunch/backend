@@ -190,6 +190,7 @@ public class MeetingService {
 
         List<MeetingSummaryResponse> responseList = meetingPage.getContent();
 
+        // TODO : 이후에 참여자수 추가 방법 변경
         List<Long> meetingIdList = responseList.stream().map(MeetingSummaryResponse::getMeetingId).toList();
         Map<Long, Long> countByMeetingResult = userMeetingRepository.countAllByMeeting(meetingIdList)
             .stream()
