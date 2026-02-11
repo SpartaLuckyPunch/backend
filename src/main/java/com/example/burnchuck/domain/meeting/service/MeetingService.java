@@ -197,9 +197,7 @@ public class MeetingService {
         MeetingSearchRequest searchRequest,
         MeetingMapViewPortRequest viewPort
     ) {
-        List<Long> meetingIdList = elasticSearchService.searchInMapFormat(searchRequest, viewPort);
-
-        return meetingRepository.findMeetingPointList(meetingIdList);
+        return elasticSearchService.searchInMapFormat(searchRequest, viewPort);
     }
 
     /**

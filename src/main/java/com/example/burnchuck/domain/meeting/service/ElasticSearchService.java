@@ -13,6 +13,7 @@ import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.UserLocationRequest;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.repository.MeetingDocumentRepository;
 import java.time.LocalDate;
@@ -82,7 +83,7 @@ public class ElasticSearchService {
     /**
      * 모임 지도 조회
      */
-    public List<Long> searchInMapFormat(MeetingSearchRequest searchRequest, MeetingMapViewPortRequest viewPort) {
+    public List<MeetingMapPointResponse> searchInMapFormat(MeetingSearchRequest searchRequest, MeetingMapViewPortRequest viewPort) {
 
         NativeQuery query = NativeQuery.builder()
             .withQuery(build(searchRequest, viewPort, null))
@@ -92,7 +93,7 @@ public class ElasticSearchService {
 
         return search.stream()
             .map(SearchHit::getContent)
-            .map(meetingDocument -> Long.parseLong(meetingDocument.getId()))
+            .map(MeetingMapPointResponse::from)
             .collect(Collectors.toList());
     }
 
