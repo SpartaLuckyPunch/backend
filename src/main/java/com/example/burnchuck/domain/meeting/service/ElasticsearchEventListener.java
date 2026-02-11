@@ -35,7 +35,7 @@ public class ElasticsearchEventListener {
     @Async("CustomTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @EventListener
-    public void meetingSyncElasticsearch(MeetingStatusChangeEvent event) {
+    public void meetingChangeStatus(MeetingStatusChangeEvent event) {
 
         elasticsearchService.updateMeetingStatus(event.getMeetingId(), event.getStatus());
     }
