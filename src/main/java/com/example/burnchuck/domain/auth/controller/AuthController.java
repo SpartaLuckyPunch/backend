@@ -7,7 +7,6 @@ import com.example.burnchuck.domain.auth.dto.request.AuthSignupRequest;
 import com.example.burnchuck.domain.auth.dto.request.NicknameRequest;
 import com.example.burnchuck.domain.auth.dto.response.AuthTokenResponse;
 import com.example.burnchuck.domain.auth.service.AuthService;
-import com.example.burnchuck.domain.auth.service.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
