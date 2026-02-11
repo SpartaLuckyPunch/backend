@@ -2,6 +2,8 @@ package com.example.burnchuck.domain.auth.service;
 
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.domain.auth.dto.request.EmailConfirmRequest;
+import com.example.burnchuck.domain.auth.dto.request.EmailRequest;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -25,7 +27,9 @@ public class EmailService {
     /**
      * 이메일 인증 번호 발송
      */
-    public boolean sendVerificationEmail(String email) {
+    public boolean sendVerificationEmail(EmailRequest request) {
+
+        String email = request.getEmail();
 
         if (userRepository.existsByEmail(email)) {
             return false;
@@ -53,7 +57,11 @@ public class EmailService {
     /**
      * 이메일 인증 번호 확인
      */
-    public boolean verifyCode(String email, String code) {
+    public boolean verifyCode(EmailConfirmRequest request) {
+
+        String email = request.getEmail();
+        String code = request.getVerificationCode();
+
         String savedCode = redisTemplate.opsForValue().get(email);
 
         if (savedCode == null || !savedCode.equals(code)) {
