@@ -17,7 +17,6 @@ public interface ReviewReactionRepository extends JpaRepository<ReviewReaction, 
     @Query("""
             SELECT new com.example.burnchuck.domain.review.dto.response.ReactionCount(rr.reaction.reaction, COUNT(rr))
             FROM ReviewReaction rr
-            JOIN FETCH rr.reaction
             WHERE rr.review.reviewee.id = :revieweeId
             GROUP BY rr.reaction.reaction
             """)
