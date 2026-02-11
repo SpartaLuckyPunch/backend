@@ -19,9 +19,8 @@ public class CategoryService {
      */
     public CategoryListResponse getCategoryList() {
 
-        List<Category> categories = categoryRepository.findAllByOrderByIdAsc();
+        List<Category> categoryList = categoryRepository.findAllByOrderByIdAsc();
 
-        return CategoryListResponse.from(categories);
+        return CategoryListResponse.from(categoryList);
     }
-
 }

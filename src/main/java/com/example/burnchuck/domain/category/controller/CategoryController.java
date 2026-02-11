@@ -33,10 +33,10 @@ public class CategoryController {
     )
     @GetMapping
     public ResponseEntity<CommonResponse<CategoryListResponse>> getCategories() {
+
         CategoryListResponse response = categoryService.getCategoryList();
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(CATEGORY_GET_SUCCESS, response));
     }
-
 }
