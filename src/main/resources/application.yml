@@ -47,6 +47,3 @@ cloud:
 jwt:
   secret:
     key: ${JWT_SECRET_KEY}
-logging:
-  level:
-    org.elasticsearch.client: TRACE
