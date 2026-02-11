@@ -16,6 +16,8 @@ import com.example.burnchuck.domain.meeting.dto.request.UserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -185,13 +187,22 @@ public class MeetingSearchService {
     }
 
     private Query dateBetween(LocalDate startDate, LocalDate endDate) {
-        return startDate != null && endDate != null
-            ? Query.of(q -> q.range(r -> r
-            .date(d -> d.field("meetingDatetime")
-                .gte(startDate.toString())
-                .lte(endDate.toString())
-            )))
-            : null;
+
+        if (startDate == null || endDate == null) return null;
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        String start = startDate.atStartOfDay().format(formatter);
+        String end = endDate.atTime(LocalTime.MAX)
+            .withNano(0)
+            .format(formatter);
+
+        return Query.of(q -> q.range(r -> r
+                .date(d -> d.field("meetingDatetime")
+                .gte(start)
+                .lte(end)
+                .format("yyyy-MM-dd HH:mm:ss")
+            )));
     }
 
     private Query timeBetween(Integer startTime, Integer endTime) {
