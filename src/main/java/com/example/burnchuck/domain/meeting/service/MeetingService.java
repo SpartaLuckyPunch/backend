@@ -181,7 +181,7 @@ public class MeetingService {
     /**
      * 모임 단건 요약 조회
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public MeetingSummaryResponse getMeetingSummary(Long meetingId) {
 
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
@@ -191,7 +191,7 @@ public class MeetingService {
     }
 
     /**
-     * 모임 단건 조회
+     * 모임 단건 조회 및 조회수 관리
      */
     @Transactional(readOnly = true)
     public MeetingDetailResponse getMeetingDetail(Long meetingId, HttpServletRequest httpServletRequest) {
@@ -219,9 +219,9 @@ public class MeetingService {
     @Transactional
     public MeetingUpdateResponse updateMeeting(AuthUser authUser, Long meetingId, MeetingUpdateRequest request) {
 
-//        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
-//            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
-//        }
+        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+        }
 
         User user = userRepository.findActivateUserById(authUser.getId());
 
@@ -296,7 +296,7 @@ public class MeetingService {
         }
 
         UserMeeting host = userMeetings.stream()
-            .filter(userMeeting -> userMeeting.isHost())
+            .filter(UserMeeting::isHost)
             .findFirst()
             .orElseThrow(() -> new CustomException(HOST_NOT_FOUND));
 

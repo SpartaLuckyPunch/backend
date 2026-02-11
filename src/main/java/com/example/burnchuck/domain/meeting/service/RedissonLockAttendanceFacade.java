@@ -19,10 +19,12 @@ public class RedissonLockAttendanceFacade {
     private final AttendanceService attendanceService;
     private final RedissonClient redissonClient;
 
+    public static final String LOCK_KEY_PREFIX = "meeting_lock:";
     public static final Long WAIT_TIME = 5L;
 
     public void registerAttendance(AuthUser authUser, Long meetingId) {
-        String lockKey = "meeting_lock:" + meetingId;
+
+        String lockKey = LOCK_KEY_PREFIX + meetingId;
         RLock lock = redissonClient.getLock(lockKey);
 
         try {

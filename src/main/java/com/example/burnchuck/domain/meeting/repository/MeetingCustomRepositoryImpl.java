@@ -50,10 +50,8 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
                         meeting.views
                 ))
                 .from(meeting)
-                .leftJoin(userMeeting)
-                .on(userMeeting.meeting.eq(meeting))
-                .leftJoin(meetingLike)
-                .on(meetingLike.meeting.eq(meeting))
+                .leftJoin(userMeeting).on(userMeeting.meeting.eq(meeting))
+                .leftJoin(meetingLike).on(meetingLike.meeting.eq(meeting))
                 .where(meeting.id.eq(meetingId))
                 .groupBy(meeting.id)
                 .fetchOne();
@@ -106,10 +104,11 @@ public class MeetingCustomRepositoryImpl implements MeetingCustomRepository {
     }
 
     /**
-     * 주최한 모임 중 COMPLETED 되지 않은 모임 조회
+     * 주최한 모임 중 COMPLETED 되지 않은 모임 조회(유저 삭제 시 처리용)
      */
     @Override
     public List<Meeting> findActiveHostedMeetings(Long userId) {
+
         return queryFactory
             .select(userMeeting.meeting)
             .from(userMeeting)

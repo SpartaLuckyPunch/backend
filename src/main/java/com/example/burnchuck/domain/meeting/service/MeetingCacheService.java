@@ -45,8 +45,7 @@ public class MeetingCacheService {
 
         String key = generateKey(meetingId, ipAddress);
 
-        Boolean exists = redisTemplate.hasKey(key);
-        return !Boolean.TRUE.equals(exists);
+        return !redisTemplate.hasKey(key);
     }
 
     /**
@@ -65,7 +64,7 @@ public class MeetingCacheService {
     }
 
     /**
-     * 모임의 조회수 조회
+     * 모임 단건 조회수 조회
      */
     public Double getViewCount(Long meetingId) {
 
@@ -76,6 +75,9 @@ public class MeetingCacheService {
         return viewCount == null ? 0 : viewCount;
     }
 
+    /**
+     * 해당 날짜의 조회수 증가분 조회
+     */
     public Set<TypedTuple<String>> getAllViewList(LocalDate localDate) {
 
         String key = VIEW_COUNT_KEY + localDate;

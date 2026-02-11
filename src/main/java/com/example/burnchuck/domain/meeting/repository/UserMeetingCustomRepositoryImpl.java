@@ -41,14 +41,16 @@ public class UserMeetingCustomRepositoryImpl implements UserMeetingCustomReposit
             .from(userMeeting)
             .join(userMeeting.meeting, meeting)
             .join(attendee).on(attendee.meeting.eq(meeting))
-            .where(userMeeting.user.eq(user))
-            .where(meeting.isDeleted.eq(false))
+            .where(
+                userMeeting.user.eq(user),
+                meeting.isDeleted.eq(false)
+            )
             .groupBy(meeting.id)
             .fetch();
     }
 
     /**
-     * 참가 신청한 모임 중 COMPLETED 되지 않은 모임 조회
+     * 참가 신청한 모임 중 COMPLETED 되지 않은 모임 조회(유저 삭제 시 처리용)
      */
     @Override
     public List<Meeting> findActiveMeetingsByUser(User user) {
@@ -60,13 +62,12 @@ public class UserMeetingCustomRepositoryImpl implements UserMeetingCustomReposit
             .where(
                 userMeeting.user.eq(user),
                 userMeeting.meetingRole.eq(MeetingRole.PARTICIPANT),
-                meeting.status.ne(MeetingStatus.COMPLETED)
+                meeting.status.ne(MeetingStatus.COMPLETED),
+                meeting.isDeleted.eq(false)
             )
-            .where(meeting.isDeleted.eq(false))
             .groupBy(meeting.id)
             .fetch();
     }
-
 
     @Override
     public List<UserMeeting> findMeetingMembers(Long meetingId) {

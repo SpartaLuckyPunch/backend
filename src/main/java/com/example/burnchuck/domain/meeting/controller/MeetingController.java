@@ -160,7 +160,7 @@ public class MeetingController {
     @Operation(
             summary = "모임 단건 조회",
             description = """
-                    특정 모임을 조회합니다.
+                    특정 모임의 세부 내용을 조회합니다.
                     """
     )
     @GetMapping("/{meetingId}")
@@ -211,9 +211,8 @@ public class MeetingController {
     ) {
         MeetingUpdateResponse response = meetingService.updateMeeting(user, meetingId, request);
 
-        return ResponseEntity.ok(
-                CommonResponse.success(MEETING_UPDATE_SUCCESS, response)
-        );
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(MEETING_UPDATE_SUCCESS, response));
     }
 
     /**
