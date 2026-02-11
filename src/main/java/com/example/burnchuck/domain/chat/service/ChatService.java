@@ -23,9 +23,8 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final ChatRoomUserRepository chatRoomUserRepository;
-    private final SimpMessagingTemplate messagingTemplate;
-
     private final ChatCacheService chatCacheService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     /**
      * 채팅 보내기
@@ -33,35 +32,36 @@ public class ChatService {
     @Transactional
     public ChatMessageResponse sendMessage(AuthUser authUser, Long roomId, ChatMessageRequest request) {
 
-        User sender = userRepository.findActivateUserById(authUser.getId());
+        User loginUser = userRepository.findActivateUserById(authUser.getId());
 
         Long msgSeq = chatCacheService.generateMessageSequence(roomId);
 
         ChatMessage chatMessage = new ChatMessage(
                 roomId,
-                sender.getId(),
+                loginUser.getId(),
                 request.getContent(),
-                sender.getNickname(),
-                sender.getProfileImgUrl(),
+                loginUser.getNickname(),
+                loginUser.getProfileImgUrl(),
                 msgSeq
         );
 
         ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
 
-        chatCacheService.updateLastReadSequence(roomId, sender.getId(), msgSeq);
+        chatCacheService.updateLastReadSequence(roomId, loginUser.getId(), msgSeq);
 
         ChatMessageResponse response = ChatMessageResponse.from(savedMessage);
 
         messagingTemplate.convertAndSend("/sub/chat/room/" + response.getRoomId(), response);
 
-        List<Long> memberIds = chatRoomUserRepository.findAllActiveUserIdByChatRoomId(roomId);
+        List<Long> memberIdList = chatRoomUserRepository.findAllActiveUserIdByChatRoomId(roomId);
+
         ChatRoomUpdateEvent updateEvent = new ChatRoomUpdateEvent(
                 roomId,
                 savedMessage.getContent(),
                 savedMessage.getCreatedDatetime()
         );
 
-        for (Long memberId : memberIds) {
+        for (Long memberId : memberIdList) {
             messagingTemplate.convertAndSend("/sub/user/" + memberId + "/chat", updateEvent);
         }
         return response;
@@ -72,6 +72,7 @@ public class ChatService {
      * 유저가 방에 들어오거나 스크롤 할 때 호출
      */
     public void readMessage(Long userId, Long roomId) {
+
         Long currentSeq = chatCacheService.getRoomCurrentSequence(roomId);
         chatCacheService.updateLastReadSequence(roomId, userId, currentSeq);
 

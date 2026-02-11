@@ -14,10 +14,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ChatRoomUserRepository extends JpaRepository<ChatRoomUser, Long> {
-    @Query("SELECT cru FROM ChatRoomUser cru " +
-            "JOIN FETCH cru.chatRoom cr " +
-            "WHERE cru.user.id = :userId " +
-            "AND cru.isDeleted = false")
+
+    @Query("""
+            SELECT cru
+            FROM ChatRoomUser cru
+            JOIN FETCH cru.chatRoom cr
+            WHERE cru.user.id = :userId
+            AND cru.isDeleted = false
+            """)
     List<ChatRoomUser> findAllActiveByUserId(@Param("userId") Long userId);
 
     @Query("SELECT cru.user.id FROM ChatRoomUser cru WHERE cru.chatRoom.id = :chatRoomId AND cru.isDeleted = false")
@@ -25,7 +29,14 @@ public interface ChatRoomUserRepository extends JpaRepository<ChatRoomUser, Long
 
     int countByChatRoomId(Long id);
 
-    Optional<ChatRoomUser> findByChatRoomIdAndUserId(Long roomId, Long id);
+    @Query("""
+            SELECT cru
+            FROM ChatRoomUser cru
+            JOIN FETCH cru.chatRoom cr
+            WHERE cru.chatRoom.id = :roomId AND cru.user.id = :userId
+            AND cru.isDeleted = false
+            """)
+    Optional<ChatRoomUser> findByChatRoomIdAndUserId(@Param("roomId") Long roomId, @Param("userId") Long userId);
 
     List<ChatRoomUser> findByChatRoomId(Long chatRoomId);
 

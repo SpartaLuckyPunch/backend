@@ -1,7 +1,7 @@
 package com.example.burnchuck.domain.chat.service;
 
 import static com.example.burnchuck.common.enums.ErrorCode.CANNOT_CHAT_WITH_SELF;
-import static com.example.burnchuck.common.enums.ErrorCode.CANNOT_LEAVE_CLOSED_MEETING;
+import static com.example.burnchuck.common.enums.ErrorCode.CANNOT_LEAVE_NOT_COMPLETED_MEETING;
 
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.entity.ChatMessage;
@@ -9,13 +9,14 @@ import com.example.burnchuck.common.entity.ChatRoom;
 import com.example.burnchuck.common.entity.ChatRoomUser;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
-import com.example.burnchuck.common.enums.MeetingStatus;
+import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.RoomType;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.domain.chat.dto.dto.ChatRoomCreationResult;
 import com.example.burnchuck.domain.chat.dto.dto.ChatRoomDto;
 import com.example.burnchuck.domain.chat.dto.dto.ChatRoomMemberDto;
+import com.example.burnchuck.domain.chat.dto.request.ChatRoomNameUpdateRequest;
 import com.example.burnchuck.domain.chat.dto.response.ChatMessageResponse;
 import com.example.burnchuck.domain.chat.dto.response.ChatRoomDetailResponse;
 import com.example.burnchuck.domain.chat.repository.ChatMessageRepository;
@@ -31,6 +32,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +55,7 @@ public class ChatRoomService {
         User me = userRepository.findActivateUserById(authUser.getId());
         User target = userRepository.findActivateUserById(targetUserId);
 
-        if (me.getId().equals(target.getId())) {
+        if (ObjectUtils.nullSafeEquals(me.getId(), target.getId())) {
             throw new CustomException(CANNOT_CHAT_WITH_SELF);
         }
 
@@ -69,6 +71,7 @@ public class ChatRoomService {
      * 1:1 채팅방 생성 로직
      */
     private Long createPrivateChatRoom(User me, User target) {
+
         String roomName = me.getNickname() + ", " + target.getNickname();
 
         ChatRoom room = new ChatRoom(roomName, RoomType.PRIVATE);
@@ -89,6 +92,7 @@ public class ChatRoomService {
      */
     @Transactional
     public void createGroupChatRoom(Meeting meeting, User host) {
+
         ChatRoom chatRoom = new ChatRoom(meeting.getTitle(), RoomType.GROUP, meeting.getId());
         chatRoomRepository.save(chatRoom);
 
@@ -101,6 +105,7 @@ public class ChatRoomService {
      */
     @Transactional
     public void joinGroupChatRoom(Long meetingId, User user) {
+
         ChatRoom chatRoom = chatRoomRepository.findChatRoomByMeetingId(meetingId);
 
         boolean isAlreadyMember = chatRoomUserRepository.existsByChatRoomAndUser(chatRoom, user);
@@ -120,16 +125,16 @@ public class ChatRoomService {
      */
     @Transactional(readOnly = true)
     public List<ChatRoomDto> getMyChatRooms(AuthUser authUser) {
+
         User user = userRepository.findActivateUserById(authUser.getId());
 
         List<ChatRoomUser> myRoomUsers = chatRoomUserRepository.findAllActiveByUserId(user.getId());
 
-        List<Long> roomIds = myRoomUsers.stream()
+        List<Long> roomIdList = myRoomUsers.stream()
                 .map(roomUser -> roomUser.getChatRoom().getId())
                 .collect(Collectors.toList());
 
-        Map<Long, Long> unreadCounts = chatCacheService.getUnreadCountsBatch(user.getId(), roomIds);
-
+        Map<Long, Long> unreadCounts = chatCacheService.getUnreadCountsBatch(user.getId(), roomIdList);
 
         return myRoomUsers.stream()
                 .map(myRoomUser -> {
@@ -143,33 +148,34 @@ public class ChatRoomService {
     /**
      * DTO 변환 로직
      */
-    private ChatRoomDto convertToChatRoomDto(ChatRoomUser myRoomUser, Long myUserId, Long unreadCount) {
-        ChatRoom room = myRoomUser.getChatRoom();
-        String roomName = myRoomUser.getCustomRoomName();
+    private ChatRoomDto convertToChatRoomDto(ChatRoomUser myRoomUser, Long loginUserId, Long unreadCount) {
 
+        ChatRoom chatRoom = myRoomUser.getChatRoom();
+
+        String roomName = myRoomUser.getCustomRoomName();
         if (roomName == null) {
-            roomName = room.getName();
+            roomName = chatRoom.getName();
         }
 
         String chatroomImg = null;
 
-        if (room.isPrivate()) {
-            User user = getPartner(room, myUserId);
+        if (chatRoom.isPrivate()) {
+            User user = getPartner(chatRoom, loginUserId);
             roomName = UserDisplay.resolveNickname(user);
             chatroomImg = UserDisplay.resolveProfileImg(user);
         }
 
-        if (room.isGroup()){
-            Meeting meeting = meetingRepository.findMeetingById(room.getMeetingId());
+        if (chatRoom.isGroup()){
+            Meeting meeting = meetingRepository.findMeetingById(chatRoom.getMeetingId());
             chatroomImg = meeting.getImgUrl();
         }
 
-        ChatMessage lastMsg = chatMessageRepository.findFirstByRoomIdOrderByCreatedDatetimeDesc(room.getId())
+        ChatMessage lastMsg = chatMessageRepository.findFirstByRoomIdOrderByCreatedDatetimeDesc(chatRoom.getId())
                 .orElse(null);
 
-        int memberCount = chatRoomUserRepository.countByChatRoomId(room.getId());
+        int memberCount = chatRoomUserRepository.countByChatRoomId(chatRoom.getId());
 
-        return ChatRoomDto.of(room, roomName, lastMsg, chatroomImg, memberCount, unreadCount);
+        return ChatRoomDto.of(chatRoom, roomName, lastMsg, chatroomImg, memberCount, unreadCount);
     }
 
     /**
@@ -177,7 +183,11 @@ public class ChatRoomService {
      */
     @Transactional(readOnly = true)
     public Slice<ChatMessageResponse> getChatMessages(Long roomId, Pageable pageable) {
-        chatRoomRepository.findChatRoomById(roomId);
+
+        boolean exists = chatRoomRepository.existsById(roomId);
+        if (!exists) {
+            throw new CustomException(ErrorCode.CHAT_ROOM_NOT_FOUND);
+        }
 
         return chatMessageRepository.findByRoomIdOrderByCreatedDatetimeDesc(roomId, pageable)
                 .map(ChatMessageResponse::from);
@@ -188,6 +198,7 @@ public class ChatRoomService {
      */
     @Transactional
     public void leaveChatRoom(AuthUser authUser, Long roomId) {
+
         User user = userRepository.findActivateUserById(authUser.getId());
 
         ChatRoomUser chatRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, user.getId());
@@ -195,10 +206,11 @@ public class ChatRoomService {
         ChatRoom room = chatRoomUser.getChatRoom();
 
         if (room.isGroup()) {
+
             Meeting meeting = meetingRepository.findActivateMeetingById(room.getMeetingId());
 
-            if (meeting.getStatus() == MeetingStatus.CLOSED) {
-                throw new CustomException(CANNOT_LEAVE_CLOSED_MEETING);
+            if (!meeting.isCompleted()) {
+                throw new CustomException(CANNOT_LEAVE_NOT_COMPLETED_MEETING);
             }
         }
 
@@ -210,6 +222,7 @@ public class ChatRoomService {
      * 상대 유저 조회
      */
     private User getPartner(ChatRoom room, Long myId) {
+
         return chatRoomUserRepository.findByChatRoomId(room.getId()).stream()
                 .map(ChatRoomUser::getUser)
                 .filter(user -> !user.getId().equals(myId))
@@ -221,10 +234,11 @@ public class ChatRoomService {
      * 채팅방 이름 수정
      */
     @Transactional
-    public void updateRoomName(AuthUser authUser, Long roomId, String newName) {
+    public void updateRoomName(AuthUser authUser, Long roomId, ChatRoomNameUpdateRequest request) {
+
         ChatRoomUser chatRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, authUser.getId());
 
-        chatRoomUser.updateCustomName(newName);
+        chatRoomUser.updateCustomName(request.getName());
     }
 
     /**
@@ -232,6 +246,7 @@ public class ChatRoomService {
      */
     @Transactional(readOnly = true)
     public ChatRoomDetailResponse getChatRoomDetail(AuthUser authUser, Long roomId) {
+
         User user = userRepository.findActivateUserById(authUser.getId());
 
         ChatRoomUser myRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, user.getId());
@@ -249,15 +264,16 @@ public class ChatRoomService {
         }
 
         List<ChatRoomUser> roomUsers = chatRoomUserRepository.findByChatRoomId(roomId);
+
         List<ChatRoomMemberDto> members = roomUsers.stream()
                 .map(roomUser -> ChatRoomMemberDto.from(roomUser.getUser()))
-                .collect(Collectors.toList());
+                .toList();
 
-        List<Long> memberIds = roomUsers.stream()
+        List<Long> memberIdList = roomUsers.stream()
                 .map(ru -> ru.getUser().getId())
-                .collect(Collectors.toList());
+                .toList();
 
-        Map<Long, Long> readStatuses = chatCacheService.getMembersLastReadSequence(roomId, memberIds);
+        Map<Long, Long> readStatuses = chatCacheService.getMembersLastReadSequence(roomId, memberIdList);
 
         return ChatRoomDetailResponse.from(room, roomName, members, readStatuses);
     }
