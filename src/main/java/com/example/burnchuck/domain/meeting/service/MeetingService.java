@@ -190,8 +190,9 @@ public class MeetingService {
 
         List<MeetingSummaryResponse> responseList = meetingPage.getContent();
 
-        List<Object[]> objects = userMeetingRepository.countAllByMeeting();
-        Map<Long, Long> countByMeetingResult = objects.stream()
+        List<Long> meetingIdList = responseList.stream().map(MeetingSummaryResponse::getMeetingId).toList();
+        Map<Long, Long> countByMeetingResult = userMeetingRepository.countAllByMeeting(meetingIdList)
+            .stream()
             .collect(Collectors.toMap(
                 row -> (Long) row[0],
                 row -> (Long) row[1]

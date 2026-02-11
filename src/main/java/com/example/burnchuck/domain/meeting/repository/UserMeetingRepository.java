@@ -29,9 +29,10 @@ public interface UserMeetingRepository extends JpaRepository<UserMeeting, Long>,
         SELECT um.meeting.id as meetingId, count(um) as attendees
         FROM UserMeeting um
         JOIN um.meeting
+        WHERE um.meeting.id in :meetingIdList
         GROUP BY um.meeting.id
         """)
-    List<Object[]> countAllByMeeting();
+    List<Object[]> countAllByMeeting(@Param("meetingIdList") List<Long> meetingIdList);
 
     default UserMeeting findUserMeeting(Long userId, Long meetingId) {
         return findByUserIdAndMeetingId(userId, meetingId)
