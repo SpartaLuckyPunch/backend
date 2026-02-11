@@ -78,6 +78,8 @@ dependencies {
     // Email Service for Verification
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+    // Elasticsearch
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 }
 
 tasks.named('test') {

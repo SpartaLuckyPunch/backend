@@ -1,25 +1,36 @@
 package com.example.burnchuck.domain.meeting.dto.response;
 
 import com.example.burnchuck.common.entity.Meeting;
-
+import com.example.burnchuck.common.entity.MeetingDocument;
 import java.time.LocalDateTime;
-
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class MeetingSummaryResponse {
 
-    private final Long meetingId;
-    private final String meetingTitle;
-    private final String imgUrl;
-    private final String location;
-    private final Double latitude;
-    private final Double longitude;
-    private final LocalDateTime meetingDatetime;
-    private final int maxAttendees;
-    private final int currentAttendees;
+    private Long meetingId;
+    private String meetingTitle;
+    private String imgUrl;
+    private String location;
+    private Double latitude;
+    private Double longitude;
+    private LocalDateTime meetingDatetime;
+    private int maxAttendees;
+    private int currentAttendees;
+
+    public MeetingSummaryResponse(MeetingDocument meetingDocument) {
+        this.meetingId = meetingDocument.getId();
+        this.meetingTitle = meetingDocument.getTitle();
+        this.imgUrl = meetingDocument.getImgUrl();
+        this.location = meetingDocument.getLocation();
+        this.latitude = meetingDocument.getGeoPoint().getLat();
+        this.longitude = meetingDocument.getGeoPoint().getLon();
+        this.meetingDatetime = meetingDocument.getMeetingDatetime();
+        this.maxAttendees = meetingDocument.getMaxAttendees();
+        this.currentAttendees = meetingDocument.getCurrentAttendees();
+    }
 
     public static MeetingSummaryResponse from(Meeting meeting, int currentAttendees) {
         return new MeetingSummaryResponse(

@@ -1,0 +1,45 @@
+package com.example.burnchuck.domain.meeting.event;
+
+import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.common.enums.MeetingStatus;
+import com.example.burnchuck.common.enums.MeetingTaskType;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class EventPublisherService {
+
+    private final ApplicationEventPublisher publisher;
+
+    public void publishMeetingCreatedEvent(Meeting meeting) {
+
+        MeetingEvent event = new MeetingEvent(MeetingTaskType.CREATE, meeting);
+        publisher.publishEvent(event);
+    }
+
+    public void publishMeetingUpdatedEvent(Meeting meeting) {
+
+        MeetingEvent event = new MeetingEvent(MeetingTaskType.UPDATE, meeting);
+        publisher.publishEvent(event);
+    }
+
+    public void publishMeetingDeletedEvent(Meeting meeting) {
+
+        MeetingEvent event = new MeetingEvent(MeetingTaskType.DELETE, meeting);
+        publisher.publishEvent(event);
+    }
+
+    public void publishMeetingStatusChangeEvent(Meeting meeting, MeetingStatus status) {
+
+        MeetingStatusChangeEvent event = new MeetingStatusChangeEvent(meeting, status);
+        publisher.publishEvent(event);
+    }
+
+    public void publishMeetingAttendeesChangeEvent(Meeting meeting) {
+
+        MeetingAttendeesChangeEvent event = new MeetingAttendeesChangeEvent(meeting);
+        publisher.publishEvent(event);
+    }
+}

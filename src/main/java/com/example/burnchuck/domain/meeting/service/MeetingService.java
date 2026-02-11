@@ -5,32 +5,30 @@ import static com.example.burnchuck.common.enums.ErrorCode.HOST_NOT_FOUND;
 import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.common.dto.BoundingBox;
 import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.common.dto.Location;
+import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
-import com.example.burnchuck.common.entity.RedisSyncFailure;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
-import com.example.burnchuck.common.enums.SyncType;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.ClientInfoExtractor;
-import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.common.utils.S3UrlGenerator;
+import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.UserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.AttendeeResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
@@ -39,16 +37,14 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
+import com.example.burnchuck.domain.meeting.event.EventPublisherService;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
-import com.example.burnchuck.domain.meeting.repository.RedisSyncFailureRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
-import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import io.lettuce.core.RedisException;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -58,9 +54,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
@@ -77,13 +71,13 @@ public class MeetingService {
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
     private final AddressRepository addressRepository;
-    private final RedisSyncFailureRepository redisSyncFailureRepository;
 
     private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
     private final MeetingCacheService meetingCacheService;
     private final ChatRoomService chatRoomService;
     private final S3UrlGenerator s3UrlGenerator;
+    private final MeetingSearchService meetingSearchService;
 
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -108,15 +102,6 @@ public class MeetingService {
         User user = userRepository.findActivateUserById(authUser.getId());
 
         Meeting meeting = createMeeting(user, request);
-
-        try {
-            meetingCacheService.saveMeetingLocation(meeting);
-        } catch (RedisException | DataAccessException e) {
-            log.error("Redis 예외 발생: {}", e.getMessage());
-
-            RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.CREATE);
-            redisSyncFailureRepository.save(redisSyncFailure);
-        }
 
         notificationService.notifyNewFollowerPost(meeting, user);
 
@@ -160,49 +145,29 @@ public class MeetingService {
      * 모임 조회
      */
     @Transactional(readOnly = true)
-    public Page<MeetingSummaryResponse> getMeetingPage(
+    public PageResponse<MeetingSummaryResponse> getMeetingPage(
             AuthUser authUser,
             MeetingSearchRequest searchRequest,
             LocationFilterRequest locationRequest,
+            UserLocationRequest userLocationRequest,
+            MeetingSortOption order,
             Pageable pageable
     ) {
-        Location location = new Location(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
-
-        if (authUser != null) {
+        if (userLocationRequest.noCurrentLocation() && authUser != null) {
             User user = userRepository.findActivateUserWithAddress(authUser.getId());
-            location = new Location(user.getAddress().getLatitude(), user.getAddress().getLongitude());
+            userLocationRequest.setLocation(user.getAddress());
+        }
+
+        if (userLocationRequest.noCurrentLocation()) {
+            userLocationRequest.setLocation(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
         }
 
         if (locationRequest.notNull()) {
             Address address = addressRepository.findAddressByAddressInfo(locationRequest.getProvince(), locationRequest.getCity(), locationRequest.getDistrict());
-            location = new Location(address.getLatitude(), address.getLongitude());
+            userLocationRequest.setLocation(address);
         }
 
-        List<Long> meetingIdList = null;
-        BoundingBox boundingBox = null;
-
-        boolean redisError = false;
-
-        Double radius = searchRequest.getDistance() == null ? 5.0 : searchRequest.getDistance();
-
-        try {
-            meetingIdList = meetingCacheService.findMeetingsByLocation(location, radius);
-        } catch (RedisException | RedisConnectionFailureException e) {
-            boundingBox = MeetingDistance.aroundUserBox(location, radius);
-            redisError = true;
-        }
-
-        Page<MeetingSummaryResponse> meetingPage = meetingRepository.findMeetingList(searchRequest, pageable, boundingBox, meetingIdList);
-
-        if (redisError && searchRequest.getOrder() == MeetingSortOption.NEAREST) {
-
-            List<MeetingSummaryResponse> meetingSummaryList = new ArrayList<>(meetingPage.getContent());
-            sortMeetingsByDistance(meetingSummaryList, location);
-
-            return new PageImpl<>(meetingSummaryList, pageable, meetingPage.getTotalElements());
-        }
-
-        return meetingPage;
+        return meetingSearchService.searchInListFormat(searchRequest, userLocationRequest, order, pageable);
     }
 
     /**
@@ -210,19 +175,10 @@ public class MeetingService {
      */
     @Transactional(readOnly = true)
     public List<MeetingMapPointResponse> getMeetingPointList(
-        MeetingMapSearchRequest searchRequest,
+        MeetingSearchRequest searchRequest,
         MeetingMapViewPortRequest viewPort
     ) {
-        List<Long> meetingIdList = null;
-        BoundingBox boundingBox = null;
-
-        try {
-            meetingIdList = meetingCacheService.findMeetingsByViewPort(viewPort);
-        } catch (RedisException | RedisConnectionFailureException e) {
-            boundingBox = new BoundingBox(viewPort.getMinLat(), viewPort.getMaxLat(), viewPort.getMinLng(), viewPort.getMaxLng());
-        }
-
-        return meetingRepository.findMeetingPointList(searchRequest, boundingBox, meetingIdList);
+        return meetingSearchService.searchInMapFormat(searchRequest, viewPort);
     }
 
     /**
@@ -266,9 +222,9 @@ public class MeetingService {
     @Transactional
     public MeetingUpdateResponse updateMeeting(AuthUser authUser, Long meetingId, MeetingUpdateRequest request) {
 
-        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
-            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
-        }
+//        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+//            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+//        }
 
         User user = userRepository.findActivateUserById(authUser.getId());
 
@@ -283,20 +239,7 @@ public class MeetingService {
 
         Point point = createPoint(request.getLatitude(), request.getLongitude());
 
-        if (!ObjectUtils.nullSafeEquals(meeting.getPoint(), point)) {
-            meetingCacheService.saveMeetingLocation(meeting);
-        }
-
         meeting.updateMeeting(request, category, point);
-
-        try {
-            meetingCacheService.saveMeetingLocation(meeting);
-        } catch (RedisException | DataAccessException e) {
-            log.error("Redis 예외 발생: {}", e.getMessage());
-
-            RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.CREATE);
-            redisSyncFailureRepository.save(redisSyncFailure);
-        }
 
         eventPublisherService.publishMeetingUpdatedEvent(meeting);
 
@@ -319,15 +262,6 @@ public class MeetingService {
         }
 
         meeting.delete();
-
-        try {
-            meetingCacheService.deleteMeetingLocation(meeting.getId());
-        } catch (RedisException | DataAccessException e) {
-            log.error("Redis 예외 발생: {}", e.getMessage());
-
-            RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.DELETE);
-            redisSyncFailureRepository.save(redisSyncFailure);
-        }
 
         eventPublisherService.publishMeetingDeletedEvent(meeting);
     }
