@@ -30,7 +30,6 @@ import static com.example.burnchuck.common.enums.SuccessMessage.*;
 public class AuthController {
 
     private final AuthService authService;
-    private final EmailService emailService;
 
     /**
      * 회원가입
