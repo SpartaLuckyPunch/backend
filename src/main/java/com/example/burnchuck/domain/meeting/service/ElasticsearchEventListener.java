@@ -2,7 +2,8 @@ package com.example.burnchuck.domain.meeting.service;
 
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingTaskType;
-import com.example.burnchuck.domain.scheduler.dto.MeetingEvent;
+import com.example.burnchuck.domain.meeting.event.MeetingEvent;
+import com.example.burnchuck.domain.meeting.event.MeetingStatusChangeEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -14,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ElasticsearchEventListener {
 
-    private final ElasticSearchService elasticSearchService;
+    private final ElasticsearchService elasticsearchService;
 
     @Async("CustomTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -25,8 +26,14 @@ public class ElasticsearchEventListener {
         Meeting meeting = event.getMeeting();
 
         switch (type) {
-            case CREATE, UPDATE -> elasticSearchService.saveMeeting(meeting);
-            case DELETE -> elasticSearchService.deleteMeeting(meeting);
+            case CREATE, UPDATE -> elasticsearchService.saveMeeting(meeting);
+            case DELETE -> elasticsearchService.deleteMeeting(meeting);
         }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @EventListener
+    public void meetingSyncElasticsearch(MeetingStatusChangeEvent event) {
+
     }
 }

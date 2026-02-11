@@ -1,8 +1,7 @@
-package com.example.burnchuck.domain.scheduler.service;
+package com.example.burnchuck.domain.meeting.event;
 
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingTaskType;
-import com.example.burnchuck.domain.scheduler.dto.MeetingEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;

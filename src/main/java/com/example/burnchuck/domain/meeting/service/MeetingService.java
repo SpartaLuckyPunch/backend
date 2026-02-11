@@ -42,7 +42,7 @@ import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.RedisSyncFailureRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
-import com.example.burnchuck.domain.scheduler.service.EventPublisherService;
+import com.example.burnchuck.domain.meeting.event.EventPublisherService;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import io.lettuce.core.RedisException;
@@ -84,7 +84,7 @@ public class MeetingService {
     private final MeetingCacheService meetingCacheService;
     private final ChatRoomService chatRoomService;
     private final S3UrlGenerator s3UrlGenerator;
-    private final ElasticSearchService elasticSearchService;
+    private final MeetingSearchService meetingSearchService;
 
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -183,7 +183,7 @@ public class MeetingService {
             userLocationRequest.setLocation(address);
         }
 
-        PageResponse<MeetingSummaryResponse> meetingPage = elasticSearchService.searchInListFormat(searchRequest, userLocationRequest, order, pageable);
+        PageResponse<MeetingSummaryResponse> meetingPage = meetingSearchService.searchInListFormat(searchRequest, userLocationRequest, order, pageable);
 
         List<MeetingSummaryResponse> responseList = meetingPage.getContent();
 
@@ -220,7 +220,7 @@ public class MeetingService {
         MeetingSearchRequest searchRequest,
         MeetingMapViewPortRequest viewPort
     ) {
-        return elasticSearchService.searchInMapFormat(searchRequest, viewPort);
+        return meetingSearchService.searchInMapFormat(searchRequest, viewPort);
     }
 
     /**

@@ -3,7 +3,7 @@ package com.example.burnchuck.domain.scheduler.eventListener;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingTaskType;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
-import com.example.burnchuck.domain.scheduler.dto.MeetingEvent;
+import com.example.burnchuck.domain.meeting.event.MeetingEvent;
 import com.example.burnchuck.domain.scheduler.service.SchedulingService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

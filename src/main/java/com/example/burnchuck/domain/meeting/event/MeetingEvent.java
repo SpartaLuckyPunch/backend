@@ -1,4 +1,4 @@
-package com.example.burnchuck.domain.scheduler.dto;
+package com.example.burnchuck.domain.meeting.event;
 
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingTaskType;
