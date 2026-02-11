@@ -53,7 +53,7 @@ public class ScheduleEventHandler {
     @Async("CustomTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @EventListener
-    public void meetingCreateScheduleEventHandler(MeetingEvent event) {
+    public void meetingScheduleEventHandler(MeetingEvent event) {
 
         MeetingTaskType type = event.getType();
         Meeting meeting = event.getMeeting();
