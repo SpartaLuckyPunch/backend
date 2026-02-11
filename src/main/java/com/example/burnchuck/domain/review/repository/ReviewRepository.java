@@ -21,7 +21,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     // 디폴트 메서드 추가
     default Review findReviewById(Long reviewId) {
-        return findById(reviewId).orElseThrow(() ->
-            new CustomException(ErrorCode.REVIEW_NOT_FOUND));
+        return findById(reviewId)
+            .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
     }
 }
