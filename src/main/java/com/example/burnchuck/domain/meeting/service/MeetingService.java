@@ -6,7 +6,6 @@ import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.GetS3Url;
-import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Category;
@@ -18,7 +17,6 @@ import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.ClientInfoExtractor;
-import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.common.utils.S3UrlGenerator;
 import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
@@ -45,7 +43,6 @@ import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import io.lettuce.core.RedisException;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -318,16 +315,6 @@ public class MeetingService {
             UserDisplay.resolveNickname(host.getUser()),
             attendees
         );
-    }
-
-    /**
-     * 중심지 기준 가까운순 정렬
-     */
-    private void sortMeetingsByDistance(List<MeetingSummaryResponse> meetings, Location location) {
-
-        meetings.sort(Comparator.comparingDouble(
-            m -> MeetingDistance.calculateDistance(location, m)
-        ));
     }
 
     /**
