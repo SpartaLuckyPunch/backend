@@ -5,10 +5,8 @@ import com.example.burnchuck.common.entity.MeetingDocument;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 @AllArgsConstructor
 public class MeetingSummaryResponse {
 
@@ -31,6 +29,7 @@ public class MeetingSummaryResponse {
         this.longitude = meetingDocument.getGeoPoint().getLon();
         this.meetingDatetime = meetingDocument.getMeetingDatetime();
         this.maxAttendees = meetingDocument.getMaxAttendees();
+        this.currentAttendees = meetingDocument.getCurrentAttendees();
     }
 
     public static MeetingSummaryResponse from(Meeting meeting, int currentAttendees) {

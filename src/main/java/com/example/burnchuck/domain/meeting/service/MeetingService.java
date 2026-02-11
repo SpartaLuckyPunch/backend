@@ -38,21 +38,18 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
+import com.example.burnchuck.domain.meeting.event.EventPublisherService;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.RedisSyncFailureRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
-import com.example.burnchuck.domain.meeting.event.EventPublisherService;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import io.lettuce.core.RedisException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
@@ -183,33 +180,7 @@ public class MeetingService {
             userLocationRequest.setLocation(address);
         }
 
-        PageResponse<MeetingSummaryResponse> meetingPage = meetingSearchService.searchInListFormat(searchRequest, userLocationRequest, order, pageable);
-
-        List<MeetingSummaryResponse> responseList = meetingPage.getContent();
-
-        // TODO : 이후에 참여자수 추가 방법 변경
-        List<Long> meetingIdList = responseList.stream().map(MeetingSummaryResponse::getMeetingId).toList();
-        Map<Long, Long> countByMeetingResult = userMeetingRepository.countAllByMeeting(meetingIdList)
-            .stream()
-            .collect(Collectors.toMap(
-                row -> (Long) row[0],
-                row -> (Long) row[1]
-            ));
-
-        for (MeetingSummaryResponse response : responseList) {
-
-            Long meetingId = response.getMeetingId();
-
-            int countResult = Optional.ofNullable(countByMeetingResult.get(meetingId))
-                .map(Long::intValue)
-                .orElse(0);
-
-            response.setCurrentAttendees(countResult);
-        }
-
-        meetingPage.setContent(responseList);
-
-        return meetingPage;
+        return meetingSearchService.searchInListFormat(searchRequest, userLocationRequest, order, pageable);
     }
 
     /**

@@ -53,7 +53,10 @@ public class MeetingDocument {
     @Field(type = FieldType.Integer)
     private int maxAttendees;
 
-    public MeetingDocument(Meeting meeting) {
+    @Field(type = FieldType.Integer)
+    private int currentAttendees;
+
+    public MeetingDocument(Meeting meeting, int currentAttendees) {
         this.id = meeting.getId();
         this.title = meeting.getTitle();
         this.categoryCode = meeting.getCategory().getCode();
@@ -62,9 +65,11 @@ public class MeetingDocument {
         this.meetingHour = meeting.getMeetingDateTime().getHour();
         this.createdDatetime = meeting.getCreatedDatetime();
         this.status = meeting.getStatus().toString();
+        // TODO : 모임 수정 시 내용 찾아와야 함
         this.popularityScore = 0L;
         this.imgUrl = meeting.getImgUrl();
         this.location = meeting.getLocation();
         this.maxAttendees = meeting.getMaxAttendees();
+        this.currentAttendees = currentAttendees;
     }
 }

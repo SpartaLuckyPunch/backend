@@ -26,7 +26,8 @@ public class ElasticsearchEventListener {
         Meeting meeting = event.getMeeting();
 
         switch (type) {
-            case CREATE, UPDATE -> elasticsearchService.saveMeeting(meeting);
+            case CREATE -> elasticsearchService.saveMeeting(meeting);
+            case UPDATE -> elasticsearchService.updateMeeting(meeting);
             case DELETE -> elasticsearchService.deleteMeeting(meeting);
         }
     }
