@@ -59,7 +59,7 @@ public class SchedulingService {
             e -> {
                 Meeting targetMeeting = meetingRepository.findActivateMeetingById(meeting.getId());
                 targetMeeting.updateStatus(MeetingStatus.COMPLETED);
-                eventPublisherService.publishMeetingStatusChangeEvent(meeting.getId(), MeetingStatus.COMPLETED);
+                eventPublisherService.publishMeetingStatusChangeEvent(meeting, MeetingStatus.COMPLETED);
             },
             meeting.getMeetingDateTime().minusMinutes(10)
         );

@@ -68,7 +68,7 @@ public class AttendanceService {
 
         if (currentAttendees +1 == maxAttendees) {
             meeting.updateStatus(MeetingStatus.CLOSED);
-            eventPublisherService.publishMeetingStatusChangeEvent(meeting.getId(), MeetingStatus.CLOSED);
+            eventPublisherService.publishMeetingStatusChangeEvent(meeting, MeetingStatus.CLOSED);
         }
 
         chatRoomService.joinGroupChatRoom(meetingId, user);
@@ -106,7 +106,7 @@ public class AttendanceService {
 
         if (meeting.isClosed()) {
             meeting.updateStatus(MeetingStatus.OPEN);
-            eventPublisherService.publishMeetingStatusChangeEvent(meeting.getId(), MeetingStatus.OPEN);
+            eventPublisherService.publishMeetingStatusChangeEvent(meeting, MeetingStatus.OPEN);
         }
 
         notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_LEFT, meeting, user);

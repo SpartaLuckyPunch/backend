@@ -1,6 +1,7 @@
 package com.example.burnchuck.domain.meeting.service;
 
 import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.MeetingTaskType;
 import com.example.burnchuck.domain.meeting.event.MeetingAttendeesChangeEvent;
 import com.example.burnchuck.domain.meeting.event.MeetingEvent;
@@ -37,7 +38,13 @@ public class ElasticsearchEventListener {
     @EventListener
     public void meetingChangeStatus(MeetingStatusChangeEvent event) {
 
-        elasticsearchService.updateMeetingStatus(event.getMeetingId(), event.getStatus());
+        MeetingStatus status = event.getStatus();
+        Meeting meeting = event.getMeeting();
+
+        switch (status) {
+            case OPEN, CLOSED -> elasticsearchService.updateMeetingStatus(meeting.getId(), event.getStatus());
+            case COMPLETED -> elasticsearchService.deleteMeeting(meeting);
+        }
     }
 
     @Async("CustomTaskExecutor")
