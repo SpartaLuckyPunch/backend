@@ -75,6 +75,9 @@ dependencies {
     // Redisson
     implementation 'org.redisson:redisson-spring-boot-starter:3.27.2'
 
+    // Email Service for Verification
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
 }
 
 tasks.named('test') {
