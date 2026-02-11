@@ -14,7 +14,6 @@ import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.RedisSyncFailure;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
-import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.enums.SyncType;
@@ -119,8 +118,6 @@ public class MeetingService {
             RedisSyncFailure redisSyncFailure = new RedisSyncFailure(meeting, SyncType.CREATE);
             redisSyncFailureRepository.save(redisSyncFailure);
         }
-
-        elasticSearchService.saveMeeting(meeting);
 
         notificationService.notifyNewFollowerPost(meeting, user);
 
@@ -267,9 +264,9 @@ public class MeetingService {
     @Transactional
     public MeetingUpdateResponse updateMeeting(AuthUser authUser, Long meetingId, MeetingUpdateRequest request) {
 
-        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
-            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
-        }
+//        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+//            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+//        }
 
         User user = userRepository.findActivateUserById(authUser.getId());
 
