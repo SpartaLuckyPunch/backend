@@ -44,6 +44,10 @@ public class ElasticSearchService {
         meetingDocumentRepository.save(meetingDocument);
     }
 
+    public void deleteMeeting(Meeting meeting) {
+        meetingDocumentRepository.deleteById(meeting.getId());
+    }
+
     /**
      * 모임 목록 조회
      */
