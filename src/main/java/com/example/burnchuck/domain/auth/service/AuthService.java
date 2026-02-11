@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -151,6 +152,15 @@ public class AuthService {
     }
 
     /**
+     * 닉네임 중복 확인
+     */
+    public boolean checkNicknameAvailable(String nickname) {
+
+        return !userRepository.existsByNickname(nickname);
+    }
+
+
+    /**
      * 소셜로그인/회원가입 통합 처리 
      */
     @Transactional
@@ -179,10 +189,13 @@ public class AuthService {
         if (userRepository.existsByEmail(userInfo.getEmail())) {
             throw new CustomException(ErrorCode.EMAIL_EXIST);
         }
-        if (userRepository.existsByNickname(userInfo.getNickname())) {
-            throw new CustomException(ErrorCode.NICKNAME_EXIST);
-        }
 
+        String uniqueNickname = userInfo.getNickname();
+        while (userRepository.existsByNickname(uniqueNickname)) {
+
+            int randomNum = ThreadLocalRandom.current().nextInt(1000, 10000);
+            uniqueNickname = userInfo.getNickname() + randomNum;
+        }
         String tempPassword = passwordEncoder.encode(UUID.randomUUID().toString());
 
         Address defaultAddress = addressRepository.findById(1L)
@@ -191,7 +204,7 @@ public class AuthService {
         User newUser = new User(
                 userInfo.getEmail(),
                 tempPassword,
-                userInfo.getNickname(),
+                uniqueNickname,
                 null,
                 false,
                 defaultAddress,
@@ -200,4 +213,8 @@ public class AuthService {
                 String.valueOf(userInfo.getId())
         );
         return userRepository.save(newUser);
-    }}
+    }
+}
+
+
+

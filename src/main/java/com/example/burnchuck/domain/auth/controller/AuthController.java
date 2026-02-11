@@ -1,13 +1,11 @@
 package com.example.burnchuck.domain.auth.controller;
 
-import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_LOGIN_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_REISSUE_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_SIGNUP_SUCCESS;
-
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.enums.Provider;
+import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.auth.dto.request.AuthLoginRequest;
 import com.example.burnchuck.domain.auth.dto.request.AuthSignupRequest;
+import com.example.burnchuck.domain.auth.dto.request.NicknameRequest;
 import com.example.burnchuck.domain.auth.dto.response.AuthTokenResponse;
 import com.example.burnchuck.domain.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -22,6 +21,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
+import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,6 +33,9 @@ import java.io.IOException;
 public class AuthController {
 
     private final AuthService authService;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     /**
      * 회원가입
@@ -118,6 +124,19 @@ public class AuthController {
     }
 
     /**
+     * 닉네임 중복 확인
+     */
+    @PostMapping("/nickname-availability")
+    public ResponseEntity<CommonResponse<Boolean>> checkNickname(
+            @Valid @RequestBody NicknameRequest request
+    ) {
+        boolean isAvailable = authService.checkNicknameAvailable(request.getNickname());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(AUTH_NICKNAME_AVAILABLE, isAvailable));
+    }
+
+    /**
      * 카카오 소셜 로그인
      */
     @Operation(
@@ -131,12 +150,25 @@ public class AuthController {
             @RequestParam String code,
             HttpServletResponse response
     ) throws IOException {
+        try {
+            AuthTokenResponse authTokenResponse = authService.socialLogin(code, Provider.KAKAO);
 
-        AuthTokenResponse authTokenResponse = authService.socialLogin(code, Provider.KAKAO);
+            addCookies(response, authTokenResponse);
 
-        addCookies(response, authTokenResponse);
+            response.sendRedirect(frontendUrl + "/oauth/callback");
 
-        response.sendRedirect("http://localhost:3000/oauth/callback");
+        } catch (Exception e) {
+
+            String message = "로그인 중 알 수 없는 오류가 발생했습니다.";
+
+            if (e instanceof CustomException customException) {
+                message = customException.getErrorCode().getMessage();
+            }
+
+            String encodedMessage = URLEncoder.encode(message, StandardCharsets.UTF_8);
+
+            response.sendRedirect(frontendUrl + "/login?error=true&message=" + encodedMessage);
+        }
     }
 
     /**
