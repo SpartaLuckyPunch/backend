@@ -151,6 +151,15 @@ public class AuthService {
     }
 
     /**
+     * 닉네임 중복 확인
+     */
+    public boolean checkNicknameAvailable(String nickname) {
+
+        return !userRepository.existsByNickname(nickname);
+    }
+
+
+    /**
      * 소셜로그인/회원가입 통합 처리 
      */
     @Transactional
@@ -200,4 +209,8 @@ public class AuthService {
                 String.valueOf(userInfo.getId())
         );
         return userRepository.save(newUser);
-    }}
+    }
+}
+
+
+
