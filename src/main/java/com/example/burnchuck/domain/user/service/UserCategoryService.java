@@ -50,17 +50,17 @@ public class UserCategoryService {
                 .map(Category::getCode)
                 .collect(Collectors.toSet());
 
-        List<UserCategory> toDelete = existUserCategory.stream()
+        List<UserCategory> delete = existUserCategory.stream()
                 .filter(uc -> !requestCategory.contains(uc.getCategory().getCode()))
                 .toList();
 
-        List<UserCategory> toAdd = categories.stream()
+        List<UserCategory> add = categories.stream()
                 .filter(category -> !existCategory.contains(category.getCode()))
                 .map(category -> new UserCategory(user, category))
                 .toList();
 
-        userCategoryRepository.deleteAll(toDelete);
-        userCategoryRepository.saveAll(toAdd);
+        userCategoryRepository.deleteAll(delete);
+        userCategoryRepository.saveAll(add);
         userCategoryRepository.flush();
     }
 
@@ -68,9 +68,9 @@ public class UserCategoryService {
      * 관심 카테고리 목록 조회
      */
     @Transactional
-    public UserCategoryGetResponse getUserFavoriteCategory(Long userId) {
+    public UserCategoryGetResponse getUserFavoriteCategory(AuthUser authUser) {
 
-        User user = userRepository.findActivateUserById(userId);
+        User user = userRepository.findActivateUserById(authUser.getId());
 
         List<UserCategory> userCategories = userCategoryRepository.findByUser(user);
 

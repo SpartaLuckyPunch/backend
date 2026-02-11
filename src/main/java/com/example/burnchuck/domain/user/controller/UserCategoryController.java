@@ -15,7 +15,7 @@ import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/users")
+@RequestMapping("/api/users/categories")
 public class UserCategoryController {
 
     private final UserCategoryService userCategoryService;
@@ -23,7 +23,7 @@ public class UserCategoryController {
     /**
      * 관심 카테고리 등록
      */
-    @PostMapping("/categories")
+    @PostMapping
     public ResponseEntity<CommonResponse<Void>> createUserFavoriteCategory(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestBody UserCategoryCreateRequest request
@@ -37,11 +37,11 @@ public class UserCategoryController {
     /**
      * 관심 카테고리 조회
      */
-    @GetMapping("/{userId}/categories")
+    @GetMapping
     public ResponseEntity<CommonResponse<UserCategoryGetResponse>> getUserFavoriteCategory(
-            @PathVariable Long userId
+            @AuthenticationPrincipal AuthUser authUser
     ) {
-        UserCategoryGetResponse response = userCategoryService.getUserFavoriteCategory(userId);
+        UserCategoryGetResponse response = userCategoryService.getUserFavoriteCategory(authUser);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(USER_GET_FAVORITE_CATEGORY_SUCCESS, response));
