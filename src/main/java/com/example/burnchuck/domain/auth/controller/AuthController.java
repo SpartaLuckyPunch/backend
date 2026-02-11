@@ -131,12 +131,18 @@ public class AuthController {
             @RequestParam String code,
             HttpServletResponse response
     ) throws IOException {
+        try {
+            AuthTokenResponse authTokenResponse = authService.socialLogin(code, Provider.KAKAO);
+            addCookies(response, authTokenResponse);
 
-        AuthTokenResponse authTokenResponse = authService.socialLogin(code, Provider.KAKAO);
+            response.sendRedirect("http://localhost:3000/oauth/callback");
 
-        addCookies(response, authTokenResponse);
+        } catch (Exception e) {
 
-        response.sendRedirect("http://localhost:3000/oauth/callback");
+            String errorMessage = java.net.URLEncoder.encode("로그인 중 오류가 발생했습니다.", "UTF-8");
+
+            response.sendRedirect("http://localhost:3000/login?error=true&message=" + errorMessage);
+        }
     }
 
     /**

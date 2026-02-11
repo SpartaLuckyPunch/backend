@@ -179,10 +179,13 @@ public class AuthService {
         if (userRepository.existsByEmail(userInfo.getEmail())) {
             throw new CustomException(ErrorCode.EMAIL_EXIST);
         }
-        if (userRepository.existsByNickname(userInfo.getNickname())) {
-            throw new CustomException(ErrorCode.NICKNAME_EXIST);
-        }
 
+        String uniqueNickname = userInfo.getNickname();
+        while (userRepository.existsByNickname(uniqueNickname)) {
+
+            int randomNum = java.util.concurrent.ThreadLocalRandom.current().nextInt(1000, 10000);
+            uniqueNickname = userInfo.getNickname() + randomNum;
+        }
         String tempPassword = passwordEncoder.encode(UUID.randomUUID().toString());
 
         Address defaultAddress = addressRepository.findById(1L)
