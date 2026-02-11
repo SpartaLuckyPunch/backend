@@ -1,5 +1,11 @@
 package com.example.burnchuck.domain.auth.controller;
 
+import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_LOGIN_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_LOGOUT_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_NICKNAME_AVAILABLE;
+import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_REISSUE_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_SIGNUP_SUCCESS;
+
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.enums.Provider;
 import com.example.burnchuck.common.exception.CustomException;
@@ -12,19 +18,22 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
-import static com.example.burnchuck.common.enums.SuccessMessage.*;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -83,6 +92,10 @@ public class AuthController {
             .body(CommonResponse.successNodata(AUTH_LOGIN_SUCCESS));
     }
 
+    @Operation(
+        summary = "액세스 토큰 재발급",
+        description = "Refresh 토큰을 기반으로 Access 토큰을 재발급합니다."
+    )
     @PostMapping("/reissue")
     public ResponseEntity<CommonResponse<Void>> reissueToken(
             @CookieValue(name = "refreshToken") String refreshToken,
@@ -99,7 +112,10 @@ public class AuthController {
     /**
      * 로그아웃 (쿠키 삭제)
      */
-    @Operation(summary = "로그아웃", description = "쿠키를 만료시켜 로그아웃 처리합니다.")
+    @Operation(
+        summary = "로그아웃",
+        description = "쿠키를 만료시켜 로그아웃 처리합니다."
+    )
     @PostMapping("/logout")
     public ResponseEntity<CommonResponse<Void>> logout(HttpServletResponse response) {
 
@@ -120,7 +136,7 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, atCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, rtCookie.toString());
 
-        return ResponseEntity.ok(CommonResponse.successNodata(AUTH_LOGIN_SUCCESS));
+        return ResponseEntity.ok(CommonResponse.successNodata(AUTH_LOGOUT_SUCCESS));
     }
 
     /**
@@ -140,7 +156,7 @@ public class AuthController {
      * 카카오 소셜 로그인
      */
     @Operation(
-            summary = "카카오 로그인 콜백",
+            summary = "카카오 소셜 로그인",
             description = """
                     인가 코드를 받아 로그인을 완료하고, 토큰을 쿠키에 담아 리다이렉트합니다.
                     """
