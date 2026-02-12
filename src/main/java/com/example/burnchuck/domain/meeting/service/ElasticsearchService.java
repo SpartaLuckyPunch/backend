@@ -1,7 +1,7 @@
 package com.example.burnchuck.domain.meeting.service;
 
 import com.example.burnchuck.common.entity.Meeting;
-import com.example.burnchuck.common.entity.MeetingDocument;
+import com.example.burnchuck.common.document.MeetingDocument;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.domain.meeting.repository.MeetingDocumentRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
