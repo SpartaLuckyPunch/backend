@@ -16,8 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,31 +39,13 @@ public class UserCategoryService {
             throw new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
         }
 
-        List<UserCategory> existUserCategory = userCategoryRepository.findByUser(user);
+        userCategoryRepository.deleteByUser(user);
 
-        Set<String> existCategory = existUserCategory.stream()
-                .map(uc -> uc.getCategory().getCode())
-                .collect(Collectors.toSet());
-
-        Set<String> requestCategory = categories.stream()
-                .map(Category::getCode)
-                .collect(Collectors.toSet());
-
-        List<UserCategory> delete = existUserCategory.stream()
-                .filter(uc -> !requestCategory.contains(uc.getCategory().getCode()))
-                .toList();
-
-        List<UserCategory> add = categories.stream()
-                .filter(category -> !existCategory.contains(category.getCode()))
+        List<UserCategory> userCategories = categories.stream()
                 .map(category -> new UserCategory(user, category))
                 .toList();
 
-        if (!delete.isEmpty()) {
-            userCategoryRepository.deleteAll(delete);
-        }
-        if (!add.isEmpty()) {
-            userCategoryRepository.saveAll(add);
-        }
+        userCategoryRepository.saveAll(userCategories);
     }
 
     /**
