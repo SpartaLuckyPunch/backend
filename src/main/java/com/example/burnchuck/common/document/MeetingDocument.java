@@ -1,5 +1,6 @@
-package com.example.burnchuck.common.entity;
+package com.example.burnchuck.common.document;
 
+import com.example.burnchuck.common.entity.Meeting;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;

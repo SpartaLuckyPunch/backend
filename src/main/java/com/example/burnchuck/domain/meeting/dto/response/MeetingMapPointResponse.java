@@ -1,6 +1,6 @@
 package com.example.burnchuck.domain.meeting.dto.response;
 
-import com.example.burnchuck.common.entity.MeetingDocument;
+import com.example.burnchuck.common.document.MeetingDocument;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

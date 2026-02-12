@@ -1,7 +1,7 @@
 package com.example.burnchuck.domain.scheduler.service;
 
 import com.example.burnchuck.common.entity.Meeting;
-import com.example.burnchuck.common.entity.MeetingDocument;
+import com.example.burnchuck.common.document.MeetingDocument;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;

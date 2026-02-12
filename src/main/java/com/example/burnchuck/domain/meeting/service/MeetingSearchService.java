@@ -7,7 +7,7 @@ import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.TopRightBottomLeftGeoBounds;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import com.example.burnchuck.common.dto.PageResponse;
-import com.example.burnchuck.common.entity.MeetingDocument;
+import com.example.burnchuck.common.document.MeetingDocument;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;

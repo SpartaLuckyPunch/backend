@@ -1,7 +1,7 @@
 package com.example.burnchuck.domain.meeting.dto.response;
 
 import com.example.burnchuck.common.entity.Meeting;
-import com.example.burnchuck.common.entity.MeetingDocument;
+import com.example.burnchuck.common.document.MeetingDocument;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
