@@ -67,3 +67,5 @@ jwt:
 app:
   frontend:
     url: ${FRONTEND_URL}
+cors:
+  allowed-origins: "http://localhost:3000,http://localhost:63342"
