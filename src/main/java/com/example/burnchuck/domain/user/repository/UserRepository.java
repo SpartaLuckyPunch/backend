@@ -15,32 +15,32 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByNickname(String nickname);
 
-    Optional<User> findByEmailAndIsDeletedFalse(String email);
+    Optional<User> findByEmailAndDeletedFalse(String email);
 
-    Optional<User> findByIdAndIsDeletedFalse(Long id);
+    Optional<User> findByIdAndDeletedFalse(Long id);
 
     Optional<User> findByProviderAndProviderId(Provider provider, String providerId);
 
     @Query("""
         SELECT u
         FROM User u JOIN FETCH u.address
-        WHERE u.id = :id AND u.isDeleted = false
+        WHERE u.id = :id AND u.deleted = false
         """)
     Optional<User> findActiveUserByIdWithAddress(@Param("id") Long id);
 
     default User findActivateUserByEmail(String email) {
-        return findByEmailAndIsDeletedFalse(email)
+        return findByEmailAndDeletedFalse(email)
             .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
     default User findActivateUserById(Long id) {
-        return findByIdAndIsDeletedFalse(id)
+        return findByIdAndDeletedFalse(id)
             .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
     // NOT_FOUND_USER 외 다른 예외 사용 시, 해당 메서드 사용
     default User findActivateUserById(Long id, ErrorCode errorCode) {
-        return findByIdAndIsDeletedFalse(id)
+        return findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new CustomException(errorCode));
     }
 
