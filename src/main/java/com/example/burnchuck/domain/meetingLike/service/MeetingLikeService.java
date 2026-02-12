@@ -23,6 +23,7 @@ public class MeetingLikeService {
     private final MeetingLikeRepository meetingLikeRepository;
     private final UserRepository userRepository;
     private final MeetingRepository meetingRepository;
+    private final MeetingLikeCacheService meetingLikeCacheService;
 
     /**
      *  좋아요 생성
@@ -41,6 +42,8 @@ public class MeetingLikeService {
         MeetingLike meetingLike = new MeetingLike(user, meeting);
         meetingLikeRepository.save(meetingLike);
 
+        meetingLikeCacheService.increaseMeetingLike(meeting.getId());
+
         return MeetingLikeResponse.from(meeting);
     }
 
@@ -57,6 +60,8 @@ public class MeetingLikeService {
         MeetingLike meetingLike = meetingLikeRepository.findByUserAndMeetingOrThrow(user, meeting);
 
         meetingLikeRepository.delete(meetingLike);
+
+        meetingLikeCacheService.decreaseMeetingLike(meeting.getId());
     }
 
     /**
@@ -70,5 +75,18 @@ public class MeetingLikeService {
         long likes = meetingLikeRepository.countByMeeting(meeting);
 
         return MeetingLikeCountResponse.of(likes);
+    }
+
+    /**
+     *  모임 좋아요 여부 확인
+     */
+    @Transactional(readOnly = true)
+    public boolean checkLikeExistence(Long meetingId, AuthUser authUser) {
+
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+
+        return meetingLikeRepository.existsByUserAndMeeting(user, meeting);
     }
 }

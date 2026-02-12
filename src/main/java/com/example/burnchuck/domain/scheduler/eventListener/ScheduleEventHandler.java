@@ -1,10 +1,9 @@
 package com.example.burnchuck.domain.scheduler.eventListener;
 
 import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.common.enums.MeetingTaskType;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
-import com.example.burnchuck.domain.scheduler.dto.MeetingCreatedEvent;
-import com.example.burnchuck.domain.scheduler.dto.MeetingDeletedEvent;
-import com.example.burnchuck.domain.scheduler.dto.MeetingUpdatedEvent;
+import com.example.burnchuck.domain.meeting.event.MeetingEvent;
 import com.example.burnchuck.domain.scheduler.service.SchedulingService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,11 +12,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
@@ -52,50 +50,28 @@ public class ScheduleEventHandler {
     /**
      * MeetingCreatedEvent에 대한 Handler -> TaskSchedule 생성
      */
+    @Async("CustomTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @EventListener
-    public void meetingCreateScheduleEventHandler(MeetingCreatedEvent event) {
+    public void meetingScheduleEventHandler(MeetingEvent event) {
 
+        MeetingTaskType type = event.getType();
         Meeting meeting = event.getMeeting();
 
         try {
-            schedulingService.scheduleMeetingStatusComplete(meeting);
-            schedulingService.scheduleNotification(meeting);
-        } catch (Exception e) {
-            log.error("스케줄러 생성 실패 : {}", meeting.getId());
-        }
-    }
+            switch (type) {
+                case CREATE -> {
+                    schedulingService.scheduleMeetingStatusComplete(meeting);
+                    schedulingService.scheduleNotification(meeting);
+                }
+                case UPDATE -> {
+                    schedulingService.scheduleCancel(meeting.getId());
 
-    /**
-     * MeetingUpdatedEvent에 대한 Handler -> 기존 TaskSchedule 취소 및 새 작업 생성
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void meetingUpdateScheduleEventHandler(MeetingUpdatedEvent event) {
-
-        Meeting meeting = event.getMeeting();
-
-        try {
-            schedulingService.scheduleCancel(meeting.getId());
-
-            schedulingService.scheduleMeetingStatusComplete(meeting);
-            schedulingService.scheduleNotification(meeting);
-        } catch (Exception e) {
-            log.error("스케줄러 생성 실패 : {}", meeting.getId());
-        }
-    }
-
-    /**
-     * MeetingDeletedEvent에 대한 Handler -> 기존 TaskSchedule 취소
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void meetingDeleteScheduleEventHandler(MeetingDeletedEvent event) {
-
-        Meeting meeting = event.getMeeting();
-
-        try {
-            schedulingService.scheduleCancel(meeting.getId());
+                    schedulingService.scheduleMeetingStatusComplete(meeting);
+                    schedulingService.scheduleNotification(meeting);
+                }
+                case DELETE -> schedulingService.scheduleCancel(meeting.getId());
+            }
         } catch (Exception e) {
             log.error("스케줄러 생성 실패 : {}", meeting.getId());
         }

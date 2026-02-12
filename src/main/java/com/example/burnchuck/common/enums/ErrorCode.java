@@ -10,9 +10,12 @@ public enum ErrorCode {
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
     LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "유효 기간이 만료된 토큰입니다."),
     INCORRECT_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
+    REFRESH_NOT_FOUND(HttpStatus.NOT_FOUND, "리프레시 토큰이 존재하지 않습니다."),
 
     EMAIL_EXIST(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
+    EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 발송에 실패했습니다."),
     NICKNAME_EXIST(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
     INVALID_GENDER_FORMAT(HttpStatus.BAD_REQUEST, "성별은 '남' 또는 '여'만 입력 가능합니다."),
 
@@ -20,6 +23,8 @@ public enum ErrorCode {
 
     // 유저
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "유저가 존재하지 않습니다."),
+    USER_IMG_NOT_FOUND(HttpStatus.NOT_FOUND, "프로필 사진이 존재하지 않습니다."),
+    DELETED_USER(HttpStatus.FORBIDDEN, "탈퇴한 계정입니다."),
     SAME_PASSWORD(HttpStatus.BAD_REQUEST, "현재 비밀번호와 새 비밀번호가 동일합니다."),
     INVALID_USER_ROLE(HttpStatus.BAD_REQUEST, "유효하지 않은 권한입니다."),
 
@@ -33,8 +38,6 @@ public enum ErrorCode {
 
     // 리뷰
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰가 존재하지 않습니다."),
-    REVIEWER_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰 작성자가 존재하지 않습니다."),
-    REVIEWEE_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰 대상자가 존재하지 않습니다."),
     SELF_REVIEW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "자기 자신에게는 리뷰를 남길 수 없습니다."),
     ALREADY_REVIEWED(HttpStatus.CONFLICT, "이미 해당 모임에서 해당 유저에게 리뷰를 남겼습니다."),
     REACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 리액션 종류입니다."),
@@ -46,6 +49,7 @@ public enum ErrorCode {
     // 모임
     MEETING_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 번개입니다."),
     HOST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주최자입니다"),
+    MEETING_IMG_NOT_FOUND(HttpStatus.BAD_REQUEST, "모임 이미지가 존재하지 않습니다."),
 
     // 모임 참여
     ATTENDANCE_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 참여 신청한 번개입니다."),
@@ -53,12 +57,31 @@ public enum ErrorCode {
     ATTENDANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "번개 참여 신청이 존재하지 않습니다."),
     ATTENDANCE_HOST_CANNOT_CANCEL(HttpStatus.BAD_REQUEST, "호스트는 번개 참여를 취소할 수 없습니다."),
     ATTENDANCE_CANNOT_CANCEL_WHEN_MEETING_CLOSED(HttpStatus.BAD_REQUEST, "번개 시작 10분 전에는 취소할 수 없습니다."),
+    ATTENDANCE_MAX_CAPACITY_REACHED(HttpStatus.BAD_REQUEST, "모임의 정원이 모두 찼습니다."),
 
     // 카테고리
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리가 존재하지 않습니다."),
 
     // 알림
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림이 존재하지 않습니다."),
+
+    // 락
+    LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "락 획득을 실패하였습니다."),
+
+    // 채팅
+    CANNOT_CHAT_WITH_SELF(HttpStatus.CONFLICT, "자기 자신과 채팅할 수 없습니다."),
+    CHAT_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 참여자가 존재하지 않습니다."),
+    CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 방이 존재하지 않습니다."),
+    CANNOT_LEAVE_NOT_COMPLETED_MEETING(HttpStatus.BAD_REQUEST, "종료되지 않은 모임의 채팅방은 나갈 수 없습니다."),
+
+    // 이미지
+    UNAUTHORIZED_IMAGE_ACCESS(HttpStatus.UNAUTHORIZED, "해당 이미지에 대한 접근 권한이 없습니다."),
+    UNSUPPORTED_FILE_TYPE(HttpStatus.BAD_REQUEST, "지원되지 않는 파일 형식입니다."),
+    S3_INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 처리 중 오류가 발생했습니다."),
+
+    // 레디스
+    CHAT_MESSAGE_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "메시지 전송 중 오류가 발생했습니다."),
+    LAST_READ_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "최근 읽은 메세지 업데이트 중 오류가 발생했습니다."),
     ;
 
     private final HttpStatus status;

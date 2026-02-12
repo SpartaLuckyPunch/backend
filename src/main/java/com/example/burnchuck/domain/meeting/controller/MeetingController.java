@@ -5,25 +5,33 @@ import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_DELETE_S
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_HOSTED_LIST_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_MEMBER_LIST_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_SUCCESS;
-import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_SEARCH_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_IMG_UPLOAD_LINK_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_UPDATE_SUCCESS;
 
-import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
+import com.example.burnchuck.common.dto.CommonResponse;
+import com.example.burnchuck.common.dto.GetS3Url;
+import com.example.burnchuck.common.dto.PageResponse;
+import com.example.burnchuck.common.enums.MeetingSortOption;
+import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
-import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
+import com.example.burnchuck.domain.meeting.dto.request.UserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
+import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -51,6 +59,19 @@ public class MeetingController {
     private final MeetingService meetingService;
 
     /**
+     * 모임 이미지 업로드 Presigned URL 생성
+     */
+    @GetMapping("/img")
+    public ResponseEntity<CommonResponse<GetS3Url>> getUploadImgUrl(
+            @RequestParam String filename
+    ) {
+        GetS3Url response = meetingService.getUploadMeetingImgUrl(filename);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(MEETING_IMG_UPLOAD_LINK_SUCCESS, response));
+    }
+
+    /**
      * 모임 생성
      */
     @Operation(
@@ -71,23 +92,66 @@ public class MeetingController {
     }
 
     /**
-     * 모임 전체 조회
+     * 모임 목록 조회
      */
     @Operation(
-            summary = "모임 전체 조회",
+            summary = "모임 목록 조회",
             description = """
-                    현재 모집 중인 번개 모임을 모두 조회합니다.
+                    현재 모집 중인 번개 모임을 사용자 지정 조건에 따라 목록 형태로 조회합니다.
                     """
     )
     @GetMapping
-    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> getMeetings(
-            @RequestParam(required = false) String category,
+    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> getMeetingPage(
+            @AuthenticationPrincipal AuthUser authUser,
+            @ModelAttribute MeetingSearchRequest searchRequest,
+            @ModelAttribute LocationFilterRequest locationRequest,
+            @ModelAttribute UserLocationRequest userLocationRequest,
+            @RequestParam(required = false) MeetingSortOption order,
             @PageableDefault(size = 6) Pageable pageable
     ) {
-        Page<MeetingSummaryResponse> page = meetingService.getMeetingPage(category, pageable);
+        PageResponse<MeetingSummaryResponse> response = meetingService.getMeetingPage(authUser, searchRequest, locationRequest, userLocationRequest, order, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));
+                .body(CommonResponse.success(MEETING_GET_SUCCESS, response));
+    }
+
+    /**
+     * 모임 지도 조회
+     */
+    @Operation(
+        summary = "모임 지도 조회",
+        description = """
+                    현재 모집 중인 번개 모임을 사용자 화면과 지정 조건에 따라 지도 형태로 조회합니다.
+                    """
+    )
+    @GetMapping("/map")
+    public ResponseEntity<CommonResponse<List<MeetingMapPointResponse>>> getMeetingPointList(
+        @ModelAttribute MeetingSearchRequest searchRequest,
+        @ModelAttribute MeetingMapViewPortRequest viewPort
+    ) {
+        List<MeetingMapPointResponse> pointList = meetingService.getMeetingPointList(searchRequest, viewPort);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.success(MEETING_GET_SUCCESS, pointList));
+    }
+
+    /**
+     * 모임 단건 요약 조회
+     */
+    @Operation(
+        summary = "모임 단건 요약 조회",
+        description = """
+                    특정 모임의 요약된 내용을 조회합니다.
+                    """
+    )
+    @GetMapping("/{meetingId}/summary")
+    public ResponseEntity<CommonResponse<MeetingSummaryResponse>> getMeetingSummary(
+        @PathVariable Long meetingId
+    ) {
+        MeetingSummaryResponse response = meetingService.getMeetingSummary(meetingId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(CommonResponse.success(MEETING_GET_SUCCESS, response));
     }
 
     /**
@@ -96,14 +160,15 @@ public class MeetingController {
     @Operation(
             summary = "모임 단건 조회",
             description = """
-                    특정 모임을 조회합니다.
+                    특정 모임의 세부 내용을 조회합니다.
                     """
     )
     @GetMapping("/{meetingId}")
     public ResponseEntity<CommonResponse<MeetingDetailResponse>> getMeetingDetail(
-            @PathVariable Long meetingId
+            @PathVariable Long meetingId,
+            HttpServletRequest httpServletRequest
     ) {
-        MeetingDetailResponse response = meetingService.getMeetingDetail(meetingId);
+        MeetingDetailResponse response = meetingService.getMeetingDetail(meetingId, httpServletRequest);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_GET_SUCCESS, response));
@@ -146,9 +211,8 @@ public class MeetingController {
     ) {
         MeetingUpdateResponse response = meetingService.updateMeeting(user, meetingId, request);
 
-        return ResponseEntity.ok(
-                CommonResponse.success(MEETING_UPDATE_SUCCESS, response)
-        );
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(MEETING_UPDATE_SUCCESS, response));
     }
 
     /**
@@ -208,26 +272,5 @@ public class MeetingController {
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(MEETING_GET_MEMBER_LIST_SUCCESS, response));
-    }
-
-    /**
-     * 모임 검색
-     */
-    @Operation(
-            summary = "모임 검색",
-            description = """
-                    원하는 필터에 맞게 모임을 검색합니다.
-                    """
-    )
-    @GetMapping("/search")
-    public ResponseEntity<CommonResponse<PageResponse<MeetingSummaryResponse>>> searchMeetings(
-            @ModelAttribute MeetingSearchRequest searchRequest,
-            @PageableDefault(size = 6) Pageable pageable
-    ) {
-
-        Page<MeetingSummaryResponse> page = meetingService.searchMeetings(searchRequest, pageable);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(MEETING_SEARCH_SUCCESS, PageResponse.from(page)));
     }
 }

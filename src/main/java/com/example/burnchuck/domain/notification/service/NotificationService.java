@@ -1,24 +1,31 @@
 package com.example.burnchuck.domain.notification.service;
 
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.entity.Follow;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.Notification;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.NotificationType;
-import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
-import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
+import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.dto.response.NotificationGetListResponse;
 import com.example.burnchuck.domain.notification.dto.response.NotificationResponse;
+import com.example.burnchuck.domain.notification.dto.response.NotificationSseResponse;
 import com.example.burnchuck.domain.notification.repository.NotificationRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
 @RequiredArgsConstructor
@@ -29,9 +36,65 @@ public class NotificationService {
     private final UserMeetingRepository userMeetingRepository;
     private final UserRepository userRepository;
 
+    private final SseNotifyService sseNotifyService;
+    private final RedisMessageService redisMessageService;
+    private final EmitterService emitterService;
+
+    /**
+     * 클라이언트와의 SSE 스트림 통신 연결
+     */
+    public SseEmitter subscribe(AuthUser authUser) {
+
+        Long userId = authUser.getId();
+
+        SseEmitter emitter = emitterService.createEmitter(userId);
+
+        emitter.onCompletion(() -> {
+            emitterService.deleteEmitter(userId);
+            redisMessageService.removeSubscribe(userId);
+        });
+        emitter.onTimeout(emitter::complete);
+
+        LocalDateTime sevenDaysAgo = LocalDate.now().atStartOfDay().minusDays(7);
+        long unread = notificationRepository.countUnReadNotificationsInSevenDaysByUserId(userId, sevenDaysAgo);
+
+        sseNotifyService.send(emitter, userId, NotificationSseResponse.sseConnection(unread));
+
+        redisMessageService.subscribe(userId);
+
+        return emitter;
+    }
+
+    /**
+     * 해당 알림을 수신하는 모든 유저에게 전송
+     */
+    private void publishNotificationList(List<Notification> notificationList) {
+
+        for (Notification notification : notificationList) {
+
+            Long userId = notification.getUser().getId();
+            NotificationResponse notificationResponse = NotificationResponse.from(notification);
+
+            redisMessageService.publish(userId, notificationResponse);
+        }
+    }
+
+    /**
+     * 앞선 내용 커밋 후 실행
+     */
+    private void sendAllAfterCommit(List<Notification> notificationList) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                publishNotificationList(notificationList);
+            }
+        });
+    }
+
     /**
      * 유저가 모임을 생성했을 때 -> 해당 유저를 팔로우하는 사람에게 알림 발송
      */
+    @Async("CustomTaskExecutor")
     @Transactional
     public void notifyNewFollowerPost(Meeting meeting, User user) {
 
@@ -56,18 +119,21 @@ public class NotificationService {
         }
 
         notificationRepository.saveAll(notificationList);
+
+        sendAllAfterCommit(notificationList);
     }
 
     /**
      * 모임에 새로운 유저가 추가되었을 때 -> 해당 모임의 주최자에게 알림 발송
      * 모임의 유저가 탈퇴했을 때 -> 해당 모임의 주최자에게 알림 발송
      */
+    @Async("CustomTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void notifyMeetingMember(NotificationType notificationType, Meeting meeting, User attendee) {
 
         String description = notificationType.getDescription(notificationType, meeting.getTitle(), attendee.getNickname());
 
-        UserMeeting host = userMeetingRepository.findHostByMeeting(meeting);
+        UserMeeting host = userMeetingRepository.findHostUserMeetingByMeeting(meeting);
 
         Notification notification = new Notification(
             notificationType,
@@ -77,11 +143,14 @@ public class NotificationService {
         );
 
         notificationRepository.save(notification);
+
+        sendAllAfterCommit(List.of(notification));
     }
 
     /**
      * 후기 작성 안내 -> 모임 시작 시간 3시간 뒤, 모임 참석자들에게 발송
      */
+    @Async("CustomTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void notifyCommentRequest(Meeting meeting) {
 
@@ -106,6 +175,8 @@ public class NotificationService {
         }
 
         notificationRepository.saveAll(notificationList);
+
+        sendAllAfterCommit(notificationList);
     }
 
     /**
@@ -116,7 +187,9 @@ public class NotificationService {
 
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        List<NotificationResponse> notificaionList = notificationRepository.findAllNotificationsByUser(user);
+        LocalDateTime sevenDaysAgo = LocalDate.now().atStartOfDay().minusDays(7);
+
+        List<NotificationResponse> notificaionList = notificationRepository.findAllNotificationsInSevenDaysByUser(user, sevenDaysAgo);
 
         return new NotificationGetListResponse(notificaionList);
     }

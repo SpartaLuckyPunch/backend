@@ -55,7 +55,6 @@ public class ReviewController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CommonResponse.successNodata(REVIEW_CREATE_SUCCESS));
-
     }
 
     /**
@@ -70,7 +69,7 @@ public class ReviewController {
     @GetMapping("/reviews/users/{userId}")
     public ResponseEntity<CommonResponse<ReviewGetListResponse>> getReviewList(
             @PathVariable Long userId,
-            @PageableDefault(size = 10, sort = "createdDatetime", direction = Sort.Direction.DESC) Pageable pageable
+            @PageableDefault(sort = "createdDatetime", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         ReviewGetListResponse response = reviewService.getReviewList(userId, pageable);
 

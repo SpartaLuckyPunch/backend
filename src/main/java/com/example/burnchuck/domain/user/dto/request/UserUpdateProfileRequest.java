@@ -2,6 +2,7 @@ package com.example.burnchuck.domain.user.dto.request;
 
 import com.example.burnchuck.common.enums.ValidationMessage;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,4 +22,10 @@ public class UserUpdateProfileRequest {
     private String city;
 
     private String district;
+
+    @Pattern(
+        regexp = "^(http|https)://.*$",
+        message = ValidationMessage.IMG_URL_FORMAT
+    )
+    private String profileImgUrl;
 }
