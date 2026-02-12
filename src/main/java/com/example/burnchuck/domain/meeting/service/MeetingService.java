@@ -227,7 +227,7 @@ public class MeetingService {
 
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
-        UserMeeting meetingHost = userMeetingRepository.findHostByMeeting(meeting);
+        UserMeeting meetingHost = userMeetingRepository.findHostUserMeetingByMeeting(meeting);
         if (!ObjectUtils.nullSafeEquals(user.getId(), meetingHost.getUser().getId())) {
             throw new CustomException(ACCESS_DENIED);
         }
@@ -253,7 +253,7 @@ public class MeetingService {
 
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
-        UserMeeting meetingHost = userMeetingRepository.findHostByMeeting(meeting);
+        UserMeeting meetingHost = userMeetingRepository.findHostUserMeetingByMeeting(meeting);
         if (!ObjectUtils.nullSafeEquals(user.getId(), meetingHost.getUser().getId())) {
             throw new CustomException(ACCESS_DENIED);
         }
