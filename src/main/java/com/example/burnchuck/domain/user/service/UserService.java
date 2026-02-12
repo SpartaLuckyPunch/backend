@@ -65,6 +65,7 @@ public class UserService {
     /**
      * 프로필 이미지 등록
      */
+    @Transactional
     public GetS3Url getViewProfileImgUrl(AuthUser authUser, String key) {
 
         s3UrlGenerator.validateKeyOwnership(authUser.getId(), key);
@@ -78,7 +79,7 @@ public class UserService {
         GetS3Url result = s3UrlGenerator.generateViewImgUrl(key);
 
         user.uploadProfileImg(result.getPreSignedUrl());
-        userRepository.saveAndFlush(user);
+        userRepository.save(user);
 
         return result;
     }
@@ -88,6 +89,12 @@ public class UserService {
      */
     @Transactional
     public UserUpdateProfileResponse updateProfile(AuthUser authUser, UserUpdateProfileRequest request) {
+
+        String requestedProfileImgUrl = request.getProfileImgUrl();
+
+        if (requestedProfileImgUrl != null && !s3UrlGenerator.isFileExists(requestedProfileImgUrl.replaceAll("^https?://[^/]+/", ""))) {
+            throw new CustomException(ErrorCode.USER_IMG_NOT_FOUND);
+        }
 
         User user = userRepository.findActivateUserById(authUser.getId());
 
@@ -107,12 +114,7 @@ public class UserService {
             request.getDistrict()
         );
 
-        if (!s3UrlGenerator.isFileExists(request.getProfileImgUrl().replaceAll("^https?://[^/]+/", ""))) {
-            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
-        }
-
-        user.updateProfile(newNickname, newAddress);
-        user.uploadProfileImg(request.getProfileImgUrl());
+        user.updateProfile(request.getProfileImgUrl(), newNickname, newAddress);
         userRepository.saveAndFlush(user);
 
         return UserUpdateProfileResponse.from(user, newAddress);
@@ -226,7 +228,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserGetAddressResponse getAddress(AuthUser authUser) {
 
-        User user = userRepository.findActivateUserById(authUser.getId());
+        User user = userRepository.findActivateUserWithAddress(authUser.getId());
 
         return UserGetAddressResponse.from(user.getAddress());
     }

@@ -1,15 +1,24 @@
 package com.example.burnchuck.domain.meeting.controller;
 
+import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_CREATE_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_DELETE_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_HOSTED_LIST_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_MEMBER_LIST_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_IMG_UPLOAD_LINK_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_UPDATE_SUCCESS;
+
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.common.dto.PageResponse;
+import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.UserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
@@ -30,9 +39,16 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import static com.example.burnchuck.common.enums.SuccessMessage.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -89,12 +105,14 @@ public class MeetingController {
             @AuthenticationPrincipal AuthUser authUser,
             @ModelAttribute MeetingSearchRequest searchRequest,
             @ModelAttribute LocationFilterRequest locationRequest,
+            @ModelAttribute UserLocationRequest userLocationRequest,
+            @RequestParam(required = false) MeetingSortOption order,
             @PageableDefault(size = 6) Pageable pageable
     ) {
-        Page<MeetingSummaryResponse> page = meetingService.getMeetingPage(authUser, searchRequest, locationRequest, pageable);
+        PageResponse<MeetingSummaryResponse> response = meetingService.getMeetingPage(authUser, searchRequest, locationRequest, userLocationRequest, order, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));
+                .body(CommonResponse.success(MEETING_GET_SUCCESS, response));
     }
 
     /**
@@ -108,7 +126,7 @@ public class MeetingController {
     )
     @GetMapping("/map")
     public ResponseEntity<CommonResponse<List<MeetingMapPointResponse>>> getMeetingPointList(
-        @ModelAttribute MeetingMapSearchRequest searchRequest,
+        @ModelAttribute MeetingSearchRequest searchRequest,
         @ModelAttribute MeetingMapViewPortRequest viewPort
     ) {
         List<MeetingMapPointResponse> pointList = meetingService.getMeetingPointList(searchRequest, viewPort);
@@ -142,7 +160,7 @@ public class MeetingController {
     @Operation(
             summary = "모임 단건 조회",
             description = """
-                    특정 모임을 조회합니다.
+                    특정 모임의 세부 내용을 조회합니다.
                     """
     )
     @GetMapping("/{meetingId}")
@@ -193,9 +211,8 @@ public class MeetingController {
     ) {
         MeetingUpdateResponse response = meetingService.updateMeeting(user, meetingId, request);
 
-        return ResponseEntity.ok(
-                CommonResponse.success(MEETING_UPDATE_SUCCESS, response)
-        );
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(MEETING_UPDATE_SUCCESS, response));
     }
 
     /**

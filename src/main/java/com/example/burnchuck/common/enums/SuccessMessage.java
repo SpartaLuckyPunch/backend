@@ -8,7 +8,11 @@ public enum SuccessMessage {
     // 인증
     AUTH_SIGNUP_SUCCESS("유저 회원가입 성공"),
     AUTH_LOGIN_SUCCESS("로그인 성공"),
+    AUTH_LOGOUT_SUCCESS("로그아웃 성공"),
     AUTH_REISSUE_SUCCESS("Access 토큰 재발급 성공"),
+    AUTH_EMAIL_SEND_SUCCESS("인증 번호 발송 성공"),
+    AUTH_EMAIL_VERIFY_SUCCESS("이메일 인증 성공"),
+    AUTH_NICKNAME_AVAILABLE("닉네임 중복 확인 성공"),
 
     // 유저
     USER_UPDATE_PROFILE_SUCCESS("프로필 수정 성공"),
@@ -19,6 +23,8 @@ public enum SuccessMessage {
     USER_GET_PROFILE_SUCCESS("회원 프로필 조회 성공"),
     USER_GET_ADDRESS_SUCCESS("회원 주소 조회 성공"),
     USER_GET_ONE_SUCCESS("회원 단건 조회 성공"),
+    USER_POST_FAVORITE_CATEGORY_SUCCESS("관심 카테고리 등록 성공"),
+    USER_GET_FAVORITE_CATEGORY_SUCCESS("관심 카테고리 조회 성공"),
 
     // 팔로우
     FOLLOW_CREATE_SUCCESS("팔로우 성공"),

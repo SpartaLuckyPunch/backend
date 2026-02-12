@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +32,10 @@ public class AuthService {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final UserRefreshRepository userRefreshRepository;
+    private final KakaoService kakaoService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final KakaoService kakaoService;
+
     /**
      * 회원가입
      */
@@ -45,22 +47,8 @@ public class AuthService {
     }
 
     /**
-     * 로그인
+     * 유저 생성(LOCAL)
      */
-    @Transactional
-    public AuthTokenResponse login(AuthLoginRequest request) {
-
-        User user = userRepository.findActivateUserByEmail(request.getEmail());
-
-        boolean matches = passwordEncoder.matches(request.getPassword(), user.getPassword());
-
-        if (!matches) {
-            throw new CustomException(ErrorCode.INCORRECT_PASSWORD);
-        }
-
-        return generateToken(user);
-    }
-
     @Transactional
     public User createUser(AuthSignupRequest request) {
 
@@ -82,12 +70,13 @@ public class AuthService {
         Address address = addressRepository.findAddressByAddressInfo(request.getProvince(), request.getCity(), request.getDistrict());
 
         User user = new User(
-                email, encodedPassword, nickname,
-                request.getBirthDate(),
-                gender.isValue(),
-                address,
-                UserRole.USER,
-                Provider.LOCAL,null
+            email, encodedPassword, nickname,
+            request.getBirthDate(),
+            gender.isValue(),
+            address,
+            UserRole.USER,
+            Provider.LOCAL,
+            null
         );
 
         userRepository.save(user);
@@ -95,6 +84,26 @@ public class AuthService {
         return user;
     }
 
+    /**
+     * 로그인
+     */
+    @Transactional
+    public AuthTokenResponse login(AuthLoginRequest request) {
+
+        User user = userRepository.findActivateUserByEmail(request.getEmail());
+
+        boolean matches = passwordEncoder.matches(request.getPassword(), user.getPassword());
+
+        if (!matches) {
+            throw new CustomException(ErrorCode.INCORRECT_PASSWORD);
+        }
+
+        return generateToken(user);
+    }
+
+    /**
+     * 유저의 Access 토큰, Refresh 토큰 생성
+     */
     @Transactional
     public AuthTokenResponse generateToken(User user) {
 
@@ -119,6 +128,9 @@ public class AuthService {
         return new AuthTokenResponse(accessToken, refreshToken, user.getId(), user.getEmail(), user.getNickname(), user.getRole());
     }
 
+    /**
+     * 토큰 재발급
+     */
     @Transactional
     public AuthTokenResponse reissueToken(String refreshToken) {
 
@@ -151,7 +163,16 @@ public class AuthService {
     }
 
     /**
-     * 소셜로그인/회원가입 통합 처리 
+     * 닉네임 중복 확인
+     */
+    public boolean checkNicknameAvailable(String nickname) {
+
+        return !userRepository.existsByNickname(nickname);
+    }
+
+
+    /**
+     * 소셜 로그인(유저 미 존재 시 회원가입)
      */
     @Transactional
     public AuthTokenResponse socialLogin(String code, Provider provider) {
@@ -167,6 +188,9 @@ public class AuthService {
         return generateToken(user);
     }
 
+    /**
+     * 유저 삭제 여부 확인
+     */
     private User checkUserStatus(User user) {
         if (user.isDeleted()) {
             throw new CustomException(ErrorCode.DELETED_USER);
@@ -174,13 +198,20 @@ public class AuthService {
         return user;
     }
 
+    /**
+     * 유저 생성(KAKAO)
+     */
     private User createSocialUser(KakaoUserInfoResponse userInfo, Provider provider) {
 
         if (userRepository.existsByEmail(userInfo.getEmail())) {
             throw new CustomException(ErrorCode.EMAIL_EXIST);
         }
-        if (userRepository.existsByNickname(userInfo.getNickname())) {
-            throw new CustomException(ErrorCode.NICKNAME_EXIST);
+
+        String uniqueNickname = userInfo.getNickname();
+        while (userRepository.existsByNickname(uniqueNickname)) {
+
+            int randomNum = ThreadLocalRandom.current().nextInt(1000, 10000);
+            uniqueNickname = userInfo.getNickname() + randomNum;
         }
 
         String tempPassword = passwordEncoder.encode(UUID.randomUUID().toString());
@@ -191,7 +222,7 @@ public class AuthService {
         User newUser = new User(
                 userInfo.getEmail(),
                 tempPassword,
-                userInfo.getNickname(),
+                uniqueNickname,
                 null,
                 false,
                 defaultAddress,
@@ -199,5 +230,10 @@ public class AuthService {
                 provider,
                 String.valueOf(userInfo.getId())
         );
+
         return userRepository.save(newUser);
-    }}
+    }
+}
+
+
+

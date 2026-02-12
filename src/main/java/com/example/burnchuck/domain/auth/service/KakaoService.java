@@ -24,9 +24,11 @@ public class KakaoService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+    /**
+     * KAKAO 고유 ID 조회
+     */
     public String getKakaoAccessToken(String code) {
 
-        // 인가 코드(code)는 1회용이므로, code가 비어있으면 즉시 예외처리
         if (code == null || code.isBlank()) {
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
@@ -50,11 +52,13 @@ public class KakaoService {
             return (String) response.getBody().get("access_token");
 
         } catch (HttpClientErrorException e) {
-
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
     }
 
+    /**
+     * KAKAO 사용자 정보 조회
+     */
     public KakaoUserInfoResponse getKakaoUserInfo(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
 
@@ -73,7 +77,6 @@ public class KakaoService {
             return response.getBody();
 
         } catch (HttpClientErrorException e) {
-
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
     }

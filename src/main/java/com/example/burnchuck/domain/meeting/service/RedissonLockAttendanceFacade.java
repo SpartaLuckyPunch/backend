@@ -1,16 +1,8 @@
 package com.example.burnchuck.domain.meeting.service;
 
 import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.common.entity.Meeting;
-import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
-import com.example.burnchuck.common.enums.NotificationType;
 import com.example.burnchuck.common.exception.CustomException;
-import com.example.burnchuck.domain.chat.service.ChatRoomService;
-import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
-import com.example.burnchuck.domain.notification.service.NotificationService;
-import com.example.burnchuck.domain.user.repository.UserRepository;
-import com.example.burnchuck.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
@@ -24,18 +16,15 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class RedissonLockAttendanceFacade {
 
-    private final ChatRoomService chatRoomService;
-    private final NotificationService notificationService;
     private final AttendanceService attendanceService;
     private final RedissonClient redissonClient;
-    private final UserRepository userRepository;
-    private final MeetingRepository meetingRepository;
 
-
+    public static final String LOCK_KEY_PREFIX = "meeting_lock:";
     public static final Long WAIT_TIME = 5L;
 
     public void registerAttendance(AuthUser authUser, Long meetingId) {
-        String lockKey = "meeting_lock:" + meetingId;
+
+        String lockKey = LOCK_KEY_PREFIX + meetingId;
         RLock lock = redissonClient.getLock(lockKey);
 
         try {

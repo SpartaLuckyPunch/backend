@@ -75,6 +75,11 @@ dependencies {
     // Redisson
     implementation 'org.redisson:redisson-spring-boot-starter:4.0.0'
 
+    // Email Service for Verification
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // Elasticsearch
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 }
 
 tasks.named('test') {

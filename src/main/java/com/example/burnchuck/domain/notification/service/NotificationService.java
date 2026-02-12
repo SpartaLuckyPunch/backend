@@ -133,7 +133,7 @@ public class NotificationService {
 
         String description = notificationType.getDescription(notificationType, meeting.getTitle(), attendee.getNickname());
 
-        UserMeeting host = userMeetingRepository.findHostByMeeting(meeting);
+        UserMeeting host = userMeetingRepository.findHostUserMeetingByMeeting(meeting);
 
         Notification notification = new Notification(
             notificationType,

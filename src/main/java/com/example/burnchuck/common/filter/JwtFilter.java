@@ -43,7 +43,6 @@ public class JwtFilter extends OncePerRequestFilter {
                     break;
                 }
             }
-
         }
 
         // 토큰이 없는 경우 처리
