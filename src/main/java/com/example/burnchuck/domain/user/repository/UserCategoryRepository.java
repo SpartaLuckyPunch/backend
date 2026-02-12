@@ -9,4 +9,6 @@ import java.util.List;
 public interface UserCategoryRepository extends JpaRepository<UserCategory, Long> {
 
     List<UserCategory> findByUser(User user);
+
+    void deleteByUser(User user);
 }
