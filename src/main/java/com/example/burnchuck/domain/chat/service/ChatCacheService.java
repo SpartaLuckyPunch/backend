@@ -1,5 +1,7 @@
 package com.example.burnchuck.domain.chat.service;
 
+import com.example.burnchuck.common.enums.ErrorCode;
+import com.example.burnchuck.common.exception.CustomException;
 import io.lettuce.core.RedisException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,9 @@ public class ChatCacheService {
         } catch (RedisException | RedisConnectionFailureException e) {
             log.error("Redis 시퀀스 생성 실패: {}", e.getMessage());
             return 0L;
+        } catch (Exception e) {
+            log.error("error : {}", e.getMessage());
+            throw new CustomException(ErrorCode.CHAT_MESSAGE_SEND_FAILED);
         }
     }
 
@@ -50,6 +55,9 @@ public class ChatCacheService {
             redisTemplate.expire(key, CHAT_CACHE_TTL, TimeUnit.DAYS);
         } catch (RedisException | RedisConnectionFailureException e) {
             log.error("Redis 읽음 처리 실패: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("error : {}", e.getMessage());
+            throw new CustomException(ErrorCode.LAST_READ_UPDATE_FAILED);
         }
     }
 

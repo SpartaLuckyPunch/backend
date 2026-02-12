@@ -20,6 +20,7 @@ import com.example.burnchuck.domain.review.repository.ReviewRepository;
 import com.example.burnchuck.domain.user.dto.request.UserUpdatePasswordRequest;
 import com.example.burnchuck.domain.user.dto.request.UserUpdateProfileRequest;
 import com.example.burnchuck.domain.user.dto.response.UserGetAddressResponse;
+import com.example.burnchuck.domain.user.dto.response.UserGetOneResponse;
 import com.example.burnchuck.domain.user.dto.response.UserGetProfileReponse;
 import com.example.burnchuck.domain.user.dto.response.UserUpdateProfileResponse;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
@@ -230,5 +231,14 @@ public class UserService {
         User user = userRepository.findActivateUserWithAddress(authUser.getId());
 
         return UserGetAddressResponse.from(user.getAddress());
+    }
+
+    /**
+     * 유저 단건 조회
+     */
+    @Transactional(readOnly = true)
+    public UserGetOneResponse getUserOne(AuthUser authUser) {
+
+        return new UserGetOneResponse(authUser.getId(), authUser.getEmail(), authUser.getNickname(), authUser.getUserRole());
     }
 }
