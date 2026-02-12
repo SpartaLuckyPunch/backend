@@ -227,7 +227,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserGetAddressResponse getAddress(AuthUser authUser) {
 
-        User user = userRepository.findActivateUserById(authUser.getId());
+        User user = userRepository.findActivateUserWithAddress(authUser.getId());
 
         return UserGetAddressResponse.from(user.getAddress());
     }
