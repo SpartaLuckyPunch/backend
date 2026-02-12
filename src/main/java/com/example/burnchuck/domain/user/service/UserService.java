@@ -89,7 +89,9 @@ public class UserService {
     @Transactional
     public UserUpdateProfileResponse updateProfile(AuthUser authUser, UserUpdateProfileRequest request) {
 
-        if (!s3UrlGenerator.isFileExists(request.getProfileImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+        String requestedProfileImgUrl = request.getProfileImgUrl();
+
+        if (requestedProfileImgUrl != null && !s3UrlGenerator.isFileExists(requestedProfileImgUrl.replaceAll("^https?://[^/]+/", ""))) {
             throw new CustomException(ErrorCode.USER_IMG_NOT_FOUND);
         }
 
