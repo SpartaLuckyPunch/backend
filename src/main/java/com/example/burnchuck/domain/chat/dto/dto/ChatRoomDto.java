@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class ChatRoomDto {
+
     private final Long roomId;
     private final String name;
     private final RoomType roomType;

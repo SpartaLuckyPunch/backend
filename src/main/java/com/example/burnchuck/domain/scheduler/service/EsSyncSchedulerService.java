@@ -85,7 +85,7 @@ public class EsSyncSchedulerService {
     /**
      * 주 1회 전체 재색인 작업
      */
-    // TODO : Alias 기반 재색인 구조
+    // TODO : Alias 기반 재색인 구조 찾아보기
     @Scheduled(cron = "0 0 3 ? * SUN")
     public void syncAllMeetings() {
 
@@ -108,7 +108,7 @@ public class EsSyncSchedulerService {
                     row -> (Long) row[1]
                 ));
 
-            Map<Long, Integer> currentAttendeesMap = userMeetingRepository.countAllByMeeting(meetingIdSet)
+            Map<Long, Integer> currentAttendeesMap = userMeetingRepository.countAllByMeetingIdIn(meetingIdSet)
                 .stream()
                 .collect(Collectors.toMap(
                     row -> (Long) row[0],

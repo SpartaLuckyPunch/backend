@@ -70,9 +70,7 @@ public class ScheduleEventHandler {
                     schedulingService.scheduleMeetingStatusComplete(meeting);
                     schedulingService.scheduleNotification(meeting);
                 }
-                case DELETE -> {
-                    schedulingService.scheduleCancel(meeting.getId());
-                }
+                case DELETE -> schedulingService.scheduleCancel(meeting.getId());
             }
         } catch (Exception e) {
             log.error("스케줄러 생성 실패 : {}", meeting.getId());

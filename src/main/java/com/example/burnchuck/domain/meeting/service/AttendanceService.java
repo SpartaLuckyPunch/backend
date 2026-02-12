@@ -34,6 +34,7 @@ public class AttendanceService {
     private final UserRepository userRepository;
     private final MeetingRepository meetingRepository;
     private final ChatRoomRepository chatRoomRepository;
+
     private final NotificationService notificationService;
     private final ChatRoomService chatRoomService;
     private final EventPublisherService eventPublisherService;
@@ -102,7 +103,7 @@ public class AttendanceService {
 
         ChatRoom chatRoom = chatRoomRepository.findChatRoomByMeetingId(meetingId);
 
-        chatRoomService.leaveChatRoom(authUser, chatRoom.getId());
+        chatRoomService.leaveChatRoomAfterAttendanceCancel(user.getId(), chatRoom.getId());
 
         if (meeting.isClosed()) {
             meeting.updateStatus(MeetingStatus.OPEN);
@@ -115,7 +116,7 @@ public class AttendanceService {
     }
 
     /**
-     * 참여 중인 모임 목록 조회
+     * 참여한 모임 목록 조회
      */
     @Transactional(readOnly = true)
     public AttendanceGetMeetingListResponse getAttendingMeetingList(AuthUser authUser) {

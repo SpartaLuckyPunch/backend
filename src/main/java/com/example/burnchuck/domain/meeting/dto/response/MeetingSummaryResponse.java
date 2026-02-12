@@ -3,22 +3,22 @@ package com.example.burnchuck.domain.meeting.dto.response;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.MeetingDocument;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class MeetingSummaryResponse {
 
-    private Long meetingId;
-    private String meetingTitle;
-    private String imgUrl;
-    private String location;
-    private Double latitude;
-    private Double longitude;
-    private LocalDateTime meetingDatetime;
-    private int maxAttendees;
-    private int currentAttendees;
+    private final Long meetingId;
+    private final String meetingTitle;
+    private final String imgUrl;
+    private final String location;
+    private final Double latitude;
+    private final Double longitude;
+    private final LocalDateTime meetingDatetime;
+    private final int maxAttendees;
+    private final int currentAttendees;
 
     public MeetingSummaryResponse(MeetingDocument meetingDocument) {
         this.meetingId = meetingDocument.getId();

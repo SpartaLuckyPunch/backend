@@ -20,9 +20,10 @@ public interface UserMeetingRepository extends JpaRepository<UserMeeting, Long>,
     @Query("""
         SELECT um
         FROM UserMeeting um
+        JOIN FETCH um.user
         WHERE um.meeting = :meeting AND um.meetingRole = 'host'
         """)
-    UserMeeting findHostByMeeting(@Param("meeting") Meeting meeting);
+    Optional<UserMeeting> findHostByMeeting(@Param("meeting") Meeting meeting);
 
     int countByMeeting(Meeting meeting);
 
@@ -33,10 +34,15 @@ public interface UserMeetingRepository extends JpaRepository<UserMeeting, Long>,
         WHERE um.meeting.id in :meetingIdList
         GROUP BY um.meeting.id
         """)
-    List<Object[]> countAllByMeeting(@Param("meetingIdList") Set<Long> meetingIdList);
+    List<Object[]> countAllByMeetingIdIn(@Param("meetingIdList") Set<Long> meetingIdList);
 
     default UserMeeting findUserMeeting(Long userId, Long meetingId) {
         return findByUserIdAndMeetingId(userId, meetingId)
+            .orElseThrow(() -> new CustomException(ErrorCode.ATTENDANCE_NOT_FOUND));
+    }
+
+    default UserMeeting findHostUserMeetingByMeeting(Meeting meeting) {
+        return findHostByMeeting(meeting)
             .orElseThrow(() -> new CustomException(ErrorCode.ATTENDANCE_NOT_FOUND));
     }
 }

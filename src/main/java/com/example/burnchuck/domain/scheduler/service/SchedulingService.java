@@ -38,7 +38,6 @@ public class SchedulingService {
         Consumer<T> action,
         LocalDateTime executionDatetime
     ) {
-
         SchedulingTask<T> task = new SchedulingTask<>(target, action, transactionTemplate);
         Instant execution = executionDatetime.atZone(ZoneId.systemDefault()).toInstant();
 

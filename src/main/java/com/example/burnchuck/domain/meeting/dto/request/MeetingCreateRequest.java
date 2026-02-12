@@ -20,10 +20,10 @@ public class MeetingCreateRequest {
     @Size(max = 500, message = MEETING_DESCRIPTION_SIZE)
     private String description;
 
-    @NotBlank(message = MEETING_IMG_URL_NOT_BLANK)
+    @NotBlank(message = IMG_URL_NOT_BLANK)
     @Pattern(
             regexp = "^(http|https)://.*$",
-            message = MEETING_IMG_URL_FORMAT
+            message = IMG_URL_FORMAT
     )
     private String imgUrl;
 

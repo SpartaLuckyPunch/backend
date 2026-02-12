@@ -6,7 +6,6 @@ import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.GetS3Url;
-import com.example.burnchuck.common.dto.Location;
 import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Category;
@@ -18,7 +17,6 @@ import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.ClientInfoExtractor;
-import com.example.burnchuck.common.utils.MeetingDistance;
 import com.example.burnchuck.common.utils.S3UrlGenerator;
 import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
@@ -45,7 +43,6 @@ import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import io.lettuce.core.RedisException;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -184,7 +181,7 @@ public class MeetingService {
     /**
      * 모임 단건 요약 조회
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public MeetingSummaryResponse getMeetingSummary(Long meetingId) {
 
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
@@ -194,7 +191,7 @@ public class MeetingService {
     }
 
     /**
-     * 모임 단건 조회
+     * 모임 단건 조회 및 조회수 관리
      */
     @Transactional(readOnly = true)
     public MeetingDetailResponse getMeetingDetail(Long meetingId, HttpServletRequest httpServletRequest) {
@@ -222,15 +219,15 @@ public class MeetingService {
     @Transactional
     public MeetingUpdateResponse updateMeeting(AuthUser authUser, Long meetingId, MeetingUpdateRequest request) {
 
-//        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
-//            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
-//        }
+        if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
+            throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
+        }
 
         User user = userRepository.findActivateUserById(authUser.getId());
 
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
-        UserMeeting meetingHost = userMeetingRepository.findHostByMeeting(meeting);
+        UserMeeting meetingHost = userMeetingRepository.findHostUserMeetingByMeeting(meeting);
         if (!ObjectUtils.nullSafeEquals(user.getId(), meetingHost.getUser().getId())) {
             throw new CustomException(ACCESS_DENIED);
         }
@@ -256,7 +253,7 @@ public class MeetingService {
 
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
-        UserMeeting meetingHost = userMeetingRepository.findHostByMeeting(meeting);
+        UserMeeting meetingHost = userMeetingRepository.findHostUserMeetingByMeeting(meeting);
         if (!ObjectUtils.nullSafeEquals(user.getId(), meetingHost.getUser().getId())) {
             throw new CustomException(ACCESS_DENIED);
         }
@@ -299,7 +296,7 @@ public class MeetingService {
         }
 
         UserMeeting host = userMeetings.stream()
-            .filter(userMeeting -> userMeeting.isHost())
+            .filter(UserMeeting::isHost)
             .findFirst()
             .orElseThrow(() -> new CustomException(HOST_NOT_FOUND));
 
@@ -318,16 +315,6 @@ public class MeetingService {
             UserDisplay.resolveNickname(host.getUser()),
             attendees
         );
-    }
-
-    /**
-     * 중심지 기준 가까운순 정렬
-     */
-    private void sortMeetingsByDistance(List<MeetingSummaryResponse> meetings, Location location) {
-
-        meetings.sort(Comparator.comparingDouble(
-            m -> MeetingDistance.calculateDistance(location, m)
-        ));
     }
 
     /**

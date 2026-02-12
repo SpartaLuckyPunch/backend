@@ -66,6 +66,7 @@ public class ChatCacheService {
      * 여러 채팅방의 안 읽은 메시지 수를 한 번에 조회 (Batch)
      */
     public Map<Long, Long> getUnreadCountsBatch(Long userId, List<Long> roomIds) {
+
         if (roomIds.isEmpty()) {
             return new HashMap<>();
         }
@@ -103,6 +104,7 @@ public class ChatCacheService {
      * 특정 메시지를 안 읽은 사람 수 계산을 위해 멤버들의 읽은 위치 조회
      */
     public Map<Long, Long> getMembersLastReadSequence(Long roomId, List<Long> memberIds) {
+
         if (memberIds.isEmpty()) {
             return new HashMap<>();
         }
@@ -128,9 +130,11 @@ public class ChatCacheService {
      * Redis Pipeline 결과를 Long으로 변환하는 메서드
      */
     private Long parseLongFromRedisResult(Object result) {
+
         if (result == null) {
             return 0L;
         }
+
         try {
             if (result instanceof byte[]) {
                 String str = new String((byte[]) result, StandardCharsets.UTF_8);
@@ -148,6 +152,9 @@ public class ChatCacheService {
         }
     }
 
+    /**
+     * 유저가 마지막 조회 시퀀스 삭제
+     */
     public void deleteUserReadInfo(Long roomId, Long userId) {
         String key = String.format(USER_READ_KEY, roomId, userId);
         try {

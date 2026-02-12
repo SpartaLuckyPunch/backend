@@ -14,7 +14,6 @@ public enum ErrorCode {
     INCORRECT_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
     REFRESH_NOT_FOUND(HttpStatus.NOT_FOUND, "리프레시 토큰이 존재하지 않습니다."),
 
-    INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "인증 번호가 일치하지 않습니다."),
     EMAIL_EXIST(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 발송에 실패했습니다."),
     NICKNAME_EXIST(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
@@ -39,8 +38,6 @@ public enum ErrorCode {
 
     // 리뷰
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰가 존재하지 않습니다."),
-    REVIEWER_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰 작성자가 존재하지 않습니다."),
-    REVIEWEE_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰 대상자가 존재하지 않습니다."),
     SELF_REVIEW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "자기 자신에게는 리뷰를 남길 수 없습니다."),
     ALREADY_REVIEWED(HttpStatus.CONFLICT, "이미 해당 모임에서 해당 유저에게 리뷰를 남겼습니다."),
     REACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 리액션 종류입니다."),
@@ -75,7 +72,7 @@ public enum ErrorCode {
     CANNOT_CHAT_WITH_SELF(HttpStatus.CONFLICT, "자기 자신과 채팅할 수 없습니다."),
     CHAT_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 참여자가 존재하지 않습니다."),
     CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 방이 존재하지 않습니다."),
-    CANNOT_LEAVE_CLOSED_MEETING(HttpStatus.BAD_REQUEST, "마감된 모임의 채팅방은 나갈 수 없습니다."),
+    CANNOT_LEAVE_NOT_COMPLETED_MEETING(HttpStatus.BAD_REQUEST, "종료되지 않은 모임의 채팅방은 나갈 수 없습니다."),
 
     // 이미지
     UNAUTHORIZED_IMAGE_ACCESS(HttpStatus.UNAUTHORIZED, "해당 이미지에 대한 접근 권한이 없습니다."),

@@ -18,6 +18,9 @@ public class MeetingLikeCacheService {
     private static final String LIKE_COUNT_KEY = "like::meeting::%s";
     private static final int LIKE_COUNT_TTL = 3; // 1일 단위
 
+    /**
+     * 좋아요 생성 시 Zset 값 증가
+     */
     public void increaseMeetingLike(Long meetingId) {
 
         String key = generateKey();
@@ -26,6 +29,9 @@ public class MeetingLikeCacheService {
         redisTemplate.expire(key, LIKE_COUNT_TTL, TimeUnit.DAYS);
     }
 
+    /**
+     * 좋아요 삭제 시 Zset 값 감소
+     */
     public void decreaseMeetingLike(Long meetingId) {
 
         String key = generateKey();
@@ -34,10 +40,16 @@ public class MeetingLikeCacheService {
         redisTemplate.expire(key, LIKE_COUNT_TTL, TimeUnit.DAYS);
     }
 
+    /**
+     * 날짜 포함 키 생성
+     */
     public String generateKey() {
         return String.format(LIKE_COUNT_KEY, LocalDate.now());
     }
 
+    /**
+     * 당일 생성된 내용 모두 조회
+     */
     public Set<TypedTuple<String>> getLikeKeyList() {
 
         String key = generateKey();
@@ -49,6 +61,9 @@ public class MeetingLikeCacheService {
         return redisTemplate.opsForZSet().rangeWithScores(key, 0, -1);
     }
 
+    /**
+     * Zset 멤버 삭제
+     */
     public void clearLikeKey(Set<Long> meetingIdList) {
 
         for (Long meetingId : meetingIdList) {

@@ -8,6 +8,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ChatRoomMemberDto {
+
     private Long userId;
     private String nickname;
     private String profileImgUrl;

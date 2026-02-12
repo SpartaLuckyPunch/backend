@@ -42,6 +42,7 @@ public class UserCategoryService {
         }
 
         List<UserCategory> existUserCategory = userCategoryRepository.findByUser(user);
+
         Set<String> existCategory = existUserCategory.stream()
                 .map(uc -> uc.getCategory().getCode())
                 .collect(Collectors.toSet());
@@ -59,9 +60,12 @@ public class UserCategoryService {
                 .map(category -> new UserCategory(user, category))
                 .toList();
 
-        userCategoryRepository.deleteAll(delete);
-        userCategoryRepository.saveAll(add);
-        userCategoryRepository.flush();
+        if (!delete.isEmpty()) {
+            userCategoryRepository.deleteAll(delete);
+        }
+        if (!add.isEmpty()) {
+            userCategoryRepository.saveAll(add);
+        }
     }
 
     /**

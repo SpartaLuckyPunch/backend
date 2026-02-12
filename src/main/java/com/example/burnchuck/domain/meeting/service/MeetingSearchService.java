@@ -47,10 +47,12 @@ public class MeetingSearchService {
         MeetingSortOption order,
         Pageable pageable
     ) {
-        MeetingSortOption sort = order == null ? MeetingSortOption.LATEST : order;
+        if (order == null) {
+            order = MeetingSortOption.LATEST;
+        }
 
         SortOptions sortOptions =
-            switch (sort) {
+            switch (order) {
                 case POPULAR -> sortPOPULAR();
                 case LATEST -> sortLATEST();
                 case UPCOMING -> sortUPCOMING();
@@ -70,9 +72,8 @@ public class MeetingSearchService {
             .map(SearchHit::getContent)
             .map(MeetingSummaryResponse::new)
             .collect(Collectors.toList());
-        long totalHits = searchPage.getTotalElements();
 
-        return new PageResponse<>(content, totalHits, searchPage.getTotalPages(), pageable.getPageSize(), pageable.getPageNumber());
+        return new PageResponse<>(content, searchPage.getTotalElements(), searchPage.getTotalPages(), pageable.getPageSize(), pageable.getPageNumber());
     }
 
     /**
@@ -206,6 +207,7 @@ public class MeetingSearchService {
     }
 
     private Query timeBetween(Integer startTime, Integer endTime) {
+
         return startTime != null && endTime != null
             ? Query.of(q -> q.range(r -> r
             .date(d -> d.field("meetingHour")

@@ -1,5 +1,8 @@
 package com.example.burnchuck.domain.auth.controller;
 
+import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_EMAIL_SEND_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.AUTH_EMAIL_VERIFY_SUCCESS;
+
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.domain.auth.dto.request.EmailConfirmRequest;
 import com.example.burnchuck.domain.auth.dto.request.EmailRequest;
@@ -11,8 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import static com.example.burnchuck.common.enums.SuccessMessage.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,7 +29,7 @@ public class EmailController {
     public ResponseEntity<CommonResponse<Boolean>> sendVerificationEmail(
             @Valid @RequestBody EmailRequest request
     ) {
-        boolean result = emailService.sendVerificationEmail(request.getEmail());
+        boolean result = emailService.sendVerificationEmail(request);
 
         return ResponseEntity.ok(CommonResponse.success(AUTH_EMAIL_SEND_SUCCESS, result));
     }
@@ -40,7 +41,7 @@ public class EmailController {
     public ResponseEntity<CommonResponse<Boolean>> confirmCode(
             @Valid @RequestBody EmailConfirmRequest request
     ) {
-        boolean isVerified = emailService.verifyCode(request.getEmail(), request.getVerificationCode());
+        boolean isVerified = emailService.verifyCode(request);
 
         return ResponseEntity.ok(CommonResponse.success(AUTH_EMAIL_VERIFY_SUCCESS, isVerified));
     }

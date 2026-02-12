@@ -40,7 +40,7 @@ public class FollowController {
     @Operation(
             summary = "팔로우",
             description = """
-                    로그인한 유저를 기준으로 특정 사용자를 팔로우하는 객체를 생성합니다..
+                    로그인한 유저를 기준으로 특정 사용자를 팔로우하는 객체를 생성합니다.
                     """
     )
     @PostMapping("/{userId}/follow")
@@ -99,7 +99,7 @@ public class FollowController {
     @Operation(
             summary = "팔로잉 목록 조회",
             description = """
-                    특정 사용자를 팔로잉하는 목록을 조회합니다.
+                    특정 사용자가 팔로잉하는 목록을 조회합니다.
                     """
     )
     @GetMapping("/{userId}/followings")
@@ -118,7 +118,7 @@ public class FollowController {
     @Operation(
             summary = "팔로워 목록 조회",
             description = """
-                    특정 사용자가 팔로우하는 목록을 조회합니다.
+                    특정 사용자의 팔로워 목록을 조회합니다.
                     """
     )
     @GetMapping("/{userId}/followers")

@@ -20,7 +20,6 @@ import org.springframework.util.ObjectUtils;
 @Component
 public class JwtUtil {
 
-    public static final String BEARER_PREFIX = "Bearer ";
     private static final long ACCESS_TOKEN_TIME = 60 * 60 * 1000L; // 1시간
     private static final long REFRESH_TOKEN_TIME = 7 * 24 * 60 * 60 * 1000L; // 1주
     public static final String TOKEN_TYPE_ACCESS = "access";

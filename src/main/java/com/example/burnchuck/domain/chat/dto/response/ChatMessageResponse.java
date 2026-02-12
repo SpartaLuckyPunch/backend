@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class ChatMessageResponse {
+
     private final String id;
     private final Long roomId;
     private final Long senderId;
