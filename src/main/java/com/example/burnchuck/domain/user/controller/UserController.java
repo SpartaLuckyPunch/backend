@@ -7,6 +7,7 @@ import static com.example.burnchuck.common.enums.SuccessMessage.USER_UPDATE_PASS
 import static com.example.burnchuck.common.enums.SuccessMessage.USER_UPDATE_PROFILE_IMG_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.USER_UPDATE_PROFILE_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.USER_UPLOAD_PROFILE_IMG_LINK_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.USER_GET_ONE_SUCCESS;
 
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
