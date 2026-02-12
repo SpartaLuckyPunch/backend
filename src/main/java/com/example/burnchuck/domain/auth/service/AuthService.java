@@ -125,7 +125,7 @@ public class AuthService {
 
         userRefreshRepository.save(userRefresh);
 
-        return new AuthTokenResponse(accessToken, refreshToken, user.getId(), user.getEmail(), user.getNickname(), user.getRole());
+        return new AuthTokenResponse(accessToken, refreshToken);
     }
 
     /**
@@ -159,7 +159,7 @@ public class AuthService {
             userRefresh.updateRefreshToken(refreshToken);
         }
 
-        return new AuthTokenResponse(accessToken, refreshToken, user.getId(), user.getEmail(), user.getNickname(), user.getRole());
+        return new AuthTokenResponse(accessToken, refreshToken);
     }
 
     /**
