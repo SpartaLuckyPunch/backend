@@ -241,7 +241,7 @@ public class ChatRoomService {
                 .map(ChatRoomUser::getUser)
                 .filter(user -> !user.getId().equals(myId))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_PARTNER_NOT_FOUND));
     }
 
     /**
