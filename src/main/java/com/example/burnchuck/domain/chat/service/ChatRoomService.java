@@ -232,8 +232,6 @@ public class ChatRoomService {
                     chatRoomUser.delete();
                     chatCacheService.deleteUserReadInfo(roomId, user.getId());
                 });
-
-        chatCacheService.deleteUserReadInfo(roomId, user.getId());
     }
 
     /**
