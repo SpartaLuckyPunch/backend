@@ -38,7 +38,6 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
 import com.example.burnchuck.domain.meeting.event.EventPublisherService;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
-import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import io.lettuce.core.RedisException;
@@ -69,13 +68,12 @@ public class MeetingService {
     private final UserMeetingRepository userMeetingRepository;
     private final AddressRepository addressRepository;
 
-    private final NotificationService notificationService;
     private final EventPublisherService eventPublisherService;
     private final MeetingCacheService meetingCacheService;
     private final ChatRoomService chatRoomService;
-    private final S3UrlGenerator s3UrlGenerator;
     private final MeetingSearchService meetingSearchService;
 
+    private final S3UrlGenerator s3UrlGenerator;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     // 서울 광화문 위치
@@ -92,26 +90,12 @@ public class MeetingService {
     }
 
     /**
-     * 모임 생성과 알림 생성 메서드를 호출하는 메서드
-     */
-    public MeetingCreateResponse createMeetingAndNotify(AuthUser authUser, MeetingCreateRequest request) {
-
-        User user = userRepository.findActivateUserById(authUser.getId());
-
-        Meeting meeting = createMeeting(user, request);
-
-        notificationService.notifyNewFollowerPost(meeting, user);
-
-        eventPublisherService.publishMeetingCreatedEvent(meeting);
-
-        return MeetingCreateResponse.from(meeting);
-    }
-
-    /**
      * 모임 생성
      */
     @Transactional
-    public Meeting createMeeting(User user, MeetingCreateRequest request) {
+    public MeetingCreateResponse createMeeting(AuthUser authUser, MeetingCreateRequest request) {
+
+        User user = userRepository.findActivateUserById(authUser.getId());
 
         if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
             throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
@@ -135,7 +119,9 @@ public class MeetingService {
 
         userMeetingRepository.save(userMeeting);
 
-        return meeting;
+        eventPublisherService.publishMeetingCreatedEvent(meeting);
+
+        return MeetingCreateResponse.from(meeting);
     }
 
     /**
