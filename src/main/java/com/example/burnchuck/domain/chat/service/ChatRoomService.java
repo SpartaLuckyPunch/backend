@@ -227,9 +227,12 @@ public class ChatRoomService {
 
         User user = userRepository.findActivateUserById(userId);
 
-        ChatRoomUser chatRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, user.getId());
+        chatRoomUserRepository.findByChatRoomIdAndUserId(roomId, user.getId())
+                .ifPresent(chatRoomUser -> {
+                    chatRoomUser.delete();
+                    chatCacheService.deleteUserReadInfo(roomId, user.getId());
+                });
 
-        chatRoomUser.delete();
         chatCacheService.deleteUserReadInfo(roomId, user.getId());
     }
 
