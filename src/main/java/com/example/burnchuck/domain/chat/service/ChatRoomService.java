@@ -166,8 +166,9 @@ public class ChatRoomService {
         }
 
         if (chatRoom.isGroup()){
-            Meeting meeting = meetingRepository.findMeetingById(chatRoom.getMeetingId());
-            chatroomImg = meeting.getImgUrl();
+            chatroomImg = meetingRepository.findByIdAndDeletedFalse(chatRoom.getMeetingId())
+                    .map(Meeting::getImgUrl)
+                    .orElse(null);
         }
 
         ChatMessage lastMsg = chatMessageRepository.findFirstByRoomIdOrderByCreatedDatetimeDesc(chatRoom.getId())
