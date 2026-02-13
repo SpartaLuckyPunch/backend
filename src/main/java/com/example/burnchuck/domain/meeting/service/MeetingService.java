@@ -77,8 +77,8 @@ public class MeetingService {
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     // 서울 광화문 위치
-    private final Double DEFAULT_LATITUDE = 37.57;
-    private final Double DEFAULT_LONGITUDE = 126.98;
+    private static final Double DEFAULT_LATITUDE = 37.57;
+    private static final Double DEFAULT_LONGITUDE = 126.98;
 
     /**
      * 모임 이미지 업로드 Presigned URL 생성
