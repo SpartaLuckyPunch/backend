@@ -6,7 +6,9 @@ import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.Notification;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
+import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.NotificationType;
+import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.dto.response.NotificationGetListResponse;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
@@ -198,9 +201,13 @@ public class NotificationService {
      * 알림 단건 조회 (알림 읽음 처리)
      */
     @Transactional
-    public NotificationResponse readNotification(Long notificationId) {
+    public NotificationResponse readNotification(AuthUser authUser, Long notificationId) {
 
         Notification notification = notificationRepository.findNotificationById(notificationId);
+
+        if (!ObjectUtils.nullSafeEquals(authUser.getId(), notification.getUser().getId())) {
+            throw new CustomException(ErrorCode.ACCESS_DENIED);
+        }
 
         notification.read();
 
