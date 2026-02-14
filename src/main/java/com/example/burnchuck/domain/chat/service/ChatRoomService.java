@@ -219,28 +219,14 @@ public class ChatRoomService {
     }
 
     /**
-     * 모임 참가 취소 시, 모임의 상태와 관계없이 채팅방 나가기 가능
+     * 모임 참가 취소 / 유저 탈퇴 시, 채팅방 나가기
      */
     @Transactional
-    public void leaveChatRoomAfterAttendanceCancel(Long userId, Long roomId) {
-
-        User user = userRepository.findActivateUserById(userId);
-
-        ChatRoomUser chatRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, user.getId());
-
-        chatRoomUser.delete();
-        chatCacheService.deleteUserReadInfo(roomId, user.getId());
-    }
-
-    /**
-     * 유저 삭제 시, 채팅방 나가기 처리
-     */
-    @Transactional
-    public void leaveChatRoomAfterUserDelete(Long userId, Long roomId) {
+    public void leaveChatRoomRegardlessOfStatus(Long userId, Long roomId) {
 
         ChatRoomUser chatRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, userId);
-        chatRoomUser.delete();
 
+        chatRoomUser.delete();
         chatCacheService.deleteUserReadInfo(roomId, userId);
     }
 

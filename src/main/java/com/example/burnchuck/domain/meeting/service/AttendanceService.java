@@ -103,7 +103,7 @@ public class AttendanceService {
 
         ChatRoom chatRoom = chatRoomRepository.findChatRoomByMeetingId(meetingId);
 
-        chatRoomService.leaveChatRoomAfterAttendanceCancel(user.getId(), chatRoom.getId());
+        chatRoomService.leaveChatRoomRegardlessOfStatus(user.getId(), chatRoom.getId());
 
         if (meeting.isClosed()) {
             meeting.updateStatus(MeetingStatus.OPEN);
@@ -134,7 +134,7 @@ public class AttendanceService {
 
             ChatRoom chatRoom = chatRoomRepository.findChatRoomByMeetingId(meeting.getId());
 
-            chatRoomService.leaveChatRoomAfterUserDelete(user.getId(), chatRoom.getId());
+            chatRoomService.leaveChatRoomRegardlessOfStatus(user.getId(), chatRoom.getId());
 
             if (meeting.isClosed()) {
                 meeting.updateStatus(MeetingStatus.OPEN);
