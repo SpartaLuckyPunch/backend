@@ -39,18 +39,8 @@ public class AuthService {
     /**
      * 회원가입
      */
-    public AuthTokenResponse signup(AuthSignupRequest request) {
-
-        User user = createUser(request);
-
-        return generateToken(user);
-    }
-
-    /**
-     * 유저 생성(LOCAL)
-     */
     @Transactional
-    public User createUser(AuthSignupRequest request) {
+    public AuthTokenResponse signup(AuthSignupRequest request) {
 
         String email = request.getEmail();
         String nickname = request.getNickname();
@@ -79,9 +69,9 @@ public class AuthService {
             null
         );
 
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
 
-        return user;
+        return generateToken(user);
     }
 
     /**
@@ -104,8 +94,7 @@ public class AuthService {
     /**
      * 유저의 Access 토큰, Refresh 토큰 생성
      */
-    @Transactional
-    public AuthTokenResponse generateToken(User user) {
+    private AuthTokenResponse generateToken(User user) {
 
         Long userId = user.getId();
 
