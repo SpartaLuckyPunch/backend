@@ -8,6 +8,7 @@ import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.S3UrlGenerator;
+import com.example.burnchuck.domain.auth.repository.UserRefreshRepository;
 import com.example.burnchuck.domain.follow.repository.FollowRepository;
 import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
 import com.example.burnchuck.domain.notification.service.EmitterService;
@@ -38,6 +39,7 @@ public class UserService {
     private final FollowRepository followRepository;
     private final MeetingLikeRepository meetingLikeRepository;
     private final ReviewRepository reviewRepository;
+    private final UserRefreshRepository userRefreshRepository;
 
     private final UserEventPublisher userEventPublisher;
     private final EmitterService emitterService;
@@ -146,6 +148,8 @@ public class UserService {
     public void deleteUser(AuthUser authUser) {
 
         User user = userRepository.findActivateUserById(authUser.getId());
+
+        userRefreshRepository.deleteByUserId(user.getId());
 
         meetingLikeRepository.deleteByUserId(user.getId());
 
