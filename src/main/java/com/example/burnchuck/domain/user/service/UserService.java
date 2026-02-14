@@ -21,7 +21,7 @@ import com.example.burnchuck.domain.user.dto.request.UserUpdatePasswordRequest;
 import com.example.burnchuck.domain.user.dto.request.UserUpdateProfileRequest;
 import com.example.burnchuck.domain.user.dto.response.UserGetAddressResponse;
 import com.example.burnchuck.domain.user.dto.response.UserGetOneResponse;
-import com.example.burnchuck.domain.user.dto.response.UserGetProfileReponse;
+import com.example.burnchuck.domain.user.dto.response.UserGetProfileResponse;
 import com.example.burnchuck.domain.user.dto.response.UserUpdateProfileResponse;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
@@ -199,7 +199,7 @@ public class UserService {
      * 프로필 조회
      */
     @Transactional(readOnly = true)
-    public UserGetProfileReponse getProfile(Long userId) {
+    public UserGetProfileResponse getProfile(Long userId) {
 
         User user = userRepository.findActivateUserById(userId);
 
@@ -213,7 +213,7 @@ public class UserService {
             .average()
             .orElse(0.0);
 
-        return new UserGetProfileReponse(
+        return new UserGetProfileResponse(
             user.getProfileImgUrl(),
             user.getNickname(),
             followings,

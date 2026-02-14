@@ -16,7 +16,7 @@ import com.example.burnchuck.domain.user.dto.request.UserUpdatePasswordRequest;
 import com.example.burnchuck.domain.user.dto.request.UserUpdateProfileRequest;
 import com.example.burnchuck.domain.user.dto.response.UserGetAddressResponse;
 import com.example.burnchuck.domain.user.dto.response.UserGetOneResponse;
-import com.example.burnchuck.domain.user.dto.response.UserGetProfileReponse;
+import com.example.burnchuck.domain.user.dto.response.UserGetProfileResponse;
 import com.example.burnchuck.domain.user.dto.response.UserUpdateProfileResponse;
 import com.example.burnchuck.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -142,10 +142,10 @@ public class UserController {
                     """
     )
     @GetMapping("/{userId}")
-    public ResponseEntity<CommonResponse<UserGetProfileReponse>> getProfile(
+    public ResponseEntity<CommonResponse<UserGetProfileResponse>> getProfile(
         @PathVariable Long userId
     ) {
-        UserGetProfileReponse response = userService.getProfile(userId);
+        UserGetProfileResponse response = userService.getProfile(userId);
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(USER_GET_PROFILE_SUCCESS, response));
