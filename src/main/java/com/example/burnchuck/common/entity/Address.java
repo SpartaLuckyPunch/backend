@@ -25,12 +25,12 @@ public class Address {
     private String district;
 
     @Column(nullable = false)
-    private double latitude;
+    private Double latitude;
 
     @Column(nullable = false)
-    private double longitude;
+    private Double longitude;
 
-    public Address(String province, String city, String district, double latitude, double longitude) {
+    public Address(String province, String city, String district, Double latitude, Double longitude) {
         this.province = province;
         this.city = city;
         this.district = district;
