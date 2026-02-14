@@ -206,7 +206,7 @@ public class UserService {
      * 유저 단건 조회
      */
     @Transactional(readOnly = true)
-    public UserGetOneResponse getUserOne(AuthUser authUser) {
+    public UserGetOneResponse getUserInfo(AuthUser authUser) {
 
         return new UserGetOneResponse(authUser.getId(), authUser.getEmail(), authUser.getNickname(), authUser.getUserRole());
     }

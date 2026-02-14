@@ -174,10 +174,10 @@ public class UserController {
      * 유저 단건 조회
      */
     @GetMapping
-    public ResponseEntity<CommonResponse<UserGetOneResponse>> getProfile(
+    public ResponseEntity<CommonResponse<UserGetOneResponse>> getUserInfo(
             @AuthenticationPrincipal AuthUser authUser
     ) {
-        UserGetOneResponse response = userService.getUserOne(authUser);
+        UserGetOneResponse response = userService.getUserInfo(authUser);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(USER_GET_ONE_SUCCESS, response));
