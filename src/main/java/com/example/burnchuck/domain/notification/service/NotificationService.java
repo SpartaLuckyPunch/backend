@@ -19,9 +19,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -94,15 +92,18 @@ public class NotificationService {
     /**
      * 유저가 모임을 생성했을 때 -> 해당 유저를 팔로우하는 사람에게 알림 발송
      */
-    @Async("CustomTaskExecutor")
     @Transactional
-    public void notifyNewFollowerPost(Meeting meeting, User user) {
+    public void notifyNewFollowerPost(Meeting meeting) {
+
+        UserMeeting hostUserMeeting = userMeetingRepository.findHostUserMeetingByMeeting(meeting);
+
+        User hostUser = hostUserMeeting.getUser();
 
         NotificationType notificationType = NotificationType.NEW_FOLLOWING_POST;
 
-        List<Follow> followerList = followRepository.findAllByFollowee(user);
+        List<Follow> followerList = followRepository.findAllByFollowee(hostUser);
 
-        String description = notificationType.getDescription(notificationType, meeting.getTitle(), user.getNickname());
+        String description = notificationType.getDescription(notificationType, meeting.getTitle(), hostUser.getNickname());
 
         List<Notification> notificationList = new ArrayList<>();
 
@@ -127,8 +128,7 @@ public class NotificationService {
      * 모임에 새로운 유저가 추가되었을 때 -> 해당 모임의 주최자에게 알림 발송
      * 모임의 유저가 탈퇴했을 때 -> 해당 모임의 주최자에게 알림 발송
      */
-    @Async("CustomTaskExecutor")
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void notifyMeetingMember(NotificationType notificationType, Meeting meeting, User attendee) {
 
         String description = notificationType.getDescription(notificationType, meeting.getTitle(), attendee.getNickname());
@@ -150,8 +150,7 @@ public class NotificationService {
     /**
      * 후기 작성 안내 -> 모임 시작 시간 3시간 뒤, 모임 참석자들에게 발송
      */
-    @Async("CustomTaskExecutor")
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void notifyCommentRequest(Meeting meeting) {
 
         NotificationType notificationType = NotificationType.COMMENT_REQUESTED;

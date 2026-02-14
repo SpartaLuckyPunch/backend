@@ -21,6 +21,7 @@ public interface UserMeetingRepository extends JpaRepository<UserMeeting, Long>,
         SELECT um
         FROM UserMeeting um
         JOIN FETCH um.user
+        JOIN FETCH um.meeting
         WHERE um.meeting = :meeting AND um.meetingRole = 'host'
         """)
     Optional<UserMeeting> findHostByMeeting(@Param("meeting") Meeting meeting);
