@@ -3,7 +3,6 @@ package com.example.burnchuck.domain.user.service;
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.GetS3Url;
 import com.example.burnchuck.common.entity.Address;
-import com.example.burnchuck.common.entity.Review;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
@@ -22,7 +21,6 @@ import com.example.burnchuck.domain.user.dto.response.UserUpdateProfileResponse;
 import com.example.burnchuck.domain.user.event.UserEventPublisher;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -175,12 +173,7 @@ public class UserService {
         Long followings = followRepository.countByFollower(user);
         Long followers = followRepository.countByFollowee(user);
 
-        List<Review> reviewList = reviewRepository.findAllByReviewee(user);
-
-        double avgRates = reviewList.stream()
-            .mapToInt(Review::getRating)
-            .average()
-            .orElse(0.0);
+        Double avgRates = reviewRepository.findAvgRatesByReviewee(user);
 
         return new UserGetProfileResponse(
             user.getProfileImgUrl(),
