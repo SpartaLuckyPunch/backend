@@ -209,7 +209,7 @@ public class ChatRoomService {
 
             Meeting meeting = meetingRepository.findActivateMeetingById(room.getMeetingId());
 
-            if (!meeting.isCompleted()) {
+            if (!meeting.isDeleted() && !meeting.isCompleted()) {
                 throw new CustomException(CANNOT_LEAVE_NOT_COMPLETED_MEETING);
             }
         }
