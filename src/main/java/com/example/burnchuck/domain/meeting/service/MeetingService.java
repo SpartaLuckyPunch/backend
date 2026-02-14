@@ -5,7 +5,7 @@ import static com.example.burnchuck.common.enums.ErrorCode.HOST_NOT_FOUND;
 import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.common.dto.GetS3Url;
+import com.example.burnchuck.common.dto.S3UrlResponse;
 import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.Category;
@@ -85,7 +85,7 @@ public class MeetingService {
     /**
      * 모임 이미지 업로드 Presigned URL 생성
      */
-    public GetS3Url getUploadMeetingImgUrl(String filename) {
+    public S3UrlResponse getUploadMeetingImgUrl(String filename) {
 
         String key = "meeting/" + UUID.randomUUID();
         return s3UrlGenerator.generateUploadImgUrl(filename, key);

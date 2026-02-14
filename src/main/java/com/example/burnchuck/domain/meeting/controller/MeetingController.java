@@ -10,7 +10,7 @@ import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_UPDATE_S
 
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.common.dto.GetS3Url;
+import com.example.burnchuck.common.dto.S3UrlResponse;
 import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
@@ -62,10 +62,10 @@ public class MeetingController {
      * 모임 이미지 업로드 Presigned URL 생성
      */
     @GetMapping("/img")
-    public ResponseEntity<CommonResponse<GetS3Url>> getUploadImgUrl(
+    public ResponseEntity<CommonResponse<S3UrlResponse>> getUploadImgUrl(
             @RequestParam String filename
     ) {
-        GetS3Url response = meetingService.getUploadMeetingImgUrl(filename);
+        S3UrlResponse response = meetingService.getUploadMeetingImgUrl(filename);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_IMG_UPLOAD_LINK_SUCCESS, response));

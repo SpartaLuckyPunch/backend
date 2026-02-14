@@ -3,10 +3,9 @@ package com.example.burnchuck.common.dto;
 import lombok.*;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @EqualsAndHashCode
-public class GetS3Url {
+public class S3UrlResponse {
 
     private String preSignedUrl;
 
@@ -15,7 +14,7 @@ public class GetS3Url {
     private String key;
 
     @Builder
-    public GetS3Url(String preSignedUrl, String cloudFrontUrl, String key) {
+    public S3UrlResponse(String preSignedUrl, String cloudFrontUrl, String key) {
         this.preSignedUrl = preSignedUrl;
         this.cloudFrontUrl = cloudFrontUrl;
         this.key = key;

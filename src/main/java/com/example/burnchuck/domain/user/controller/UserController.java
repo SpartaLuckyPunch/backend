@@ -11,7 +11,7 @@ import static com.example.burnchuck.common.enums.SuccessMessage.USER_GET_ONE_SUC
 
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.common.dto.GetS3Url;
+import com.example.burnchuck.common.dto.S3UrlResponse;
 import com.example.burnchuck.domain.user.dto.request.UserUpdatePasswordRequest;
 import com.example.burnchuck.domain.user.dto.request.UserUpdateProfileRequest;
 import com.example.burnchuck.domain.user.dto.response.UserGetAddressResponse;
@@ -48,11 +48,11 @@ public class UserController {
      * 프로필 이미지 업로드 Presigned URL 생성
      */
     @GetMapping("/profileImg")
-    public ResponseEntity<CommonResponse<GetS3Url>> getUploadImgUrl(
+    public ResponseEntity<CommonResponse<S3UrlResponse>> getUploadImgUrl(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestParam String filename
     ) {
-        GetS3Url response = userService.getUploadProfileImgUrl(authUser, filename);
+        S3UrlResponse response = userService.getUploadProfileImgUrl(authUser, filename);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(USER_UPLOAD_PROFILE_IMG_LINK_SUCCESS, response));
@@ -62,11 +62,11 @@ public class UserController {
      * 프로필 이미지 등록
      */
     @PatchMapping("/profileImg")
-    public ResponseEntity<CommonResponse<GetS3Url>> getViewImgUrl(
+    public ResponseEntity<CommonResponse<S3UrlResponse>> getViewImgUrl(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestParam String key
     ) {
-        GetS3Url response = userService.getViewProfileImgUrl(authUser, key);
+        S3UrlResponse response = userService.getViewProfileImgUrl(authUser, key);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(USER_UPDATE_PROFILE_IMG_SUCCESS, response));

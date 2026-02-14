@@ -1,7 +1,7 @@
 package com.example.burnchuck.domain.user.service;
 
 import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.common.dto.GetS3Url;
+import com.example.burnchuck.common.dto.S3UrlResponse;
 import com.example.burnchuck.common.entity.Address;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
@@ -48,7 +48,7 @@ public class UserService {
     /**
      * 프로필 이미지 업로드 Presigned URL 생성
      */
-    public GetS3Url getUploadProfileImgUrl(AuthUser authUser, String filename) {
+    public S3UrlResponse getUploadProfileImgUrl(AuthUser authUser, String filename) {
 
         String key = "profile/" + authUser.getId() + "/" + UUID.randomUUID();
         return s3UrlGenerator.generateUploadImgUrl(filename, key);
@@ -58,7 +58,7 @@ public class UserService {
      * 프로필 이미지 등록
      */
     @Transactional
-    public GetS3Url getViewProfileImgUrl(AuthUser authUser, String key) {
+    public S3UrlResponse getViewProfileImgUrl(AuthUser authUser, String key) {
 
         s3UrlGenerator.validateKeyOwnership(authUser.getId(), key);
 
@@ -68,7 +68,7 @@ public class UserService {
 
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        GetS3Url result = s3UrlGenerator.generateViewImgUrl(key);
+        S3UrlResponse result = s3UrlGenerator.generateViewImgUrl(key);
 
         user.uploadProfileImg(result.getPreSignedUrl());
         userRepository.save(user);
