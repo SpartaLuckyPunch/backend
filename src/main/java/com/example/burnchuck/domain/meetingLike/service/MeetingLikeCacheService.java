@@ -16,7 +16,7 @@ public class MeetingLikeCacheService {
     private final StringRedisTemplate redisTemplate;
 
     private static final String LIKE_COUNT_KEY = "like::meeting::%s";
-    private static final int LIKE_COUNT_TTL = 3; // 1일 단위
+    private static final int LIKE_COUNT_TTL = 3; // 3일
 
     /**
      * 좋아요 생성 시 Zset 값 증가
