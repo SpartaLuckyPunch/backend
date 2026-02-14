@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
     indexes = {
         @Index(
             name = "idx_unread_count",
-            columnList = "user_id, is_read, notified_datetime"
+            columnList = "user_id, is_read, created_datetime"
         )
     })
 @Getter
