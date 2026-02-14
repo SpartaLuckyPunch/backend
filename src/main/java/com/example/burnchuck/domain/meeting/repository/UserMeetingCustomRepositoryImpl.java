@@ -55,8 +55,7 @@ public class UserMeetingCustomRepositoryImpl implements UserMeetingCustomReposit
     public List<UserMeeting> findActiveMeetingsByUser(User user) {
 
         return queryFactory
-            .select(userMeeting)
-            .from(userMeeting)
+            .selectFrom(userMeeting)
             .join(userMeeting.meeting, meeting)
             .where(
                 userMeeting.user.eq(user),
