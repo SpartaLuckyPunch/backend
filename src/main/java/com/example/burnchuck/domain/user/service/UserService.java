@@ -127,16 +127,20 @@ public class UserService {
 
         User user = userRepository.findActivateUserById(authUser.getId());
 
-        boolean matches = passwordEncoder.matches(oldPassword, user.getPassword());
-
-        if (!matches) {
+        boolean oldPasswordMatches = passwordEncoder.matches(oldPassword, user.getPassword());
+        if (!oldPasswordMatches) {
             throw new CustomException(ErrorCode.INCORRECT_PASSWORD);
+        }
+
+        boolean newPasswordMatches = passwordEncoder.matches(newPassword, user.getPassword());
+        if (newPasswordMatches) {
+            throw new CustomException(ErrorCode.SAME_PASSWORD);
         }
 
         String encodedPassword = passwordEncoder.encode(newPassword);
 
         user.updatePassword(encodedPassword);
-        userRepository.saveAndFlush(user);
+        userRepository.save(user);
     }
 
     /**
