@@ -26,6 +26,7 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
+import com.example.burnchuck.domain.meeting.service.MeetingSearchService;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -57,6 +58,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MeetingController {
 
     private final MeetingService meetingService;
+    private final MeetingSearchService meetingSearchService;
 
     /**
      * 모임 이미지 업로드 Presigned URL 생성
@@ -109,7 +111,7 @@ public class MeetingController {
             @RequestParam(required = false) MeetingSortOption order,
             @PageableDefault(size = 6) Pageable pageable
     ) {
-        PageResponse<MeetingSummaryResponse> response = meetingService.getMeetingPage(authUser, searchRequest, locationRequest, userLocationRequest, order, pageable);
+        PageResponse<MeetingSummaryResponse> response = meetingSearchService.getMeetingPage(authUser, searchRequest, locationRequest, userLocationRequest, order, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_GET_SUCCESS, response));
@@ -129,7 +131,7 @@ public class MeetingController {
         @ModelAttribute MeetingSearchRequest searchRequest,
         @ModelAttribute MeetingMapViewPortRequest viewPort
     ) {
-        List<MeetingMapPointResponse> pointList = meetingService.getMeetingPointList(searchRequest, viewPort);
+        List<MeetingMapPointResponse> pointList = meetingSearchService.getMeetingPointList(searchRequest, viewPort);
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(MEETING_GET_SUCCESS, pointList));
