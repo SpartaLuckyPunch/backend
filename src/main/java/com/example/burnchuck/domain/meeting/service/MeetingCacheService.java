@@ -44,8 +44,9 @@ public class MeetingCacheService {
     public boolean isCountable(String ipAddress, Long meetingId) {
 
         String key = generateKey(meetingId, ipAddress);
+        Boolean exists = redisTemplate.hasKey(key);
 
-        return !redisTemplate.hasKey(key);
+        return !Boolean.TRUE.equals(exists);
     }
 
     /**
