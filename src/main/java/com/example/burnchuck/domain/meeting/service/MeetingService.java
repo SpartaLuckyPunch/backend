@@ -121,7 +121,7 @@ public class MeetingService {
 
         Point point = createPoint(request.getLatitude(), request.getLongitude());
 
-        Meeting meeting = new Meeting(request, category, point);
+        Meeting meeting = Meeting.create(request, category, point);
 
         meetingRepository.save(meeting);
 
