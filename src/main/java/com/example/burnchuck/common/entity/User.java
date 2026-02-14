@@ -1,5 +1,6 @@
 package com.example.burnchuck.common.entity;
 
+import com.example.burnchuck.common.enums.Gender;
 import com.example.burnchuck.common.enums.Provider;
 import com.example.burnchuck.common.enums.UserRole;
 import jakarta.persistence.*;
@@ -31,9 +32,8 @@ public class User extends BaseEntity {
     @Column
     private LocalDate birth;
 
-    // false = 남자, true = 여자
-    @Column(nullable = false, columnDefinition = "TINYINT(1)")
-    private boolean gender;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     @Column
     private String profileImgUrl;
@@ -53,7 +53,7 @@ public class User extends BaseEntity {
     @Column(unique = true)
     private String providerId;
 
-    public User(String email, String password, String nickname, LocalDate birth, boolean gender, Address address, UserRole role, Provider provider, String providerId) {
+    public User(String email, String password, String nickname, LocalDate birth, Gender gender, Address address, UserRole role, Provider provider, String providerId) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;

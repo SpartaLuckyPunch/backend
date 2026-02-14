@@ -72,7 +72,7 @@ public class AuthService {
         User user = new User(
             email, encodedPassword, nickname,
             request.getBirthDate(),
-            gender.isValue(),
+            gender,
             address,
             UserRole.USER,
             Provider.LOCAL,
@@ -224,7 +224,7 @@ public class AuthService {
                 tempPassword,
                 uniqueNickname,
                 null,
-                false,
+                null,
                 defaultAddress,
                 UserRole.USER,
                 provider,
