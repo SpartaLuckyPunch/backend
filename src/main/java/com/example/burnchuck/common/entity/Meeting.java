@@ -113,10 +113,6 @@ public class Meeting extends BaseEntity {
         this.category = category;
     }
 
-    public void increaseViews(Long views) {
-        this.views += views;
-    }
-
     public void updateStatus(MeetingStatus status) {
         this.status = status;
     }
