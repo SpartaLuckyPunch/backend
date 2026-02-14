@@ -1,4 +1,4 @@
-package com.example.burnchuck.common.enums;
+package com.example.burnchuck.common.constants;
 
 public final class ValidationMessage {
 

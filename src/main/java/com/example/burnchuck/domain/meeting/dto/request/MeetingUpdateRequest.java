@@ -1,6 +1,6 @@
 package com.example.burnchuck.domain.meeting.dto.request;
 
-import static com.example.burnchuck.common.enums.ValidationMessage.*;
+import static com.example.burnchuck.common.constants.ValidationMessage.*;
 
 import jakarta.validation.constraints.*;
 

@@ -1,6 +1,6 @@
 package com.example.burnchuck.domain.chat.dto.request;
 
-import static com.example.burnchuck.common.enums.ValidationMessage.CHAT_TARGET_USER_NOT_NULL;
+import static com.example.burnchuck.common.constants.ValidationMessage.CHAT_TARGET_USER_NOT_NULL;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
