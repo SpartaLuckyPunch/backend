@@ -18,14 +18,14 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
                 n.id,
                 n.type,
                 n.description,
-                n.notifiedDatetime,
+                n.createdDatetime,
                 n.meeting.id,
                 n.isRead
               )
         FROM Notification n
         WHERE n.user = :user
-            AND n.notifiedDatetime >= :sevenDaysAgo
-        ORDER BY n.notifiedDatetime DESC
+            AND n.createdDatetime >= :sevenDaysAgo
+        ORDER BY n.createdDatetime DESC
         """)
     List<NotificationResponse> findAllNotificationsInSevenDaysByUser(@Param("user") User user, @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo);
 
@@ -33,7 +33,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
         SELECT count(1)
         FROM Notification n
         WHERE n.user.id = :userId
-            AND n.notifiedDatetime >= :sevenDaysAgo
+            AND n.createdDatetime >= :sevenDaysAgo
             AND n.isRead = false
         """)
     long countUnReadNotificationsInSevenDaysByUserId(@Param("userId") Long userId, @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo);
