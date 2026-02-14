@@ -50,7 +50,7 @@ public class MeetingScheduleEventListener {
     /**
      * MeetingCreatedEvent에 대한 Handler -> TaskSchedule 생성
      */
-    @Async("CustomTaskExecutor")
+    @Async("customTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @EventListener
     public void meetingScheduleEventHandler(MeetingEvent event) {

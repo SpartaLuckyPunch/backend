@@ -15,7 +15,7 @@ public class MeetingEventListener {
     private final AttendanceService attendanceService;
     private final MeetingService meetingService;
 
-    @Async("CustomTaskExecutor")
+    @Async("customTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @EventListener
     public void deleteHostedMeetings(UserDeleteEvent event) {
@@ -25,7 +25,7 @@ public class MeetingEventListener {
         meetingService.deleteAllHostedMeetingsAfterUserDelete(userId);
     }
 
-    @Async("CustomTaskExecutor")
+    @Async("customTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @EventListener
     public void cancelAttendMeetings(UserDeleteEvent event) {
