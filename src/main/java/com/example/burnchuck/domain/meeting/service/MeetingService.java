@@ -35,7 +35,7 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
-import com.example.burnchuck.domain.meeting.event.EventPublisherService;
+import com.example.burnchuck.domain.meeting.event.MeetingEventPublisher;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
@@ -70,7 +70,7 @@ public class MeetingService {
     private final AddressRepository addressRepository;
 
     private final NotificationService notificationService;
-    private final EventPublisherService eventPublisherService;
+    private final MeetingEventPublisher meetingEventPublisher;
     private final MeetingCacheService meetingCacheService;
     private final ChatRoomService chatRoomService;
     private final S3UrlGenerator s3UrlGenerator;
@@ -102,7 +102,7 @@ public class MeetingService {
 
         notificationService.notifyNewFollowerPost(meeting, user);
 
-        eventPublisherService.publishMeetingCreatedEvent(meeting);
+        meetingEventPublisher.publishMeetingCreatedEvent(meeting);
 
         return MeetingCreateResponse.from(meeting);
     }
@@ -238,7 +238,7 @@ public class MeetingService {
 
         meeting.updateMeeting(request, category, point);
 
-        eventPublisherService.publishMeetingUpdatedEvent(meeting);
+        meetingEventPublisher.publishMeetingUpdatedEvent(meeting);
 
         return MeetingUpdateResponse.from(meeting);
     }
@@ -260,7 +260,7 @@ public class MeetingService {
 
         meeting.delete();
 
-        eventPublisherService.publishMeetingDeletedEvent(meeting);
+        meetingEventPublisher.publishMeetingDeletedEvent(meeting);
     }
 
     /**

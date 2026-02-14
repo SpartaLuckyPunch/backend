@@ -14,7 +14,7 @@ import com.example.burnchuck.domain.chat.repository.ChatRoomRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.response.AttendanceGetMeetingListResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
-import com.example.burnchuck.domain.meeting.event.EventPublisherService;
+import com.example.burnchuck.domain.meeting.event.MeetingEventPublisher;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.notification.service.NotificationService;
@@ -37,7 +37,7 @@ public class AttendanceService {
 
     private final NotificationService notificationService;
     private final ChatRoomService chatRoomService;
-    private final EventPublisherService eventPublisherService;
+    private final MeetingEventPublisher meetingEventPublisher;
 
     /**
      * 모임 참여 신청
@@ -69,14 +69,14 @@ public class AttendanceService {
 
         if (currentAttendees +1 == maxAttendees) {
             meeting.updateStatus(MeetingStatus.CLOSED);
-            eventPublisherService.publishMeetingStatusChangeEvent(meeting, MeetingStatus.CLOSED);
+            meetingEventPublisher.publishMeetingStatusChangeEvent(meeting, MeetingStatus.CLOSED);
         }
 
         chatRoomService.joinGroupChatRoom(meetingId, user);
 
         notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
 
-        eventPublisherService.publishMeetingAttendeesChangeEvent(meeting);
+        meetingEventPublisher.publishMeetingAttendeesChangeEvent(meeting);
     }
 
     /**
@@ -107,12 +107,12 @@ public class AttendanceService {
 
         if (meeting.isClosed()) {
             meeting.updateStatus(MeetingStatus.OPEN);
-            eventPublisherService.publishMeetingStatusChangeEvent(meeting, MeetingStatus.OPEN);
+            meetingEventPublisher.publishMeetingStatusChangeEvent(meeting, MeetingStatus.OPEN);
         }
 
         notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_LEFT, meeting, user);
 
-        eventPublisherService.publishMeetingAttendeesChangeEvent(meeting);
+        meetingEventPublisher.publishMeetingAttendeesChangeEvent(meeting);
     }
 
     /**
