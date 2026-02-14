@@ -4,7 +4,7 @@ import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.enums.MeetingTaskType;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.event.MeetingEvent;
-import com.example.burnchuck.domain.scheduler.service.SchedulingService;
+import com.example.burnchuck.domain.scheduler.service.MeetingSchedulingService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,9 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @RequiredArgsConstructor
 @Slf4j(topic = "ScheduleEventHandler")
-public class ScheduleEventHandler {
+public class MeetingScheduleEventListener {
 
-    private final SchedulingService schedulingService;
+    private final MeetingSchedulingService schedulingService;
     private final MeetingRepository meetingRepository;
 
     /**

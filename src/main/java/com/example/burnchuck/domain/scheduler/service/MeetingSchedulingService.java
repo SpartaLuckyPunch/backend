@@ -22,7 +22,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 @RequiredArgsConstructor
-public class SchedulingService {
+public class MeetingSchedulingService {
 
     private final TaskScheduler taskScheduler;
     private final TransactionTemplate transactionTemplate;
