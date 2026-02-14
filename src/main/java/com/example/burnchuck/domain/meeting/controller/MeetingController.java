@@ -190,7 +190,7 @@ public class MeetingController {
     ) {
         meetingService.deleteMeeting(authUser, meetingId);
 
-        return ResponseEntity.status(HttpStatus.OK)
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(CommonResponse.successNodata(MEETING_DELETE_SUCCESS));
     }
 

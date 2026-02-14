@@ -128,7 +128,7 @@ public class UserController {
     ) {
         userService.deleteUser(authUser);
 
-        return ResponseEntity.status(HttpStatus.OK)
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
             .body(CommonResponse.successNodata(USER_DELETE_SUCCESS));
     }
 
