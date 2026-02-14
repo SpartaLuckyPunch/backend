@@ -105,7 +105,7 @@ public class NotificationService {
 
         List<Follow> followerList = followRepository.findAllByFollowee(user);
 
-        String description = notificationType.getDescription(notificationType, meeting.getTitle(), user.getNickname());
+        String description = notificationType.getDescription(meeting.getTitle(), user.getNickname());
 
         List<Notification> notificationList = new ArrayList<>();
 
@@ -134,7 +134,7 @@ public class NotificationService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void notifyMeetingMember(NotificationType notificationType, Meeting meeting, User attendee) {
 
-        String description = notificationType.getDescription(notificationType, meeting.getTitle(), attendee.getNickname());
+        String description = notificationType.getDescription(meeting.getTitle(), attendee.getNickname());
 
         UserMeeting host = userMeetingRepository.findHostUserMeetingByMeeting(meeting);
 
@@ -161,7 +161,7 @@ public class NotificationService {
 
         List<UserMeeting> userMeetingList = userMeetingRepository.findMeetingMembers(meeting.getId());
 
-        String description = notificationType.getDescription(notificationType, meeting.getTitle(), null);
+        String description = notificationType.getDescription(meeting.getTitle(), null);
 
         List<Notification> notificationList = new ArrayList<>();
 
