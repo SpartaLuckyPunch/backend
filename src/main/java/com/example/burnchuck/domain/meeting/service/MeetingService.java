@@ -264,6 +264,21 @@ public class MeetingService {
     }
 
     /**
+     * 유저 삭제 후, 해당 유저가 주최한 모임 삭제
+     */
+    @Transactional
+    public void deleteAllHostedMeetingsAfterUserDelete(Long userId) {
+
+        List<Meeting> meetingList = meetingRepository.findActiveHostedMeetings(userId);
+
+        for (Meeting meeting : meetingList) {
+
+            meeting.delete();
+            meetingEventPublisher.publishMeetingDeletedEvent(meeting);
+        }
+    }
+
+    /**
      * 주최한 모임 목록 조회 (로그인한 유저 기준)
      */
     @Transactional(readOnly = true)

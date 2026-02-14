@@ -116,6 +116,38 @@ public class AttendanceService {
     }
 
     /**
+     * 유저 삭제 후, 참가 신청한 모임 취소 처리
+     */
+    @Transactional
+    public void cancelAllAttendanceAfterDeleteUser(Long userId) {
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<UserMeeting> userMeetingList = userMeetingRepository.findActiveMeetingsByUser(user);
+
+        for (UserMeeting userMeeting : userMeetingList) {
+
+            userMeetingRepository.delete(userMeeting);
+
+            Meeting meeting = userMeeting.getMeeting();
+
+            ChatRoom chatRoom = chatRoomRepository.findChatRoomByMeetingId(meeting.getId());
+
+            chatRoomService.leaveChatRoomAfterUserDelete(user.getId(), chatRoom.getId());
+
+            if (meeting.isClosed()) {
+                meeting.updateStatus(MeetingStatus.OPEN);
+                meetingEventPublisher.publishMeetingStatusChangeEvent(meeting, MeetingStatus.OPEN);
+            }
+
+            notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_LEFT, meeting, user);
+
+            meetingEventPublisher.publishMeetingAttendeesChangeEvent(meeting);
+        }
+    }
+
+    /**
      * 참여한 모임 목록 조회
      */
     @Transactional(readOnly = true)

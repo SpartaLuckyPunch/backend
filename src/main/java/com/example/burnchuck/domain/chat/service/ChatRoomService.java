@@ -233,6 +233,18 @@ public class ChatRoomService {
     }
 
     /**
+     * 유저 삭제 시, 채팅방 나가기 처리
+     */
+    @Transactional
+    public void leaveChatRoomAfterUserDelete(Long userId, Long roomId) {
+
+        ChatRoomUser chatRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, userId);
+        chatRoomUser.delete();
+
+        chatCacheService.deleteUserReadInfo(roomId, userId);
+    }
+
+    /**
      * 상대 유저 조회
      */
     private User getPartner(ChatRoom room, Long myId) {
