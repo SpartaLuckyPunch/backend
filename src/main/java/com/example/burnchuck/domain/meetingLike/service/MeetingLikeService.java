@@ -10,6 +10,7 @@ import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meetingLike.dto.response.MeetingLikeCountResponse;
 import com.example.burnchuck.domain.meetingLike.dto.response.MeetingLikeResponse;
+import com.example.burnchuck.domain.meetingLike.event.MeetingLikeEventPublisher;
 import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class MeetingLikeService {
     private final MeetingLikeRepository meetingLikeRepository;
     private final UserRepository userRepository;
     private final MeetingRepository meetingRepository;
-    private final MeetingLikeCacheService meetingLikeCacheService;
+    private final MeetingLikeEventPublisher eventPublisher;
 
     /**
      *  좋아요 생성
@@ -42,7 +43,7 @@ public class MeetingLikeService {
         MeetingLike meetingLike = new MeetingLike(user, meeting);
         meetingLikeRepository.save(meetingLike);
 
-        meetingLikeCacheService.increaseMeetingLike(meeting.getId());
+        eventPublisher.likeIncreaseEvent(meeting.getId());
 
         return MeetingLikeResponse.from(meeting);
     }
@@ -61,7 +62,7 @@ public class MeetingLikeService {
 
         meetingLikeRepository.delete(meetingLike);
 
-        meetingLikeCacheService.decreaseMeetingLike(meeting.getId());
+        eventPublisher.likeDecreaseEvent(meeting.getId());
     }
 
     /**
