@@ -101,16 +101,12 @@ public class AuthService {
         String accessToken = jwtUtil.generateAccessToken(userId, user.getEmail(), user.getNickname(), user.getRole());
         String refreshToken = jwtUtil.generateRefreshToken(userId);
 
-        boolean exist = userRefreshRepository.existsByUserId(userId);
-
-        UserRefresh userRefresh;
-
-        if (exist) {
-            userRefresh = userRefreshRepository.findUserRefreshByUserId(userId);
-            userRefresh.updateRefreshToken(refreshToken);
-        } else {
-            userRefresh = new UserRefresh(user, refreshToken);
-        }
+        UserRefresh userRefresh = userRefreshRepository.findByUserId(userId)
+            .map(ur -> {
+                ur.updateRefreshToken(refreshToken);
+                return ur;
+            })
+            .orElseGet(() -> new UserRefresh(user, refreshToken));
 
         userRefreshRepository.save(userRefresh);
 
