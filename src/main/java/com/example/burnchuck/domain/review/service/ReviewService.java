@@ -71,10 +71,9 @@ public class ReviewService {
 
         if (requestReactionList != null) {
 
-            List<Reaction> reactionList = reactionRepository.findAll();
+            List<Reaction> reactionList = reactionRepository.findAllById(requestReactionList);
 
             List<ReviewReaction> chosenReactionList = reactionList.stream()
-                .filter(reaction -> requestReactionList.contains(reaction.getId()))
                 .map(reaction -> new ReviewReaction(review, reaction))
                 .toList();
 
