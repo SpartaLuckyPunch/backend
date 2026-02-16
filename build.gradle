@@ -80,6 +80,14 @@ dependencies {
 
     // Elasticsearch
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+
+    // Logback
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
+    // CloudWatch
+    implementation 'software.amazon.awssdk:cloudwatch'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-cloudwatch2:1.13.6'
 }
 
 tasks.named('test') {

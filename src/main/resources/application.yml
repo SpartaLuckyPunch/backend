@@ -67,3 +67,15 @@ jwt:
 app:
   frontend:
     url: ${FRONTEND_URL}
+management:
+  metrics:
+    export:
+      cloudwatch:
+        enabled: true
+        namespace: burn-chuck
+        region: ap-northeast-2
+        step: 1m
+  endpoints:
+    web:
+      exposure:
+        include: "*"
