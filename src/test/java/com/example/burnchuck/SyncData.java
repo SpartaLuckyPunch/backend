@@ -3,7 +3,7 @@ package com.example.burnchuck;
 import com.example.burnchuck.common.document.MeetingDocument;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
-import com.example.burnchuck.domain.meeting.service.MeetingCacheService;
+import com.example.burnchuck.domain.meeting.service.MeetingCacheTest;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ public class SyncData {
     @Autowired
     private MeetingRepository meetingRepository;
     @Autowired
-    private MeetingCacheService meetingCacheService;
+    private MeetingCacheTest meetingCacheTest;
     @Autowired
     private ElasticsearchOperations elasticsearchOperations;
 
@@ -63,7 +63,7 @@ public class SyncData {
             }
 
             for (Meeting meeting : meetingList) {
-//                meetingCacheService.saveMeetingLocation(meeting);
+                meetingCacheTest.saveMeetingLocation(meeting);
             }
 
             lastId = meetingList.get(meetingList.size() -1).getId();
