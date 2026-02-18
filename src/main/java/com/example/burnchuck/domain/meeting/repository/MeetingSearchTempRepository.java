@@ -135,7 +135,7 @@ public class MeetingSearchTempRepository {
             return null;
         }
 
-        return category1.category.eq(categoryName);
+        return category1.code.eq(categoryName);
     }
 
     private BooleanExpression inMeetingIdList(List<Long> meetingIdList) {
