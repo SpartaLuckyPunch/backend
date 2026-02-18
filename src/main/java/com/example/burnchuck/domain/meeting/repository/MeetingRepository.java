@@ -26,7 +26,7 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long>, Meeting
             FROM Meeting m
             JOIN FETCH m.category
             WHERE m.status != com.example.burnchuck.common.enums.MeetingStatus.COMPLETED AND m.isDeleted = false
-                AND m.id > : lastId
+                AND m.id > :lastId
             """)
     List<Meeting> findMeetingListForSync(@Param("lastId") Long lastId, Pageable pageable);
 
