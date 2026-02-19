@@ -14,7 +14,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // ws://localhost:8080/ws-stomp 로 연결
         registry.addEndpoint("/ws-stomp")
-                .setAllowedOriginPatterns("*") // 모든 출처 허용 (보안 필요시 수정)
+                .setAllowedOriginPatterns(
+                        "http://localhost:3000",
+                        "https://burnchuck.vercel.app"
+                )
                 .withSockJS(); // SockJS 지원
     }
 
