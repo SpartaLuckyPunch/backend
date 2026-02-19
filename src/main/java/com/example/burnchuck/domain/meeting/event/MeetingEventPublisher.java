@@ -1,8 +1,10 @@
 package com.example.burnchuck.domain.meeting.event;
 
 import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.MeetingTaskType;
+import com.example.burnchuck.common.enums.NotificationType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -37,9 +39,9 @@ public class MeetingEventPublisher {
         publisher.publishEvent(event);
     }
 
-    public void publishMeetingAttendeesChangeEvent(Meeting meeting) {
+    public void publishMeetingAttendeesChangeEvent(NotificationType type, Meeting meeting, User user) {
 
-        MeetingAttendeesChangeEvent event = new MeetingAttendeesChangeEvent(meeting);
+        MeetingAttendeesChangeEvent event = new MeetingAttendeesChangeEvent(type, meeting, user);
         publisher.publishEvent(event);
     }
 }
