@@ -7,6 +7,7 @@ import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.notification.dto.response.NotificationResponse;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,14 +19,14 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
                 n.id,
                 n.type,
                 n.description,
-                n.notifiedDatetime,
+                n.createdDatetime,
                 n.meeting.id,
                 n.isRead
               )
         FROM Notification n
         WHERE n.user = :user
-            AND n.notifiedDatetime >= :sevenDaysAgo
-        ORDER BY n.notifiedDatetime DESC
+            AND n.createdDatetime >= :sevenDaysAgo
+        ORDER BY n.createdDatetime DESC
         """)
     List<NotificationResponse> findAllNotificationsInSevenDaysByUser(@Param("user") User user, @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo);
 
@@ -33,10 +34,18 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
         SELECT count(1)
         FROM Notification n
         WHERE n.user.id = :userId
-            AND n.notifiedDatetime >= :sevenDaysAgo
+            AND n.createdDatetime >= :sevenDaysAgo
             AND n.isRead = false
         """)
     long countUnReadNotificationsInSevenDaysByUserId(@Param("userId") Long userId, @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo);
+
+    @Query("""
+        SELECT n
+        FROM Notification n
+        JOIN FETCH n.user
+        WHERE n.id = :id
+        """)
+    Optional<Notification> findById(@Param("id") Long id);
 
     default Notification findNotificationById(Long notificationId) {
         return findById(notificationId)

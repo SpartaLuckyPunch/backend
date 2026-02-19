@@ -5,7 +5,7 @@ import static com.example.burnchuck.common.enums.ErrorCode.HOST_NOT_FOUND;
 import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.common.dto.GetS3Url;
+import com.example.burnchuck.common.dto.S3UrlResponse;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
@@ -27,7 +27,7 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
-import com.example.burnchuck.domain.meeting.event.EventPublisherService;
+import com.example.burnchuck.domain.meeting.event.MeetingEventPublisher;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
@@ -58,7 +58,7 @@ public class MeetingService {
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
 
-    private final EventPublisherService eventPublisherService;
+    private final MeetingEventPublisher meetingEventPublisher;
     private final MeetingCacheService meetingCacheService;
     private final ChatRoomService chatRoomService;
 
@@ -68,7 +68,7 @@ public class MeetingService {
     /**
      * 모임 이미지 업로드 Presigned URL 생성
      */
-    public GetS3Url getUploadMeetingImgUrl(String filename) {
+    public S3UrlResponse getUploadMeetingImgUrl(String filename) {
 
         String key = "meeting/" + UUID.randomUUID();
         return s3UrlGenerator.generateUploadImgUrl(filename, key);
@@ -90,7 +90,7 @@ public class MeetingService {
 
         Point point = createPoint(request.getLatitude(), request.getLongitude());
 
-        Meeting meeting = new Meeting(request, category, point);
+        Meeting meeting = Meeting.create(request, category, point);
 
         meetingRepository.save(meeting);
 
@@ -104,7 +104,7 @@ public class MeetingService {
 
         userMeetingRepository.save(userMeeting);
 
-        eventPublisherService.publishMeetingCreatedEvent(meeting);
+        meetingEventPublisher.publishMeetingCreatedEvent(meeting);
 
         return MeetingCreateResponse.from(meeting);
     }
@@ -169,7 +169,7 @@ public class MeetingService {
 
         meeting.updateMeeting(request, category, point);
 
-        eventPublisherService.publishMeetingUpdatedEvent(meeting);
+        meetingEventPublisher.publishMeetingUpdatedEvent(meeting);
 
         return MeetingUpdateResponse.from(meeting);
     }
@@ -191,7 +191,22 @@ public class MeetingService {
 
         meeting.delete();
 
-        eventPublisherService.publishMeetingDeletedEvent(meeting);
+        meetingEventPublisher.publishMeetingDeletedEvent(meeting);
+    }
+
+    /**
+     * 유저 삭제 후, 해당 유저가 주최한 모임 삭제
+     */
+    @Transactional
+    public void deleteAllHostedMeetingsAfterUserDelete(Long userId) {
+
+        List<Meeting> meetingList = meetingRepository.findActiveHostedMeetings(userId);
+
+        for (Meeting meeting : meetingList) {
+
+            meeting.delete();
+            meetingEventPublisher.publishMeetingDeletedEvent(meeting);
+        }
     }
 
     /**

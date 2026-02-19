@@ -6,19 +6,17 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "notifications",
     indexes = {
         @Index(
             name = "idx_unread_count",
-            columnList = "user_id, is_read, notified_datetime"
+            columnList = "user_id, is_read, created_datetime"
         )
     })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Notification {
+public class Notification extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,9 +28,6 @@ public class Notification {
 
     @Column(nullable = false)
     private String description;
-
-    @Column(nullable = false)
-    private LocalDateTime notifiedDatetime;
 
     @Column(nullable = false, columnDefinition = "TINYINT(1)")
     private boolean isRead = false;
@@ -48,7 +43,6 @@ public class Notification {
     public Notification(NotificationType type, String description, User user, Meeting meeting) {
         this.type = type;
         this.description = description;
-        this.notifiedDatetime = LocalDateTime.now();
         this.user = user;
         this.meeting = meeting;
     }

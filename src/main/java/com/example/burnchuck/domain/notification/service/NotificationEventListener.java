@@ -16,7 +16,7 @@ public class NotificationEventListener {
 
     private final NotificationService notificationService;
 
-    @Async("CustomTaskExecutor")
+    @Async("customTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @EventListener
     public void createNewFollowerPostNotification(MeetingEvent event) {
@@ -28,7 +28,7 @@ public class NotificationEventListener {
         }
     }
 
-    @Async("CustomTaskExecutor")
+    @Async("customTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @EventListener
     public void createMeetingMemberNotification(MeetingAttendeesChangeEvent event) {

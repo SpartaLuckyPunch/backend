@@ -12,6 +12,8 @@ public interface UserRefreshRepository extends JpaRepository<UserRefresh, Long> 
 
     Optional<UserRefresh> findByUserId(Long userId);
 
+    void deleteByUserId(Long id);
+
     default UserRefresh findUserRefreshByUserId(Long userId) {
         return findByUserId(userId)
             .orElseThrow(() -> new CustomException(ErrorCode.REFRESH_NOT_FOUND));

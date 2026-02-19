@@ -6,7 +6,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "follows")
+@Table(name = "follows",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_follower_followee",
+            columnNames = {"follower_id", "followee_id"}
+        )
+    })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Follow {

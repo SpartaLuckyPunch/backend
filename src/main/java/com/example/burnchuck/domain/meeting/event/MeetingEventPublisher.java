@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class EventPublisherService {
+public class MeetingEventPublisher {
 
     private final ApplicationEventPublisher publisher;
 
