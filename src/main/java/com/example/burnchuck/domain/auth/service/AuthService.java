@@ -211,7 +211,7 @@ public class AuthService {
                         tempPassword,
                         uniqueNickname,
                         null,
-                        false,
+                        null,
                         defaultAddress,
                         UserRole.USER,
                         provider,
@@ -222,19 +222,7 @@ public class AuthService {
 
             }
         }
-        User newUser = new User(
-                userInfo.getEmail(),
-                tempPassword,
-                uniqueNickname,
-                null,
-                null,
-                defaultAddress,
-                UserRole.USER,
-                provider,
-                String.valueOf(userInfo.getId())
-        );
 
-        // 5번 시도 후에도 실패할 경우
         throw new CustomException(ErrorCode.NICKNAME_DUPLICATION_LIMIT_EXCEEDED);
     }
 }
