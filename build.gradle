@@ -72,8 +72,7 @@ dependencies {
     implementation("software.amazon.awssdk:s3")
 
     // Redisson
-    implementation platform('org.redisson:redisson-bom:3.43.0')
-    implementation 'org.redisson:redisson-spring-boot-starter'
+    implementation 'org.redisson:redisson-spring-boot-starter:3.23.2'
 
     // Email Service for Verification
     implementation 'org.springframework.boot:spring-boot-starter-mail'
