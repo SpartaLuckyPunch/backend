@@ -17,6 +17,7 @@ import com.example.burnchuck.domain.auth.repository.UserRefreshRepository;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -207,33 +208,37 @@ public class AuthService {
             throw new CustomException(ErrorCode.EMAIL_EXIST);
         }
 
-        String uniqueNickname = userInfo.getNickname();
-        while (userRepository.existsByNickname(uniqueNickname)) {
-
-            int randomNum = ThreadLocalRandom.current().nextInt(1000, 10000);
-            uniqueNickname = userInfo.getNickname() + randomNum;
-        }
-
+        String baseNickname = userInfo.getNickname();
         String tempPassword = passwordEncoder.encode(UUID.randomUUID().toString());
-
         Address defaultAddress = addressRepository.findById(1L)
                 .orElseThrow(() -> new CustomException(ErrorCode.ADDRESS_NOT_FOUND));
 
-        User newUser = new User(
-                userInfo.getEmail(),
-                tempPassword,
-                uniqueNickname,
-                null,
-                false,
-                defaultAddress,
-                UserRole.USER,
-                provider,
-                String.valueOf(userInfo.getId())
-        );
+        for (int i = 0; i < 5; i++) {
+            String uniqueNickname = (i == 0) ? baseNickname : baseNickname + ThreadLocalRandom.current().nextInt(1000, 10000);
 
-        return userRepository.save(newUser);
+            if (userRepository.existsByNickname(uniqueNickname)) {
+                continue;
+            }
+
+            try {
+                User newUser = new User(
+                        userInfo.getEmail(),
+                        tempPassword,
+                        uniqueNickname,
+                        null,
+                        false,
+                        defaultAddress,
+                        UserRole.USER,
+                        provider,
+                        String.valueOf(userInfo.getId())
+                );
+                return userRepository.saveAndFlush(newUser);
+            } catch (DataIntegrityViolationException e) {
+
+            }
+        }
+
+        // 5번 시도 후에도 실패할 경우
+        throw new CustomException(ErrorCode.NICKNAME_DUPLICATION_LIMIT_EXCEEDED);
     }
 }
-
-
-
