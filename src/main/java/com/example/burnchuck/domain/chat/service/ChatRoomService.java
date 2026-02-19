@@ -166,8 +166,9 @@ public class ChatRoomService {
         }
 
         if (chatRoom.isGroup()){
-            Meeting meeting = meetingRepository.findMeetingById(chatRoom.getMeetingId());
-            chatroomImg = meeting.getImgUrl();
+            chatroomImg = meetingRepository.findByIdAndDeletedFalse(chatRoom.getMeetingId())
+                    .map(Meeting::getImgUrl)
+                    .orElse(null);
         }
 
         ChatMessage lastMsg = chatMessageRepository.findFirstByRoomIdOrderByCreatedDatetimeDesc(chatRoom.getId())
@@ -239,7 +240,7 @@ public class ChatRoomService {
                 .map(ChatRoomUser::getUser)
                 .filter(user -> !user.getId().equals(myId))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_PARTNER_NOT_FOUND));
     }
 
     /**

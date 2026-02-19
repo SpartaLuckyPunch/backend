@@ -29,8 +29,8 @@ public class Notification extends BaseEntity {
     @Column(nullable = false)
     private String description;
 
-    @Column(nullable = false, columnDefinition = "TINYINT(1)")
-    private boolean isRead = false;
+    @Column(name = "is_read", nullable = false, columnDefinition = "TINYINT(1)")
+    private boolean read = false;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -48,6 +48,6 @@ public class Notification extends BaseEntity {
     }
 
     public void read() {
-        this.isRead = true;
+        this.read = true;
     }
 }
