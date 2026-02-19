@@ -16,6 +16,7 @@ public enum ErrorCode {
 
     EMAIL_EXIST(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 발송에 실패했습니다."),
+    NICKNAME_DUPLICATION_LIMIT_EXCEEDED(HttpStatus.CONFLICT, "닉네임 생성 재시도 횟수를 초과했습니다."),
     NICKNAME_EXIST(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
     INVALID_GENDER_FORMAT(HttpStatus.BAD_REQUEST, "성별은 '남' 또는 '여'만 입력 가능합니다."),
 
