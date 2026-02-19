@@ -42,8 +42,7 @@ public class UserMeetingCustomRepositoryImpl implements UserMeetingCustomReposit
             .join(userMeeting.meeting, meeting)
             .join(attendee).on(attendee.meeting.eq(meeting))
             .where(
-                userMeeting.user.eq(user),
-                meeting.deleted.eq(false)
+                userMeeting.user.eq(user)
             )
             .groupBy(meeting.id)
             .fetch();
@@ -62,8 +61,7 @@ public class UserMeetingCustomRepositoryImpl implements UserMeetingCustomReposit
             .where(
                 userMeeting.user.eq(user),
                 userMeeting.meetingRole.eq(MeetingRole.PARTICIPANT),
-                meeting.status.ne(MeetingStatus.COMPLETED),
-                meeting.deleted.eq(false)
+                meeting.status.ne(MeetingStatus.COMPLETED)
             )
             .groupBy(meeting.id)
             .fetch();

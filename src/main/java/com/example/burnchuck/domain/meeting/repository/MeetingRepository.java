@@ -17,7 +17,7 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long>, Meeting
     @Query("""
             SELECT m
             FROM Meeting m
-            WHERE m.status != com.example.burnchuck.common.enums.MeetingStatus.COMPLETED AND m.deleted = false
+            WHERE m.status != com.example.burnchuck.common.enums.MeetingStatus.COMPLETED
             """)
     List<Meeting> findActivateMeetingsForSchedules();
 
@@ -25,7 +25,7 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long>, Meeting
             SELECT m
             FROM Meeting m
             JOIN FETCH m.category
-            WHERE m.status != com.example.burnchuck.common.enums.MeetingStatus.COMPLETED AND m.deleted = false
+            WHERE m.status != com.example.burnchuck.common.enums.MeetingStatus.COMPLETED
                 AND m.id > :lastId
             """)
     List<Meeting> findMeetingListForSync(@Param("lastId") Long lastId, Pageable pageable);
