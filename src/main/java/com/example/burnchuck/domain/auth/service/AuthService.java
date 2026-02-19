@@ -40,18 +40,8 @@ public class AuthService {
     /**
      * 회원가입
      */
-    public AuthTokenResponse signup(AuthSignupRequest request) {
-
-        User user = createUser(request);
-
-        return generateToken(user);
-    }
-
-    /**
-     * 유저 생성(LOCAL)
-     */
     @Transactional
-    public User createUser(AuthSignupRequest request) {
+    public AuthTokenResponse signup(AuthSignupRequest request) {
 
         String email = request.getEmail();
         String nickname = request.getNickname();
@@ -73,16 +63,16 @@ public class AuthService {
         User user = new User(
             email, encodedPassword, nickname,
             request.getBirthDate(),
-            gender.isValue(),
+            gender,
             address,
             UserRole.USER,
             Provider.LOCAL,
             null
         );
 
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
 
-        return user;
+        return generateToken(user);
     }
 
     /**
@@ -105,24 +95,19 @@ public class AuthService {
     /**
      * 유저의 Access 토큰, Refresh 토큰 생성
      */
-    @Transactional
-    public AuthTokenResponse generateToken(User user) {
+    private AuthTokenResponse generateToken(User user) {
 
         Long userId = user.getId();
 
         String accessToken = jwtUtil.generateAccessToken(userId, user.getEmail(), user.getNickname(), user.getRole());
         String refreshToken = jwtUtil.generateRefreshToken(userId);
 
-        boolean exist = userRefreshRepository.existsByUserId(userId);
-
-        UserRefresh userRefresh;
-
-        if (exist) {
-            userRefresh = userRefreshRepository.findUserRefreshByUserId(userId);
-            userRefresh.updateRefreshToken(refreshToken);
-        } else {
-            userRefresh = new UserRefresh(user, refreshToken);
-        }
+        UserRefresh userRefresh = userRefreshRepository.findByUserId(userId)
+            .map(ur -> {
+                ur.updateRefreshToken(refreshToken);
+                return ur;
+            })
+            .orElseGet(() -> new UserRefresh(user, refreshToken));
 
         userRefreshRepository.save(userRefresh);
 
@@ -237,6 +222,17 @@ public class AuthService {
 
             }
         }
+        User newUser = new User(
+                userInfo.getEmail(),
+                tempPassword,
+                uniqueNickname,
+                null,
+                null,
+                defaultAddress,
+                UserRole.USER,
+                provider,
+                String.valueOf(userInfo.getId())
+        );
 
         // 5번 시도 후에도 실패할 경우
         throw new CustomException(ErrorCode.NICKNAME_DUPLICATION_LIMIT_EXCEEDED);

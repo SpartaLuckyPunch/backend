@@ -4,7 +4,6 @@ import static com.example.burnchuck.common.entity.QMeeting.meeting;
 import static com.example.burnchuck.common.entity.QUser.user;
 import static com.example.burnchuck.common.entity.QUserMeeting.userMeeting;
 
-import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.QUserMeeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
@@ -53,11 +52,10 @@ public class UserMeetingCustomRepositoryImpl implements UserMeetingCustomReposit
      * 참가 신청한 모임 중 COMPLETED 되지 않은 모임 조회(유저 삭제 시 처리용)
      */
     @Override
-    public List<Meeting> findActiveMeetingsByUser(User user) {
+    public List<UserMeeting> findActiveMeetingsByUser(User user) {
 
         return queryFactory
-            .select(userMeeting.meeting)
-            .from(userMeeting)
+            .selectFrom(userMeeting)
             .join(userMeeting.meeting, meeting)
             .where(
                 userMeeting.user.eq(user),

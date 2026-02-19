@@ -11,12 +11,12 @@ import static com.example.burnchuck.common.enums.SuccessMessage.USER_GET_ONE_SUC
 
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.common.dto.GetS3Url;
+import com.example.burnchuck.common.dto.S3UrlResponse;
 import com.example.burnchuck.domain.user.dto.request.UserUpdatePasswordRequest;
 import com.example.burnchuck.domain.user.dto.request.UserUpdateProfileRequest;
 import com.example.burnchuck.domain.user.dto.response.UserGetAddressResponse;
 import com.example.burnchuck.domain.user.dto.response.UserGetOneResponse;
-import com.example.burnchuck.domain.user.dto.response.UserGetProfileReponse;
+import com.example.burnchuck.domain.user.dto.response.UserGetProfileResponse;
 import com.example.burnchuck.domain.user.dto.response.UserUpdateProfileResponse;
 import com.example.burnchuck.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,11 +48,11 @@ public class UserController {
      * 프로필 이미지 업로드 Presigned URL 생성
      */
     @GetMapping("/profileImg")
-    public ResponseEntity<CommonResponse<GetS3Url>> getUploadImgUrl(
+    public ResponseEntity<CommonResponse<S3UrlResponse>> getUploadImgUrl(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestParam String filename
     ) {
-        GetS3Url response = userService.getUploadProfileImgUrl(authUser, filename);
+        S3UrlResponse response = userService.getUploadProfileImgUrl(authUser, filename);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(USER_UPLOAD_PROFILE_IMG_LINK_SUCCESS, response));
@@ -62,11 +62,11 @@ public class UserController {
      * 프로필 이미지 등록
      */
     @PatchMapping("/profileImg")
-    public ResponseEntity<CommonResponse<GetS3Url>> getViewImgUrl(
+    public ResponseEntity<CommonResponse<S3UrlResponse>> getViewImgUrl(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestParam String key
     ) {
-        GetS3Url response = userService.getViewProfileImgUrl(authUser, key);
+        S3UrlResponse response = userService.getViewProfileImgUrl(authUser, key);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(USER_UPDATE_PROFILE_IMG_SUCCESS, response));
@@ -128,7 +128,7 @@ public class UserController {
     ) {
         userService.deleteUser(authUser);
 
-        return ResponseEntity.status(HttpStatus.OK)
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
             .body(CommonResponse.successNodata(USER_DELETE_SUCCESS));
     }
 
@@ -142,10 +142,10 @@ public class UserController {
                     """
     )
     @GetMapping("/{userId}")
-    public ResponseEntity<CommonResponse<UserGetProfileReponse>> getProfile(
+    public ResponseEntity<CommonResponse<UserGetProfileResponse>> getProfile(
         @PathVariable Long userId
     ) {
-        UserGetProfileReponse response = userService.getProfile(userId);
+        UserGetProfileResponse response = userService.getProfile(userId);
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(USER_GET_PROFILE_SUCCESS, response));
@@ -174,10 +174,10 @@ public class UserController {
      * 유저 단건 조회
      */
     @GetMapping
-    public ResponseEntity<CommonResponse<UserGetOneResponse>> getProfile(
+    public ResponseEntity<CommonResponse<UserGetOneResponse>> getUserInfo(
             @AuthenticationPrincipal AuthUser authUser
     ) {
-        UserGetOneResponse response = userService.getUserOne(authUser);
+        UserGetOneResponse response = userService.getUserInfo(authUser);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(USER_GET_ONE_SUCCESS, response));

@@ -40,7 +40,7 @@ public class NotificationResponse {
             notification.getId(),
             notification.getType().toString(),
             notification.getDescription(),
-            notification.getNotifiedDatetime(),
+            notification.getCreatedDatetime(),
             notification.getMeeting().getId(),
             notification.isRead()
         );
