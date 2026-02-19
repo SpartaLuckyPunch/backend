@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
     })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MeetingLike {
+public class MeetingLike extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
