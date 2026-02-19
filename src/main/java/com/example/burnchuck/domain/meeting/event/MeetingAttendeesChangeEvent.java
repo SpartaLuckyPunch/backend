@@ -1,6 +1,8 @@
 package com.example.burnchuck.domain.meeting.event;
 
 import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.common.entity.User;
+import com.example.burnchuck.common.enums.NotificationType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,5 +10,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class MeetingAttendeesChangeEvent {
 
+    private NotificationType type;
     private Meeting meeting;
+    private User user;
 }

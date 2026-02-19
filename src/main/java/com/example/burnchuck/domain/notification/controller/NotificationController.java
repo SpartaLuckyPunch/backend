@@ -60,9 +60,10 @@ public class NotificationController {
     )
     @GetMapping("/{notificationId}")
     public ResponseEntity<CommonResponse<NotificationResponse>> readNotification(
+        @AuthenticationPrincipal AuthUser authUser,
         @PathVariable Long notificationId
     ) {
-        NotificationResponse response = notificationService.readNotification(notificationId);
+        NotificationResponse response = notificationService.readNotification(authUser, notificationId);
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(NOTIFICATION_GET_ONE_SUCCESS, response));

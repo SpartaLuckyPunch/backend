@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +15,10 @@ import org.springframework.stereotype.Service;
 @Slf4j(topic = "MeetingRedisCache")
 public class MeetingCacheService {
 
-    private final RedisTemplate<String, String> redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     private static final String VIEW_COUNT_KEY = "view::meeting::";
-    private static final int VIEW_COUNT_TTL = 3; // 1일 단위
+    private static final int VIEW_COUNT_TTL = 3; // 3일
     private static final String VIEW_COUNT_LOG_KEY = "view::meeting::%s::%s";
     private static final long VIEW_COUNT_LOG_TTL = 60 * 60; // TTL 1시간
 
@@ -44,8 +44,9 @@ public class MeetingCacheService {
     public boolean isCountable(String ipAddress, Long meetingId) {
 
         String key = generateKey(meetingId, ipAddress);
+        Boolean exists = redisTemplate.hasKey(key);
 
-        return !redisTemplate.hasKey(key);
+        return !Boolean.TRUE.equals(exists);
     }
 
     /**

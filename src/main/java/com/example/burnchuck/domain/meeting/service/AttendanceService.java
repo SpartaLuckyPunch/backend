@@ -14,14 +14,11 @@ import com.example.burnchuck.domain.chat.repository.ChatRoomRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.response.AttendanceGetMeetingListResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
-import com.example.burnchuck.domain.meeting.event.EventPublisherService;
+import com.example.burnchuck.domain.meeting.event.MeetingEventPublisher;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
-import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
-
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +32,8 @@ public class AttendanceService {
     private final MeetingRepository meetingRepository;
     private final ChatRoomRepository chatRoomRepository;
 
-    private final NotificationService notificationService;
     private final ChatRoomService chatRoomService;
-    private final EventPublisherService eventPublisherService;
+    private final MeetingEventPublisher meetingEventPublisher;
 
     /**
      * 모임 참여 신청
@@ -69,14 +65,12 @@ public class AttendanceService {
 
         if (currentAttendees +1 == maxAttendees) {
             meeting.updateStatus(MeetingStatus.CLOSED);
-            eventPublisherService.publishMeetingStatusChangeEvent(meeting, MeetingStatus.CLOSED);
+            meetingEventPublisher.publishMeetingStatusChangeEvent(meeting, MeetingStatus.CLOSED);
         }
 
         chatRoomService.joinGroupChatRoom(meetingId, user);
 
-        notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
-
-        eventPublisherService.publishMeetingAttendeesChangeEvent(meeting);
+        meetingEventPublisher.publishMeetingAttendeesChangeEvent(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
     }
 
     /**
@@ -103,16 +97,44 @@ public class AttendanceService {
 
         ChatRoom chatRoom = chatRoomRepository.findChatRoomByMeetingId(meetingId);
 
-        chatRoomService.leaveChatRoomAfterAttendanceCancel(user.getId(), chatRoom.getId());
+        chatRoomService.leaveChatRoomRegardlessOfStatus(user.getId(), chatRoom.getId());
 
         if (meeting.isClosed()) {
             meeting.updateStatus(MeetingStatus.OPEN);
-            eventPublisherService.publishMeetingStatusChangeEvent(meeting, MeetingStatus.OPEN);
+            meetingEventPublisher.publishMeetingStatusChangeEvent(meeting, MeetingStatus.OPEN);
         }
 
-        notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_LEFT, meeting, user);
+        meetingEventPublisher.publishMeetingAttendeesChangeEvent(NotificationType.MEETING_MEMBER_LEFT, meeting, user);
+    }
 
-        eventPublisherService.publishMeetingAttendeesChangeEvent(meeting);
+    /**
+     * 유저 삭제 후, 참가 신청한 모임 취소 처리
+     */
+    @Transactional
+    public void cancelAllAttendanceAfterDeleteUser(Long userId) {
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<UserMeeting> userMeetingList = userMeetingRepository.findActiveMeetingsByUser(user);
+
+        for (UserMeeting userMeeting : userMeetingList) {
+
+            userMeetingRepository.delete(userMeeting);
+
+            Meeting meeting = userMeeting.getMeeting();
+
+            ChatRoom chatRoom = chatRoomRepository.findChatRoomByMeetingId(meeting.getId());
+
+            chatRoomService.leaveChatRoomRegardlessOfStatus(user.getId(), chatRoom.getId());
+
+            if (meeting.isClosed()) {
+                meeting.updateStatus(MeetingStatus.OPEN);
+                meetingEventPublisher.publishMeetingStatusChangeEvent(meeting, MeetingStatus.OPEN);
+            }
+
+            meetingEventPublisher.publishMeetingAttendeesChangeEvent(NotificationType.MEETING_MEMBER_LEFT, meeting, user);
+        }
     }
 
     /**

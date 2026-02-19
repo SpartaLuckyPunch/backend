@@ -1,13 +1,14 @@
 package com.example.burnchuck.domain.scheduler.service;
 
-import com.example.burnchuck.common.entity.Meeting;
-import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.service.MeetingCacheService;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,31 +18,35 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j(topic = "MeetingViewSyncScheduler")
 public class MeetingViewSyncSchedulerService {
 
-    private final MeetingRepository meetingRepository;
     private final MeetingCacheService meetingCacheService;
+    private final JdbcTemplate jdbcTemplate;
 
     @Scheduled(cron = "0 0 0 * * *")
+    @Transactional
     public void meetingViewSync() {
 
         LocalDate dayBeforeTody = LocalDate.now().minusDays(1);
 
         Set<TypedTuple<String>> allViewList = meetingCacheService.getAllViewList(dayBeforeTody);
 
-        for (TypedTuple<String> tuple : allViewList) {
+        Map<Long, Long> viewMap = new HashMap<>();
 
+        for (TypedTuple<String> tuple : allViewList) {
             Long meetingId = Long.parseLong(tuple.getValue());
             Long viewCount = tuple.getScore().longValue();
-
-            increaseViewCount(meetingId, viewCount);
+            viewMap.put(meetingId, viewCount);
         }
-    }
 
-    @Transactional
-    public void increaseViewCount(Long meetingId, Long viewCount) {
+        if (viewMap.isEmpty()) {
+            return;
+        }
 
-        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+        String sql = "UPDATE meetings SET views = views + ? WHERE id = ?";
 
-        meeting.increaseViews(viewCount);
-        meetingRepository.save(meeting);
+        jdbcTemplate.batchUpdate(sql, viewMap.entrySet(), viewMap.size(), (ps, entry) -> {
+                ps.setLong(1, entry.getValue());
+                ps.setLong(2, entry.getKey());
+            }
+        );
     }
 }

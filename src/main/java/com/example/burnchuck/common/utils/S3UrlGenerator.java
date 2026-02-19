@@ -1,6 +1,6 @@
 package com.example.burnchuck.common.utils;
 
-import com.example.burnchuck.common.dto.GetS3Url;
+import com.example.burnchuck.common.dto.S3UrlResponse;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.exception.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +40,7 @@ public class S3UrlGenerator {
     /**
      * 이미지 업로드용 Presigned URL, 조회용 CloudFront URL 생성
      */
-    public GetS3Url generateUploadImgUrl(String filename, String key) {
+    public S3UrlResponse generateUploadImgUrl(String filename, String key) {
 
         if (!validateFileType(filename)) {
             throw new CustomException(ErrorCode.UNSUPPORTED_FILE_TYPE);
@@ -64,7 +64,7 @@ public class S3UrlGenerator {
 
         String publicUrl = cloudFrontDomain + "/" + key;
 
-        return GetS3Url.builder()
+        return S3UrlResponse.builder()
                 .preSignedUrl(preSignedUrl)
                 .cloudFrontUrl(publicUrl)
                 .key(key)
@@ -74,10 +74,10 @@ public class S3UrlGenerator {
     /**
      * 이미지 조회 CloudFront 링크 생성
      */
-    public GetS3Url generateViewImgUrl(String key) {
+    public S3UrlResponse generateViewImgUrl(String key) {
         String publicUrl = cloudFrontDomain + "/" + key;
 
-        return GetS3Url.builder()
+        return S3UrlResponse.builder()
                 .preSignedUrl(publicUrl)
                 .key(key)
                 .build();

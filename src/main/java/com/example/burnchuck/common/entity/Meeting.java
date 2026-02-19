@@ -65,19 +65,34 @@ public class Meeting extends BaseEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    public Meeting(MeetingCreateRequest request, Category category, Point point) {
-        this.title = request.getTitle();
-        this.description = request.getDescription();
-        this.imgUrl = request.getImgUrl();
-        this.location = request.getLocation();
-        this.latitude = request.getLatitude();
-        this.longitude = request.getLongitude();
+    public Meeting(String title, String description, String imgUrl, String location, Double latitude, Double longitude, Point point, int maxAttendees, LocalDateTime meetingDateTime, Category category) {
+        this.title = title;
+        this.description = description;
+        this.imgUrl = imgUrl;
+        this.location = location;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.point = point;
-        this.maxAttendees = request.getMaxAttendees();
-        this.meetingDateTime = request.getMeetingDateTime();
+        this.maxAttendees = maxAttendees;
+        this.meetingDateTime = meetingDateTime;
         this.views = 0L;
         this.status = MeetingStatus.OPEN;
         this.category = category;
+    }
+
+    public static Meeting create(MeetingCreateRequest request, Category category, Point point) {
+        return new Meeting(
+            request.getTitle(),
+            request.getDescription(),
+            request.getImgUrl(),
+            request.getLocation(),
+            request.getLatitude(),
+            request.getLongitude(),
+            point,
+            request.getMaxAttendees(),
+            request.getMeetingDateTime(),
+            category
+        );
     }
 
     public void updateMeeting(MeetingUpdateRequest request, Category category, Point point) {
@@ -91,10 +106,6 @@ public class Meeting extends BaseEntity {
         this.maxAttendees = request.getMaxAttendees();
         this.meetingDateTime = request.getMeetingDateTime();
         this.category = category;
-    }
-
-    public void increaseViews(Long views) {
-        this.views += views;
     }
 
     public void updateStatus(MeetingStatus status) {

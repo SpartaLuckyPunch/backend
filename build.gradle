@@ -61,7 +61,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
     // Spatial
-    implementation 'org.hibernate.orm:hibernate-spatial:6.6.39.Final'
+    implementation 'org.hibernate.orm:hibernate-spatial'
     implementation 'com.querydsl:querydsl-spatial:5.0.0'
 
     // Redis

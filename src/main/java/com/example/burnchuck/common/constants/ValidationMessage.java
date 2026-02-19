@@ -1,9 +1,6 @@
-package com.example.burnchuck.common.enums;
+package com.example.burnchuck.common.constants;
 
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor
-public class ValidationMessage {
+public final class ValidationMessage {
 
     // --- User 관련 ---
     public static final String USERNAME_NOT_BLANK = "닉네임은 필수입니다.";
