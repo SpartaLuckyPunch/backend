@@ -8,8 +8,6 @@ import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.jwt.JwtAuthenticationToken;
 import com.example.burnchuck.common.utils.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -28,6 +26,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -88,10 +87,6 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private void writeErrorResponse(HttpServletResponse response, CommonResponse body) throws IOException {
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         String json = objectMapper.writeValueAsString(body);
 

@@ -21,9 +21,12 @@ import com.example.burnchuck.domain.user.dto.response.UserUpdateProfileResponse;
 import com.example.burnchuck.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -124,9 +127,29 @@ public class UserController {
     )
     @DeleteMapping
     public ResponseEntity<CommonResponse<Void>> deleteUser(
-        @AuthenticationPrincipal AuthUser authUser
+        @AuthenticationPrincipal AuthUser authUser,
+        HttpServletResponse response
     ) {
         userService.deleteUser(authUser);
+
+        ResponseCookie atCookie = ResponseCookie.from("accessToken", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+
+        ResponseCookie rtCookie = ResponseCookie.from("refreshToken", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, atCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, rtCookie.toString());
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
             .body(CommonResponse.successNodata(USER_DELETE_SUCCESS));

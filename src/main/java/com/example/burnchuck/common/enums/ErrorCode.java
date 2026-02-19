@@ -16,6 +16,7 @@ public enum ErrorCode {
 
     EMAIL_EXIST(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 발송에 실패했습니다."),
+    NICKNAME_DUPLICATION_LIMIT_EXCEEDED(HttpStatus.CONFLICT, "닉네임 생성 재시도 횟수를 초과했습니다."),
     NICKNAME_EXIST(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
     INVALID_GENDER_FORMAT(HttpStatus.BAD_REQUEST, "성별은 '남' 또는 '여'만 입력 가능합니다."),
 
@@ -73,6 +74,7 @@ public enum ErrorCode {
     CHAT_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 참여자가 존재하지 않습니다."),
     CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 방이 존재하지 않습니다."),
     CANNOT_LEAVE_NOT_COMPLETED_MEETING(HttpStatus.BAD_REQUEST, "종료되지 않은 모임의 채팅방은 나갈 수 없습니다."),
+    CHAT_PARTNER_NOT_FOUND(HttpStatus.NOT_FOUND, "1:1 채팅방에서 상대방을 찾을 수 없습니다." ),
 
     // 이미지
     UNAUTHORIZED_IMAGE_ACCESS(HttpStatus.UNAUTHORIZED, "해당 이미지에 대한 접근 권한이 없습니다."),

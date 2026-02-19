@@ -19,6 +19,9 @@ spring:
         format_sql: true
     defer-datasource-initialization: true
     open-in-view: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
   swagger-ui:
     tags-sorter: none
     operations-sorter: none
@@ -66,3 +69,5 @@ jwt:
 app:
   frontend:
     url: ${FRONTEND_URL}
+cors:
+  allowed-origins: "http://localhost:3000,http://localhost:63342"
