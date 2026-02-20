@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
         indexes = {@Index(name = "idx_address_province_city_district", columnList = "province, city, district")})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Address extends BaseEntity {
+public class Address {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
