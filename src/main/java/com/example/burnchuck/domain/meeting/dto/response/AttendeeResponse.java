@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class AttendeeResponse {
 
-    private Long attendeeId;
-    private String attendeeProfileImgUrl;
-    private String attendeeNickname;
+    private final Long attendeeId;
+    private final String attendeeProfileImgUrl;
+    private final String attendeeNickname;
 }

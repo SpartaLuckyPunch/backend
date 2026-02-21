@@ -10,6 +10,7 @@ import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meetingLike.dto.response.MeetingLikeCountResponse;
 import com.example.burnchuck.domain.meetingLike.dto.response.MeetingLikeResponse;
+import com.example.burnchuck.domain.meetingLike.event.MeetingLikeEventPublisher;
 import com.example.burnchuck.domain.meetingLike.repository.MeetingLikeRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class MeetingLikeService {
     private final MeetingLikeRepository meetingLikeRepository;
     private final UserRepository userRepository;
     private final MeetingRepository meetingRepository;
+    private final MeetingLikeEventPublisher eventPublisher;
 
     /**
      *  좋아요 생성
@@ -41,6 +43,8 @@ public class MeetingLikeService {
         MeetingLike meetingLike = new MeetingLike(user, meeting);
         meetingLikeRepository.save(meetingLike);
 
+        eventPublisher.likeIncreaseEvent(meeting.getId());
+
         return MeetingLikeResponse.from(meeting);
     }
 
@@ -57,6 +61,8 @@ public class MeetingLikeService {
         MeetingLike meetingLike = meetingLikeRepository.findByUserAndMeetingOrThrow(user, meeting);
 
         meetingLikeRepository.delete(meetingLike);
+
+        eventPublisher.likeDecreaseEvent(meeting.getId());
     }
 
     /**
@@ -70,5 +76,18 @@ public class MeetingLikeService {
         long likes = meetingLikeRepository.countByMeeting(meeting);
 
         return MeetingLikeCountResponse.of(likes);
+    }
+
+    /**
+     *  모임 좋아요 여부 확인
+     */
+    @Transactional(readOnly = true)
+    public boolean checkLikeExistence(Long meetingId, AuthUser authUser) {
+
+        User user = userRepository.findActivateUserById(authUser.getId());
+
+        Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
+
+        return meetingLikeRepository.existsByUserAndMeeting(user, meeting);
     }
 }

@@ -61,12 +61,25 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
     // Spatial
-    implementation 'org.hibernate.orm:hibernate-spatial:6.6.39.Final'
+    implementation 'org.hibernate.orm:hibernate-spatial'
     implementation 'com.querydsl:querydsl-spatial:5.0.0'
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    // AWS S3
+    implementation(platform("software.amazon.awssdk:bom:2.35.0"))
+    implementation("software.amazon.awssdk:s3")
+
+    // Redisson
+    implementation 'org.redisson:redisson-spring-boot-starter:3.31.0'
+
+    // Email Service for Verification
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // Elasticsearch
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 }
 
 tasks.named('test') {

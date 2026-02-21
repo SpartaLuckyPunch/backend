@@ -3,7 +3,6 @@ package com.example.burnchuck.domain.follow.service;
 import static com.example.burnchuck.common.enums.ErrorCode.ALREADY_FOLLOWING;
 import static com.example.burnchuck.common.enums.ErrorCode.FOLLOWEE_NOT_FOUND;
 import static com.example.burnchuck.common.enums.ErrorCode.FOLLOWER_NOT_FOUND;
-import static com.example.burnchuck.common.enums.ErrorCode.FOLLOW_NOT_FOUND;
 import static com.example.burnchuck.common.enums.ErrorCode.SELF_FOLLOW_NOT_ALLOWED;
 import static com.example.burnchuck.common.enums.ErrorCode.SELF_UNFOLLOW_NOT_ALLOWED;
 
@@ -31,7 +30,6 @@ public class FollowService {
 
     /**
      * 팔로우
-     *
      * 팔로우 하는 사람(신청자) = follower
      * 팔로우 당하는 사람(대상) = followee
      */
@@ -71,7 +69,7 @@ public class FollowService {
             throw new CustomException(SELF_UNFOLLOW_NOT_ALLOWED);
         }
 
-        Follow follow = followRepository.getByFollowerAndFolloweeOrThrow(follower, followee, FOLLOW_NOT_FOUND);
+        Follow follow = followRepository.getByFollowerAndFolloweeOrThrow(follower, followee);
 
         followRepository.delete(follow);
     }
@@ -136,5 +134,17 @@ public class FollowService {
                         .toList();
 
         return new FollowListResponse(users);
+    }
+
+    /**
+     * 팔로우 여부 확인
+     */
+    @Transactional(readOnly = true)
+    public boolean checkFollowExistence(Long userId, AuthUser authUser) {
+
+        User follower = userRepository.findActivateUserById(authUser.getId(), FOLLOWER_NOT_FOUND);
+        User followee = userRepository.findActivateUserById(userId, FOLLOWEE_NOT_FOUND);
+
+        return followRepository.existsByFollowerAndFollowee(follower, followee);
     }
 }

@@ -50,10 +50,8 @@ public class ReviewService {
 
         Meeting meeting = meetingRepository.findActivateMeetingById(request.getMeetingId());
 
-        if (reviewRepository.existsByMeetingIdAndReviewerIdAndRevieweeId(
-                meeting.getId(), reviewer.getId(), reviewee.getId())) {
+        if (reviewRepository.existsByMeetingIdAndReviewerIdAndRevieweeId(meeting.getId(), reviewer.getId(), reviewee.getId())) {
             throw new CustomException(ErrorCode.ALREADY_REVIEWED);
-
         }
 
         if (ObjectUtils.nullSafeEquals(reviewer.getId(), reviewee.getId())) {
@@ -73,10 +71,9 @@ public class ReviewService {
 
         if (requestReactionList != null) {
 
-            List<Reaction> reactionList = reactionRepository.findAll();
+            List<Reaction> reactionList = reactionRepository.findAllById(requestReactionList);
 
             List<ReviewReaction> chosenReactionList = reactionList.stream()
-                .filter(reaction -> requestReactionList.contains(reaction.getId()))
                 .map(reaction -> new ReviewReaction(review, reaction))
                 .toList();
 
@@ -92,9 +89,9 @@ public class ReviewService {
 
         User user = userRepository.findActivateUserById(userId);
 
-        List<ReactionCount> reactionCounts = reviewReactionRepository.countReactionsByRevieweeId(userId);
+        List<ReactionCount> reactionCounts = reviewReactionRepository.countReactionsByRevieweeId(user.getId());
 
-        Page<Review> reviewPage = reviewRepository.findAllByRevieweeId(userId, pageable);
+        Page<Review> reviewPage = reviewRepository.findAllByRevieweeId(user.getId(), pageable);
 
         return ReviewGetListResponse.of(reactionCounts, reviewPage);
     }

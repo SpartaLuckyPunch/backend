@@ -9,5 +9,7 @@ public interface UserMeetingCustomRepository {
 
     List<MeetingSummaryWithStatusResponse> findAllMeetingsByUser(User user);
 
+    List<UserMeeting> findActiveMeetingsByUser(User user);
+
     List<UserMeeting> findMeetingMembers(Long meetingId);
 }

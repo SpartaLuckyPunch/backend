@@ -5,17 +5,20 @@ import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_DELETE_S
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_HOSTED_LIST_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_MEMBER_LIST_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_GET_SUCCESS;
+import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_IMG_UPLOAD_LINK_SUCCESS;
 import static com.example.burnchuck.common.enums.SuccessMessage.MEETING_UPDATE_SUCCESS;
 
 import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
+import com.example.burnchuck.common.dto.S3UrlResponse;
 import com.example.burnchuck.common.dto.PageResponse;
+import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingMapSearchRequest;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
+import com.example.burnchuck.domain.meeting.dto.request.UserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
@@ -23,9 +26,11 @@ import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
+import com.example.burnchuck.domain.meeting.service.MeetingSearchService;
 import com.example.burnchuck.domain.meeting.service.MeetingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +48,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -52,6 +58,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class MeetingController {
 
     private final MeetingService meetingService;
+    private final MeetingSearchService meetingSearchService;
+
+    /**
+     * 모임 이미지 업로드 Presigned URL 생성
+     */
+    @GetMapping("/img")
+    public ResponseEntity<CommonResponse<S3UrlResponse>> getUploadImgUrl(
+            @RequestParam String filename
+    ) {
+        S3UrlResponse response = meetingService.getUploadMeetingImgUrl(filename);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(MEETING_IMG_UPLOAD_LINK_SUCCESS, response));
+    }
 
     /**
      * 모임 생성
@@ -67,7 +87,7 @@ public class MeetingController {
             @AuthenticationPrincipal AuthUser user,
             @Valid @RequestBody MeetingCreateRequest request
     ) {
-        MeetingCreateResponse response = meetingService.createMeetingAndNotify(user, request);
+        MeetingCreateResponse response = meetingService.createMeeting(user, request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CommonResponse.success(MEETING_CREATE_SUCCESS, response));
@@ -87,12 +107,14 @@ public class MeetingController {
             @AuthenticationPrincipal AuthUser authUser,
             @ModelAttribute MeetingSearchRequest searchRequest,
             @ModelAttribute LocationFilterRequest locationRequest,
+            @ModelAttribute UserLocationRequest userLocationRequest,
+            @RequestParam(required = false) MeetingSortOption order,
             @PageableDefault(size = 6) Pageable pageable
     ) {
-        Page<MeetingSummaryResponse> page = meetingService.getMeetingPage(authUser, searchRequest, locationRequest, pageable);
+        PageResponse<MeetingSummaryResponse> response = meetingSearchService.getMeetingPage(authUser, searchRequest, locationRequest, userLocationRequest, order, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success(MEETING_GET_SUCCESS, PageResponse.from(page)));
+                .body(CommonResponse.success(MEETING_GET_SUCCESS, response));
     }
 
     /**
@@ -106,10 +128,10 @@ public class MeetingController {
     )
     @GetMapping("/map")
     public ResponseEntity<CommonResponse<List<MeetingMapPointResponse>>> getMeetingPointList(
-        @ModelAttribute MeetingMapSearchRequest searchRequest,
+        @ModelAttribute MeetingSearchRequest searchRequest,
         @ModelAttribute MeetingMapViewPortRequest viewPort
     ) {
-        List<MeetingMapPointResponse> pointList = meetingService.getMeetingPointList(searchRequest, viewPort);
+        List<MeetingMapPointResponse> pointList = meetingSearchService.getMeetingPointList(searchRequest, viewPort);
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(CommonResponse.success(MEETING_GET_SUCCESS, pointList));
@@ -140,14 +162,15 @@ public class MeetingController {
     @Operation(
             summary = "모임 단건 조회",
             description = """
-                    특정 모임을 조회합니다.
+                    특정 모임의 세부 내용을 조회합니다.
                     """
     )
     @GetMapping("/{meetingId}")
     public ResponseEntity<CommonResponse<MeetingDetailResponse>> getMeetingDetail(
-            @PathVariable Long meetingId
+            @PathVariable Long meetingId,
+            HttpServletRequest httpServletRequest
     ) {
-        MeetingDetailResponse response = meetingService.getMeetingDetail(meetingId);
+        MeetingDetailResponse response = meetingService.getMeetingDetail(meetingId, httpServletRequest);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(MEETING_GET_SUCCESS, response));
@@ -169,7 +192,7 @@ public class MeetingController {
     ) {
         meetingService.deleteMeeting(authUser, meetingId);
 
-        return ResponseEntity.status(HttpStatus.OK)
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(CommonResponse.successNodata(MEETING_DELETE_SUCCESS));
     }
 
@@ -190,9 +213,8 @@ public class MeetingController {
     ) {
         MeetingUpdateResponse response = meetingService.updateMeeting(user, meetingId, request);
 
-        return ResponseEntity.ok(
-                CommonResponse.success(MEETING_UPDATE_SUCCESS, response)
-        );
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success(MEETING_UPDATE_SUCCESS, response));
     }
 
     /**

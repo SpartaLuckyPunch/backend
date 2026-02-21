@@ -7,9 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
-
 @AllArgsConstructor
 public class ChatRoomDetailResponse {
 
@@ -19,15 +19,17 @@ public class ChatRoomDetailResponse {
     private final int memberCount;
     private final Long meetingId;
     private final List<ChatRoomMemberDto> members;
+    private final Map<Long, Long> memberReadStatuses;
 
-    public static ChatRoomDetailResponse from(ChatRoom room, String roomName, List<ChatRoomMemberDto> members) {
+    public static ChatRoomDetailResponse from(ChatRoom room, String roomName, List<ChatRoomMemberDto> members, Map<Long, Long> readStatuses) {
         return new ChatRoomDetailResponse(
                 room.getId(),
                 roomName,
                 room.getType(),
                 members.size(),
                 room.getMeetingId(),
-                members
+                members,
+                readStatuses
         );
     }
 }

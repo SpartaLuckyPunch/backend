@@ -14,9 +14,9 @@ public enum NotificationType {
 
     private final String description;
 
-    public String getDescription(NotificationType type, String title, String nickname) {
+    public String getDescription(String title, String nickname) {
 
-        return switch (type) {
+        return switch (this) {
             case NEW_FOLLOWING_POST -> String.format(description, nickname, title);
             case MEETING_MEMBER_JOIN, MEETING_MEMBER_LEFT -> String.format(description, title, nickname);
             case COMMENT_REQUESTED -> String.format(description, title);

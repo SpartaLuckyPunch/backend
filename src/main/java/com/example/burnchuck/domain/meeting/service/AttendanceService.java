@@ -1,6 +1,7 @@
 package com.example.burnchuck.domain.meeting.service;
 
 import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.common.entity.ChatRoom;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
@@ -9,12 +10,13 @@ import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.NotificationType;
 import com.example.burnchuck.common.exception.CustomException;
+import com.example.burnchuck.domain.chat.repository.ChatRoomRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.response.AttendanceGetMeetingListResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
+import com.example.burnchuck.domain.meeting.event.MeetingEventPublisher;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
-import com.example.burnchuck.domain.notification.service.NotificationService;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +30,10 @@ public class AttendanceService {
     private final UserMeetingRepository userMeetingRepository;
     private final UserRepository userRepository;
     private final MeetingRepository meetingRepository;
-    private final NotificationService notificationService;
+    private final ChatRoomRepository chatRoomRepository;
+
     private final ChatRoomService chatRoomService;
+    private final MeetingEventPublisher meetingEventPublisher;
 
     /**
      * 모임 참여 신청
@@ -38,33 +42,35 @@ public class AttendanceService {
     public void registerAttendance(AuthUser authUser, Long meetingId) {
 
         User user = userRepository.findActivateUserById(authUser.getId());
-
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);
 
         if (!meeting.isOpen()) {
             throw new CustomException(ErrorCode.ATTENDANCE_CANNOT_REGISTER);
         }
 
-        boolean exists = userMeetingRepository.existsByUserIdAndMeetingId(user.getId(), meeting.getId());
-
-        if (exists) {
+        if (userMeetingRepository.existsByUserIdAndMeetingId(user.getId(), meeting.getId())) {
             throw new CustomException(ErrorCode.ATTENDANCE_ALREADY_REGISTERED);
+        }
+
+        int maxAttendees = meeting.getMaxAttendees();
+        int currentAttendees = userMeetingRepository.countByMeeting(meeting);
+
+        if (currentAttendees >= maxAttendees) {
+            throw new CustomException(ErrorCode.ATTENDANCE_MAX_CAPACITY_REACHED);
         }
 
         UserMeeting userMeeting = new UserMeeting(user, meeting, MeetingRole.PARTICIPANT);
 
         userMeetingRepository.save(userMeeting);
 
-        chatRoomService.joinGroupChatRoom(meeting.getId(), user);
-
-        int maxAttendees = meeting.getMaxAttendees();
-        int currentAttendees = userMeetingRepository.countByMeeting(meeting);
-
-        if (maxAttendees == currentAttendees) {
+        if (currentAttendees +1 == maxAttendees) {
             meeting.updateStatus(MeetingStatus.CLOSED);
+            meetingEventPublisher.publishMeetingStatusChangeEvent(meeting, MeetingStatus.CLOSED);
         }
 
-        notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
+        chatRoomService.joinGroupChatRoom(meetingId, user);
+
+        meetingEventPublisher.publishMeetingAttendeesChangeEvent(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
     }
 
     /**
@@ -89,17 +95,50 @@ public class AttendanceService {
 
         userMeetingRepository.delete(userMeeting);
 
-        chatRoomService.leaveChatRoom(authUser, meetingId);
+        ChatRoom chatRoom = chatRoomRepository.findChatRoomByMeetingId(meetingId);
+
+        chatRoomService.leaveChatRoomRegardlessOfStatus(user.getId(), chatRoom.getId());
 
         if (meeting.isClosed()) {
             meeting.updateStatus(MeetingStatus.OPEN);
+            meetingEventPublisher.publishMeetingStatusChangeEvent(meeting, MeetingStatus.OPEN);
         }
 
-        notificationService.notifyMeetingMember(NotificationType.MEETING_MEMBER_LEFT, meeting, user);
+        meetingEventPublisher.publishMeetingAttendeesChangeEvent(NotificationType.MEETING_MEMBER_LEFT, meeting, user);
     }
 
     /**
-     * 참여 중인 모임 목록 조회
+     * 유저 삭제 후, 참가 신청한 모임 취소 처리
+     */
+    @Transactional
+    public void cancelAllAttendanceAfterDeleteUser(Long userId) {
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<UserMeeting> userMeetingList = userMeetingRepository.findActiveMeetingsByUser(user);
+
+        for (UserMeeting userMeeting : userMeetingList) {
+
+            userMeetingRepository.delete(userMeeting);
+
+            Meeting meeting = userMeeting.getMeeting();
+
+            ChatRoom chatRoom = chatRoomRepository.findChatRoomByMeetingId(meeting.getId());
+
+            chatRoomService.leaveChatRoomRegardlessOfStatus(user.getId(), chatRoom.getId());
+
+            if (meeting.isClosed()) {
+                meeting.updateStatus(MeetingStatus.OPEN);
+                meetingEventPublisher.publishMeetingStatusChangeEvent(meeting, MeetingStatus.OPEN);
+            }
+
+            meetingEventPublisher.publishMeetingAttendeesChangeEvent(NotificationType.MEETING_MEMBER_LEFT, meeting, user);
+        }
+    }
+
+    /**
+     * 참여한 모임 목록 조회
      */
     @Transactional(readOnly = true)
     public AttendanceGetMeetingListResponse getAttendingMeetingList(AuthUser authUser) {

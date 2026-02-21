@@ -3,19 +3,21 @@ package com.example.burnchuck.domain.notification.dto.response;
 import com.example.burnchuck.common.entity.Notification;
 import com.example.burnchuck.common.enums.NotificationType;
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class NotificationResponse {
 
-    private final Long notificationId;
-    private final String type;
-    private final String description;
-    private final LocalDateTime notificatedDatetime;
-    private final Long meetingId;
-    private final boolean check;
+    private Long notificationId;
+    private String type;
+    private String description;
+    private LocalDateTime notificatedDatetime;
+    private Long meetingId;
+    private boolean check;
 
     public NotificationResponse(
         Long notificationId,
@@ -38,7 +40,7 @@ public class NotificationResponse {
             notification.getId(),
             notification.getType().toString(),
             notification.getDescription(),
-            notification.getNotifiedDatetime(),
+            notification.getCreatedDatetime(),
             notification.getMeeting().getId(),
             notification.isRead()
         );

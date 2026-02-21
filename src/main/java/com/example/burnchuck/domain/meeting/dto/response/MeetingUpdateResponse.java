@@ -10,14 +10,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MeetingUpdateResponse {
 
-    private Long meetingId;
-    private String title;
-    private String imgUrl;
-    private String description;
-    private String location;
-    private Double latitude;
-    private Double longitude;
-    private LocalDateTime meetingDateTime;
+    private final Long meetingId;
+    private final String title;
+    private final String imgUrl;
+    private final String description;
+    private final String location;
+    private final Double latitude;
+    private final Double longitude;
+    private final LocalDateTime meetingDateTime;
 
     public static MeetingUpdateResponse from(Meeting meeting) {
         return new MeetingUpdateResponse(

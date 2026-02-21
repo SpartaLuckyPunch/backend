@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "user_category")
+@Table(name = "user_categories")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserCategory {

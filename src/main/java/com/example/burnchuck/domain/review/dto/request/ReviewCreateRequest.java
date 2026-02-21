@@ -1,6 +1,6 @@
 package com.example.burnchuck.domain.review.dto.request;
 
-import com.example.burnchuck.common.enums.ValidationMessage;
+import com.example.burnchuck.common.constants.ValidationMessage;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

@@ -1,18 +1,16 @@
 package com.example.burnchuck.common.filter;
 
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.CommonResponse;
-import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.UserRole;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.jwt.JwtAuthenticationToken;
 import com.example.burnchuck.common.utils.JwtUtil;
-import com.example.burnchuck.common.dto.AuthUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -28,22 +26,37 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final ObjectMapper objectMapper;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-        // 토큰이 없는 경우
-        String authorizationHeader = request.getHeader("Authorization");
+        String jwt = null;
+        Cookie[] cookies = request.getCookies();
 
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+        if (cookies != null) {
+            for(Cookie cookie : cookies) {
+                if("accessToken".equals(cookie.getName())) {
+                    jwt= cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        // 토큰이 없는 경우 처리
+        if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 토큰이 유효하지 않은 경우
-        String jwt = authorizationHeader.substring(7);
-
         if (!jwtUtil.validateToken(jwt)) {
+            handleCustomException(response, new CustomException(ErrorCode.INVALID_TOKEN));
+            return;
+        }
+
+        // refresh 토큰으로 접근하는 경우
+        if (jwtUtil.isRefreshToken(jwt)) {
             handleCustomException(response, new CustomException(ErrorCode.INVALID_TOKEN));
             return;
         }
@@ -74,10 +87,6 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private void writeErrorResponse(HttpServletResponse response, CommonResponse body) throws IOException {
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         String json = objectMapper.writeValueAsString(body);
 

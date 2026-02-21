@@ -5,11 +5,13 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "chat_rooms")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("is_deleted = false")
 public class ChatRoom extends BaseEntity {
 
     @Id
@@ -39,4 +41,11 @@ public class ChatRoom extends BaseEntity {
         this.meetingId = null;
     }
 
+    public boolean isPrivate() {
+        return this.type == RoomType.PRIVATE;
+    }
+
+    public boolean isGroup() {
+        return this.type == RoomType.GROUP;
+    }
 }
