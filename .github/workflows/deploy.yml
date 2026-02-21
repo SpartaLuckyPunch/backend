@@ -87,4 +87,3 @@ jobs:
               $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
               --restart unless-stopped
 
-
