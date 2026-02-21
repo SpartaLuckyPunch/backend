@@ -73,7 +73,7 @@ cors:
   allowed-origins: "http://localhost:3000,http://localhost:63342"
 logging:
   file:
-    name: logs/burnchuck.log
+    name: ${LOGGING_ROOT}
   level:
     root: INFO
 management:
