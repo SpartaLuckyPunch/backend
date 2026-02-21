@@ -61,13 +61,13 @@ public class AuthService {
         Address address = addressRepository.findAddressByAddressInfo(request.getProvince(), request.getCity(), request.getDistrict());
 
         User user = new User(
-            email, encodedPassword, nickname,
-            request.getBirthDate(),
-            gender,
-            address,
-            UserRole.USER,
-            Provider.LOCAL,
-            null
+                email, encodedPassword, nickname,
+                request.getBirthDate(),
+                gender,
+                address,
+                UserRole.USER,
+                Provider.LOCAL,
+                null
         );
 
         userRepository.saveAndFlush(user);
@@ -103,11 +103,11 @@ public class AuthService {
         String refreshToken = jwtUtil.generateRefreshToken(userId);
 
         UserRefresh userRefresh = userRefreshRepository.findByUserId(userId)
-            .map(ur -> {
-                ur.updateRefreshToken(refreshToken);
-                return ur;
-            })
-            .orElseGet(() -> new UserRefresh(user, refreshToken));
+                .map(ur -> {
+                    ur.updateRefreshToken(refreshToken);
+                    return ur;
+                })
+                .orElseGet(() -> new UserRefresh(user, refreshToken));
 
         userRefreshRepository.save(userRefresh);
 
@@ -201,6 +201,10 @@ public class AuthService {
         for (int i = 0; i < 5; i++) {
             String uniqueNickname = (i == 0) ? baseNickname : baseNickname + ThreadLocalRandom.current().nextInt(1000, 10000);
 
+            if (userRepository.existsByNickname(uniqueNickname)) {
+                continue;
+            }
+
             try {
                 User newUser = new User(
                         userInfo.getEmail(),
@@ -215,7 +219,6 @@ public class AuthService {
                 );
                 return userRepository.saveAndFlush(newUser);
             } catch (DataIntegrityViolationException e) {
-
                 if (userRepository.existsByNickname(uniqueNickname)) {
                     continue;
                 }
