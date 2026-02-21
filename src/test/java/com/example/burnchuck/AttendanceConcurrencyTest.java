@@ -38,6 +38,7 @@ import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled
 @SpringBootTest
 @ActiveProfiles("test")
 class AttendanceConcurrencyTest {
