@@ -84,5 +84,4 @@ jobs:
               --name burn-chuck \
               -p 8080:8080 \
               --env-file .env \
-              $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-              --restart unless-stopped
+              $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
