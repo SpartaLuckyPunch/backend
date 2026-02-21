@@ -86,4 +86,3 @@ jobs:
               --env-file .env \
               $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
               --restart unless-stopped
-
