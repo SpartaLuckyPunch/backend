@@ -71,3 +71,19 @@ app:
     url: ${FRONTEND_URL}
 cors:
   allowed-origins: "http://localhost:3000,http://localhost:63342"
+logging:
+  file:
+    name: logs/burnchuck.log
+  level:
+    root: INFO
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  metrics:
+    export:
+      cloudwatch:
+        enabled: true
+        namespace: burn-chuck
+        step: 1m
