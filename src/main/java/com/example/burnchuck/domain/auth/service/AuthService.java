@@ -201,11 +201,7 @@ public class AuthService {
         for (int i = 0; i < 5; i++) {
             String uniqueNickname = (i == 0) ? baseNickname : baseNickname + ThreadLocalRandom.current().nextInt(1000, 10000);
 
-            if (userRepository.existsByNickname(uniqueNickname)) {
-                continue;
-            }
-
-            try {
+            if (!userRepository.existsByNickname(uniqueNickname)) {
                 User newUser = new User(
                         userInfo.getEmail(),
                         tempPassword,
@@ -217,12 +213,8 @@ public class AuthService {
                         provider,
                         String.valueOf(userInfo.getId())
                 );
+
                 return userRepository.saveAndFlush(newUser);
-            } catch (DataIntegrityViolationException e) {
-                if (userRepository.existsByNickname(uniqueNickname)) {
-                    continue;
-                }
-                throw e;
             }
         }
         throw new CustomException(ErrorCode.NICKNAME_DUPLICATION_LIMIT_EXCEEDED);
