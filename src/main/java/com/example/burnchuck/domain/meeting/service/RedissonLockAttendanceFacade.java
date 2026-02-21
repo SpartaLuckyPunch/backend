@@ -39,6 +39,7 @@ public class RedissonLockAttendanceFacade {
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            throw new CustomException(ErrorCode.LOCK_ACQUISITION_FAILED);
         } finally {
             if (lock.isLocked() && lock.isHeldByCurrentThread()) {
                 lock.unlock();
