@@ -1,7 +1,8 @@
 package com.example.burnchuck.domain.notification.service;
 
 import com.example.burnchuck.domain.notification.repository.EmitterRepository;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,19 +20,20 @@ public class SseHeartbeatScheduler {
 
         Map<String, SseEmitter> emitters = emitterRepository.findAll();
 
-        if (emitters == null || emitters.isEmpty()) {
-            return;
-        }
+        if (emitters.isEmpty()) return;
 
-        for (Map.Entry<String, SseEmitter> entry : emitters.entrySet()) {
-            String memberId = entry.getKey();
-            SseEmitter emitter = entry.getValue();
+        List<String> deadEmitters = new ArrayList<>();
 
+        emitters.forEach((memberId, emitter) -> {
             try {
-                emitter.send(SseEmitter.event().name("heartbeat").data("ping"));
-            } catch (IllegalStateException | IOException e) {
-                emitterRepository.disconnectAllEmittersStartWith(memberId);
+                emitter.send(SseEmitter.event()
+                    .name("heartbeat")
+                    .data("ping"));
+            } catch (Exception e) {
+                deadEmitters.add(memberId);
             }
-        }
+        });
+
+        deadEmitters.forEach(emitterRepository::deleteById);
     }
 }
