@@ -34,6 +34,11 @@ public class EmitterRepository {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    public Map<String, SseEmitter> findAll() {
+        return emitters.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
     /**
      * emitter 단건 삭제
      */
