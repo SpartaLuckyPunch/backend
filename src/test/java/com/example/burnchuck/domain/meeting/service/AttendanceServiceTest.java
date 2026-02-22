@@ -5,14 +5,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.burnchuck.common.dto.AuthUser;
+import com.example.burnchuck.common.entity.ChatRoom;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
+import com.example.burnchuck.common.enums.NotificationType;
+import com.example.burnchuck.common.enums.RoomType;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.chat.repository.ChatRoomRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
@@ -82,7 +86,9 @@ class AttendanceServiceTest {
         attendanceService.registerAttendance(authUser, meeting.getId());
 
         // Then
-        assertThat(userMeeting).isEqualTo(userMeeting);
+        verify(userMeetingRepository).save(any(UserMeeting.class));
+        verify(chatRoomService).joinGroupChatRoom(meeting.getId(), user);
+        verify(meetingEventPublisher).publishMeetingAttendeesChangeEvent(NotificationType.MEETING_MEMBER_JOIN, meeting, user);
     }
 
     @Test
@@ -156,12 +162,88 @@ class AttendanceServiceTest {
     }
 
     @Test
-    void cancelAttendance() {
+    @DisplayName("정상 취소")
+    void cancelAttendance_success() {
 
         // Given
+        UserMeeting userMeeting = new UserMeeting(user, meeting, MeetingRole.PARTICIPANT);
+
+        ChatRoom chatRoom = new ChatRoom(meeting.getTitle(), RoomType.GROUP, meeting.getId());
+
+        when(userRepository.findActivateUserById(anyLong())).thenReturn(user);
+        when(meetingRepository.findActivateMeetingById(anyLong())).thenReturn(meeting);
+        when(userMeetingRepository.findUserMeeting(anyLong(), anyLong())).thenReturn(userMeeting);
+        when(chatRoomRepository.findChatRoomByMeetingId(anyLong())).thenReturn(chatRoom);
 
         // When
+        attendanceService.cancelAttendance(authUser, meeting.getId());
 
         // Then
+        verify(userMeetingRepository).delete(userMeeting);
+        verify(chatRoomService).leaveChatRoomRegardlessOfStatus(user.getId(), chatRoom.getId());
+        verify(meetingEventPublisher).publishMeetingAttendeesChangeEvent(NotificationType.MEETING_MEMBER_LEFT, meeting, user);
+    }
+
+    @Test
+    @DisplayName("정상 취소 - 취소 후 상태 변경")
+    void cancelAttendance_success_changeStatus() {
+
+        // Given
+        ReflectionTestUtils.setField(meeting, "status", MeetingStatus.CLOSED);
+
+        UserMeeting userMeeting = new UserMeeting(user, meeting, MeetingRole.PARTICIPANT);
+
+        ChatRoom chatRoom = new ChatRoom(meeting.getTitle(), RoomType.GROUP, meeting.getId());
+
+        when(userRepository.findActivateUserById(anyLong())).thenReturn(user);
+        when(meetingRepository.findActivateMeetingById(anyLong())).thenReturn(meeting);
+        when(userMeetingRepository.findUserMeeting(anyLong(), anyLong())).thenReturn(userMeeting);
+        when(chatRoomRepository.findChatRoomByMeetingId(anyLong())).thenReturn(chatRoom);
+
+        // When
+        attendanceService.cancelAttendance(authUser, meeting.getId());
+
+        // Then
+        verify(userMeetingRepository).delete(userMeeting);
+        verify(chatRoomService).leaveChatRoomRegardlessOfStatus(user.getId(), chatRoom.getId());
+        verify(meetingEventPublisher).publishMeetingStatusChangeEvent(meeting, MeetingStatus.OPEN);
+        verify(meetingEventPublisher).publishMeetingAttendeesChangeEvent(NotificationType.MEETING_MEMBER_LEFT, meeting, user);
+
+        assertThat(meeting.getStatus()).isEqualTo(MeetingStatus.OPEN);
+    }
+
+    @Test
+    @DisplayName("취소 실패 - 모임 상태 COMPLETED")
+    void cancelAttendance_failure_completedMeeting() {
+
+        // Given
+        ReflectionTestUtils.setField(meeting, "status", MeetingStatus.COMPLETED);
+
+        when(userRepository.findActivateUserById(anyLong())).thenReturn(user);
+        when(meetingRepository.findActivateMeetingById(anyLong())).thenReturn(meeting);
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class,
+            () -> attendanceService.cancelAttendance(authUser, meeting.getId()));
+
+        assertEquals("번개 시작 10분 전에는 취소할 수 없습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("취소 실패 - Host가 취소 시도")
+    void cancelAttendance_failure_host() {
+
+        // Given
+        UserMeeting userMeeting = new UserMeeting(user, meeting, MeetingRole.HOST);
+
+        when(userRepository.findActivateUserById(anyLong())).thenReturn(user);
+        when(meetingRepository.findActivateMeetingById(anyLong())).thenReturn(meeting);
+        when(userMeetingRepository.findUserMeeting(anyLong(), anyLong())).thenReturn(userMeeting);
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class,
+            () -> attendanceService.cancelAttendance(authUser, meeting.getId()));
+
+        assertEquals("호스트는 번개 참여를 취소할 수 없습니다.", exception.getMessage());
     }
 }
