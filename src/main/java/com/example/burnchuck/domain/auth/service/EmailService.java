@@ -66,7 +66,7 @@ public class EmailService {
 
         String savedCode = redisTemplate.opsForValue().get(email);
 
-        if (savedCode == null || ObjectUtils.nullSafeEquals(savedCode, code)) {
+        if (savedCode == null || !ObjectUtils.nullSafeEquals(savedCode, code)) {
             return false;
         }
 

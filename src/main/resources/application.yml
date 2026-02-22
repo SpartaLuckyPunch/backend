@@ -3,21 +3,7 @@ spring:
     name: burn-chuck
   config:
     import: optional:file:.env[.properties]
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      maximum-pool-size: 20
   jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true
-    defer-datasource-initialization: true
     open-in-view: false
   jackson:
     serialization:
@@ -25,14 +11,6 @@ spring:
   swagger-ui:
     tags-sorter: none
     operations-sorter: none
-  data:
-    mongodb:
-      uri: ${MONGO_DB_URI}
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
-  elasticsearch:
-    uris: ${ELASTICSEARCH_URIS}
   mail:
     host: smtp.gmail.com
     port: 587
@@ -70,20 +48,4 @@ app:
   frontend:
     url: ${FRONTEND_URL}
 cors:
-  allowed-origins: "http://localhost:3000,http://localhost:63342"
-logging:
-  file:
-    name: ${LOGGING_ROOT}
-  level:
-    root: INFO
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
-  metrics:
-    export:
-      cloudwatch:
-        enabled: true
-        namespace: burn-chuck
-        step: 1m
+  allowed-origins: ${CORS_ALLOWED_ORIGINS}
