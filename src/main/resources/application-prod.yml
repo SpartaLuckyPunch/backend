@@ -44,6 +44,10 @@ management:
     web:
       exposure:
         include: health,info,metrics
+    endpoint:
+      health:
+        show-details: always
+        show-components: always
   metrics:
     export:
       cloudwatch:
