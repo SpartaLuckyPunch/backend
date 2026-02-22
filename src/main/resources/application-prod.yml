@@ -37,3 +37,16 @@ logging:
     com.example.burnchuck: WARN
     org.hibernate.SQL: OFF
     org.hibernate.orm.jdbc.bind: OFF
+  file:
+    name: ${LOGGING_ROOT}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  metrics:
+    export:
+      cloudwatch:
+        enabled: true
+        namespace: burn-chuck
+        step: 1m
