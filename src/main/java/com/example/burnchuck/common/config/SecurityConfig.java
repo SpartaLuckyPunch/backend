@@ -1,6 +1,7 @@
 package com.example.burnchuck.common.config;
 
 import com.example.burnchuck.common.filter.JwtFilter;
+import com.example.burnchuck.common.filter.SseAuthenticationFilter;
 import com.example.burnchuck.common.jwt.JwtAccessDeniedHandler;
 import com.example.burnchuck.common.jwt.JwtAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final SseAuthenticationFilter sseAuthenticationFilter;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
     private final JwtAccessDeniedHandler accessDeniedHandler;
 
@@ -49,6 +51,7 @@ public class SecurityConfig {
             .httpBasic(AbstractHttpConfigurer::disable)
             .formLogin(AbstractHttpConfigurer::disable)
             .addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class)
+            .addFilterAfter(sseAuthenticationFilter, JwtFilter.class)
 
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(authenticationEntryPoint)
@@ -66,6 +69,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/reactions").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/api/notifications/subscribe").permitAll()
                 .anyRequest().authenticated()
             )
             .build();
