@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - fix/fix
+      - main
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
