@@ -45,16 +45,18 @@ public class NotificationService {
      * 클라이언트와의 SSE 스트림 통신 연결
      */
     public SseEmitter subscribe(AuthUser authUser) {
-
         Long userId = authUser.getId();
 
         SseEmitter emitter = emitterService.createEmitter(userId);
 
-        emitter.onCompletion(() -> {
+        Runnable cleanup = () -> {
             emitterService.deleteEmitter(userId);
             redisMessageService.removeSubscribe(userId);
-        });
-        emitter.onTimeout(emitter::complete);
+        };
+
+        emitter.onCompletion(cleanup);
+        emitter.onTimeout(cleanup);
+        emitter.onError(e -> cleanup.run());
 
         LocalDateTime sevenDaysAgo = LocalDate.now().atStartOfDay().minusDays(7);
         long unread = notificationRepository.countUnReadNotificationsInSevenDaysByUserId(userId, sevenDaysAgo);
