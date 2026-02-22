@@ -3,7 +3,6 @@ package com.example.burnchuck.common.exception;
 import com.example.burnchuck.common.dto.CommonResponse;
 import com.example.burnchuck.common.enums.ErrorCode;
 import jakarta.servlet.ServletException;
-import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -89,17 +88,6 @@ public class GlobalExceptionHandler {
         log.warn("ServletException 발생 : {}", e.getMessage());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    // 파일 업로드 / 다운로드 중 예외 발생
-    @ExceptionHandler(IOException.class)
-    public ResponseEntity<CommonResponse<Void>> handleIOException(IOException e) {
-
-        CommonResponse<Void> response = CommonResponse.exception("파일 처리 중 오류가 발생했습니다.");
-
-        log.error("IOException 발생", e);
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
     // 외부 시스템 / 비동기 처리 시 Timeout 되었을 때
