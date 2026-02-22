@@ -1,14 +1,17 @@
 package com.example.burnchuck.common.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "reviews")
 @Getter
-@NoArgsConstructor
-public class Review {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("is_deleted = false")
+public class Review extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,7 +20,6 @@ public class Review {
     @Column(nullable = false)
     private int rating;
 
-    @Column(nullable = false)
     private String detailedReview;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

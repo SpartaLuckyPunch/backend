@@ -1,13 +1,21 @@
 package com.example.burnchuck.common.entity;
 
+import com.example.burnchuck.common.enums.MeetingRole;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "user_meeting")
+@Table(name = "user_meetings",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_user_meeting",
+            columnNames = {"user_id", "meeting_id"}
+        )
+    })
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserMeeting {
 
     @Id
@@ -22,8 +30,17 @@ public class UserMeeting {
     @JoinColumn(name = "meeting_id", nullable = false)
     private Meeting meeting;
 
-    public UserMeeting(User user, Meeting meeting) {
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MeetingRole meetingRole;
+
+    public UserMeeting(User user, Meeting meeting, MeetingRole meetingRole) {
         this.user = user;
         this.meeting = meeting;
+        this.meetingRole = meetingRole;
+    }
+
+    public boolean isHost() {
+        return this.meetingRole == MeetingRole.HOST;
     }
 }

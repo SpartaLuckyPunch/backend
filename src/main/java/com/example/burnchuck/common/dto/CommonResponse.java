@@ -1,6 +1,5 @@
 package com.example.burnchuck.common.dto;
 
-import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.SuccessMessage;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

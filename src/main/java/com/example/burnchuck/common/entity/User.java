@@ -1,6 +1,10 @@
 package com.example.burnchuck.common.entity;
 
+import com.example.burnchuck.common.enums.Gender;
+import com.example.burnchuck.common.enums.Provider;
+import com.example.burnchuck.common.enums.UserRole;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,7 +13,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "users")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
 
     @Id
@@ -22,15 +26,14 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, unique = true, length = 50)
     private String nickname;
 
-    @Column(nullable = false)
+    @Column
     private LocalDate birth;
 
-    // false = 남자, true = 여자
-    @Column(nullable = false, columnDefinition = "TINYINT(1)")
-    private boolean gender;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     @Column
     private String profileImgUrl;
@@ -39,16 +42,42 @@ public class User extends BaseEntity {
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
-    public User(String email, String password, String nickname, LocalDate birth, boolean gender, Address address) {
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Provider provider;
+
+    @Column(unique = true)
+    private String providerId;
+
+    public User(String email, String password, String nickname, LocalDate birth, Gender gender, Address address, UserRole role, Provider provider, String providerId) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.birth = birth;
         this.gender = gender;
         this.address = address;
+        this.role = role;
+        this.provider = provider;
+        this.providerId = providerId;
     }
 
     public void uploadProfileImg(String profileImgUrl) {
         this.profileImgUrl = profileImgUrl;
     }
+
+    public void updateProfile(String profileImgUrl, String nickname, Address address) {
+        this.profileImgUrl = profileImgUrl;
+        this.nickname = nickname;
+        this.address = address;
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
 }
+
+

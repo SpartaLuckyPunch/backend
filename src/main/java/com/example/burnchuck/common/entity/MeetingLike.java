@@ -1,13 +1,20 @@
 package com.example.burnchuck.common.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "meeting_likes")
+@Table(name = "meeting_likes",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_user_meeting",
+            columnNames = {"user_id", "meeting_id"}
+        )
+    })
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MeetingLike {
 
     @Id
