@@ -123,7 +123,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(true)
                 .maxAge(0)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         ResponseCookie rtCookie = ResponseCookie.from("refreshToken", "")
@@ -131,7 +131,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(true)
                 .maxAge(0)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, atCookie.toString());
@@ -201,7 +201,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(true)
                 .maxAge(3600)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", rt)
@@ -209,7 +209,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(true)
                 .maxAge(604800)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
