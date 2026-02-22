@@ -61,7 +61,6 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/v3/api-docs", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/ws-stomp/**", "/ws-stomp/info").permitAll()
-                .requestMatchers("/api/meetings/attendance").authenticated()
                 .requestMatchers("/api/meetings/hosted-meetings").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/meetings/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
