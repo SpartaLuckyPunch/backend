@@ -6,15 +6,21 @@ import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.TopRightBottomLeftGeoBounds;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import com.example.burnchuck.common.dto.AuthUser;
 import com.example.burnchuck.common.dto.PageResponse;
 import com.example.burnchuck.common.document.MeetingDocument;
+import com.example.burnchuck.common.entity.Address;
+import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.enums.MeetingStatus;
+import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.UserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
+import com.example.burnchuck.domain.user.repository.AddressRepository;
+import com.example.burnchuck.domain.user.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -30,18 +36,65 @@ import org.springframework.data.elasticsearch.core.SearchHitSupport;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.SearchPage;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
 public class MeetingSearchService {
 
+    private final UserRepository userRepository;
+    private final AddressRepository addressRepository;
     private final ElasticsearchOperations elasticsearchOperations;
 
+    // 서울 광화문 위치
+    private static final Double DEFAULT_LATITUDE = 37.57;
+    private static final Double DEFAULT_LONGITUDE = 126.98;
+
     /**
-     * 모임 목록 조회
+     * 모임 조회
      */
-    public PageResponse<MeetingSummaryResponse> searchInListFormat(
+    @Transactional(readOnly = true)
+    public PageResponse<MeetingSummaryResponse> getMeetingPage(
+        AuthUser authUser,
+        MeetingSearchRequest searchRequest,
+        LocationFilterRequest locationRequest,
+        UserLocationRequest userLocationRequest,
+        MeetingSortOption order,
+        Pageable pageable
+    ) {
+        if (userLocationRequest.noCurrentLocation() && authUser != null) {
+            User user = userRepository.findActivateUserWithAddress(authUser.getId());
+            userLocationRequest.setLocation(user.getAddress());
+        }
+
+        if (userLocationRequest.noCurrentLocation()) {
+            userLocationRequest.setLocation(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+        }
+
+        if (locationRequest.notNull()) {
+            Address address = addressRepository.findAddressByAddressInfo(locationRequest.getProvince(), locationRequest.getCity(), locationRequest.getDistrict());
+            userLocationRequest.setLocation(address);
+        }
+
+        return searchInListFormat(searchRequest, userLocationRequest, order, pageable);
+    }
+
+    /**
+     * 모임 지도 조회
+     */
+    @Transactional(readOnly = true)
+    public List<MeetingMapPointResponse> getMeetingPointList(
+        MeetingSearchRequest searchRequest,
+        MeetingMapViewPortRequest viewPort
+    ) {
+        return searchInMapFormat(searchRequest, viewPort);
+    }
+
+    /**
+     * ES 모임 목록 조회
+     */
+    private PageResponse<MeetingSummaryResponse> searchInListFormat(
         MeetingSearchRequest searchRequest,
         UserLocationRequest userLocationRequest,
         MeetingSortOption order,
@@ -77,9 +130,9 @@ public class MeetingSearchService {
     }
 
     /**
-     * 모임 지도 조회
+     * ES 모임 지도 조회
      */
-    public List<MeetingMapPointResponse> searchInMapFormat(MeetingSearchRequest searchRequest, MeetingMapViewPortRequest viewPort) {
+    private List<MeetingMapPointResponse> searchInMapFormat(MeetingSearchRequest searchRequest, MeetingMapViewPortRequest viewPort) {
 
         NativeQuery query = NativeQuery.builder()
             .withQuery(build(searchRequest, viewPort, null))

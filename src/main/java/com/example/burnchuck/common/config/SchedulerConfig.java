@@ -16,7 +16,6 @@ public class SchedulerConfig {
         scheduler.setThreadNamePrefix("scheduler - ");
         scheduler.setWaitForTasksToCompleteOnShutdown(true);
         scheduler.setAwaitTerminationSeconds(15);
-        scheduler.initialize();
         return scheduler;
     }
 }

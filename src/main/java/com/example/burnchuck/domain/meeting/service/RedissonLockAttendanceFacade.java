@@ -21,6 +21,7 @@ public class RedissonLockAttendanceFacade {
 
     public static final String LOCK_KEY_PREFIX = "meeting_lock:";
     public static final Long WAIT_TIME = 5L;
+    public static final Long LEASE_TIME = 10L;
 
     public void registerAttendance(AuthUser authUser, Long meetingId) {
 
@@ -28,7 +29,7 @@ public class RedissonLockAttendanceFacade {
         RLock lock = redissonClient.getLock(lockKey);
 
         try {
-            boolean isLocked = lock.tryLock(WAIT_TIME, TimeUnit.SECONDS);
+            boolean isLocked = lock.tryLock(WAIT_TIME, LEASE_TIME, TimeUnit.SECONDS);
 
             if (!isLocked) {
                 throw new CustomException(ErrorCode.LOCK_ACQUISITION_FAILED);
@@ -38,6 +39,7 @@ public class RedissonLockAttendanceFacade {
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            throw new CustomException(ErrorCode.LOCK_ACQUISITION_FAILED);
         } finally {
             if (lock.isLocked() && lock.isHeldByCurrentThread()) {
                 lock.unlock();

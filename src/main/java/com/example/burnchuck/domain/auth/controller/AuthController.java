@@ -11,7 +11,6 @@ import com.example.burnchuck.common.enums.Provider;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.domain.auth.dto.request.AuthLoginRequest;
 import com.example.burnchuck.domain.auth.dto.request.AuthSignupRequest;
-import com.example.burnchuck.domain.auth.dto.request.NicknameRequest;
 import com.example.burnchuck.domain.auth.dto.response.AuthTokenResponse;
 import com.example.burnchuck.domain.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -124,6 +123,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(true)
                 .maxAge(0)
+                .sameSite("None")
                 .build();
 
         ResponseCookie rtCookie = ResponseCookie.from("refreshToken", "")
@@ -131,6 +131,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(true)
                 .maxAge(0)
+                .sameSite("None")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, atCookie.toString());
@@ -142,11 +143,11 @@ public class AuthController {
     /**
      * 닉네임 중복 확인
      */
-    @PostMapping("/nickname-availability")
+    @GetMapping("/nickname-availability")
     public ResponseEntity<CommonResponse<Boolean>> checkNickname(
-            @Valid @RequestBody NicknameRequest request
+            @RequestParam String nickname
     ) {
-        boolean isAvailable = authService.checkNicknameAvailable(request.getNickname());
+        boolean isAvailable = authService.checkNicknameAvailable(nickname);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success(AUTH_NICKNAME_AVAILABLE, isAvailable));
@@ -200,7 +201,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(true)
                 .maxAge(3600)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", rt)
@@ -208,7 +209,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(true)
                 .maxAge(604800)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());

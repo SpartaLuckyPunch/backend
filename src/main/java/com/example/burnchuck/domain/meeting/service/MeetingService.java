@@ -5,43 +5,33 @@ import static com.example.burnchuck.common.enums.ErrorCode.HOST_NOT_FOUND;
 import static com.example.burnchuck.common.enums.ErrorCode.MEETING_NOT_FOUND;
 
 import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.common.dto.GetS3Url;
-import com.example.burnchuck.common.dto.PageResponse;
-import com.example.burnchuck.common.entity.Address;
+import com.example.burnchuck.common.dto.S3UrlResponse;
 import com.example.burnchuck.common.entity.Category;
 import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.ErrorCode;
 import com.example.burnchuck.common.enums.MeetingRole;
-import com.example.burnchuck.common.enums.MeetingSortOption;
 import com.example.burnchuck.common.exception.CustomException;
 import com.example.burnchuck.common.utils.ClientInfoExtractor;
 import com.example.burnchuck.common.utils.S3UrlGenerator;
 import com.example.burnchuck.common.utils.UserDisplay;
 import com.example.burnchuck.domain.category.repository.CategoryRepository;
 import com.example.burnchuck.domain.chat.service.ChatRoomService;
-import com.example.burnchuck.domain.meeting.dto.request.LocationFilterRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingMapViewPortRequest;
-import com.example.burnchuck.domain.meeting.dto.request.MeetingSearchRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
-import com.example.burnchuck.domain.meeting.dto.request.UserLocationRequest;
 import com.example.burnchuck.domain.meeting.dto.response.AttendeeResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingCreateResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingDetailResponse;
-import com.example.burnchuck.domain.meeting.dto.response.MeetingMapPointResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingMemberResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingUpdateResponse;
-import com.example.burnchuck.domain.meeting.event.EventPublisherService;
+import com.example.burnchuck.domain.meeting.event.MeetingEventPublisher;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
-import com.example.burnchuck.domain.notification.service.NotificationService;
-import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
-import io.lettuce.core.RedisException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.UUID;
@@ -51,6 +41,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
+import io.lettuce.core.RedisException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.RedisConnectionFailureException;
@@ -67,51 +58,30 @@ public class MeetingService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final UserMeetingRepository userMeetingRepository;
-    private final AddressRepository addressRepository;
 
-    private final NotificationService notificationService;
-    private final EventPublisherService eventPublisherService;
+    private final MeetingEventPublisher meetingEventPublisher;
     private final MeetingCacheService meetingCacheService;
     private final ChatRoomService chatRoomService;
+
     private final S3UrlGenerator s3UrlGenerator;
-    private final MeetingSearchService meetingSearchService;
-
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-
-    // 서울 광화문 위치
-    private final Double DEFAULT_LATITUDE = 37.57;
-    private final Double DEFAULT_LONGITUDE = 126.98;
 
     /**
      * 모임 이미지 업로드 Presigned URL 생성
      */
-    public GetS3Url getUploadMeetingImgUrl(String filename) {
+    public S3UrlResponse getUploadMeetingImgUrl(String filename) {
 
         String key = "meeting/" + UUID.randomUUID();
         return s3UrlGenerator.generateUploadImgUrl(filename, key);
     }
 
     /**
-     * 모임 생성과 알림 생성 메서드를 호출하는 메서드
-     */
-    public MeetingCreateResponse createMeetingAndNotify(AuthUser authUser, MeetingCreateRequest request) {
-
-        User user = userRepository.findActivateUserById(authUser.getId());
-
-        Meeting meeting = createMeeting(user, request);
-
-        notificationService.notifyNewFollowerPost(meeting, user);
-
-        eventPublisherService.publishMeetingCreatedEvent(meeting);
-
-        return MeetingCreateResponse.from(meeting);
-    }
-
-    /**
      * 모임 생성
      */
     @Transactional
-    public Meeting createMeeting(User user, MeetingCreateRequest request) {
+    public MeetingCreateResponse createMeeting(AuthUser authUser, MeetingCreateRequest request) {
+
+        User user = userRepository.findActivateUserById(authUser.getId());
 
         if (!s3UrlGenerator.isFileExists(request.getImgUrl().replaceAll("^https?://[^/]+/", ""))) {
             throw new CustomException(ErrorCode.MEETING_IMG_NOT_FOUND);
@@ -121,7 +91,7 @@ public class MeetingService {
 
         Point point = createPoint(request.getLatitude(), request.getLongitude());
 
-        Meeting meeting = new Meeting(request, category, point);
+        Meeting meeting = Meeting.create(request, category, point);
 
         meetingRepository.save(meeting);
 
@@ -135,47 +105,9 @@ public class MeetingService {
 
         userMeetingRepository.save(userMeeting);
 
-        return meeting;
-    }
+        meetingEventPublisher.publishMeetingCreatedEvent(meeting);
 
-    /**
-     * 모임 조회
-     */
-    @Transactional(readOnly = true)
-    public PageResponse<MeetingSummaryResponse> getMeetingPage(
-            AuthUser authUser,
-            MeetingSearchRequest searchRequest,
-            LocationFilterRequest locationRequest,
-            UserLocationRequest userLocationRequest,
-            MeetingSortOption order,
-            Pageable pageable
-    ) {
-        if (userLocationRequest.noCurrentLocation() && authUser != null) {
-            User user = userRepository.findActivateUserWithAddress(authUser.getId());
-            userLocationRequest.setLocation(user.getAddress());
-        }
-
-        if (userLocationRequest.noCurrentLocation()) {
-            userLocationRequest.setLocation(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
-        }
-
-        if (locationRequest.notNull()) {
-            Address address = addressRepository.findAddressByAddressInfo(locationRequest.getProvince(), locationRequest.getCity(), locationRequest.getDistrict());
-            userLocationRequest.setLocation(address);
-        }
-
-        return meetingSearchService.searchInListFormat(searchRequest, userLocationRequest, order, pageable);
-    }
-
-    /**
-     * 모임 지도 조회
-     */
-    @Transactional(readOnly = true)
-    public List<MeetingMapPointResponse> getMeetingPointList(
-        MeetingSearchRequest searchRequest,
-        MeetingMapViewPortRequest viewPort
-    ) {
-        return meetingSearchService.searchInMapFormat(searchRequest, viewPort);
+        return MeetingCreateResponse.from(meeting);
     }
 
     /**
@@ -238,7 +170,7 @@ public class MeetingService {
 
         meeting.updateMeeting(request, category, point);
 
-        eventPublisherService.publishMeetingUpdatedEvent(meeting);
+        meetingEventPublisher.publishMeetingUpdatedEvent(meeting);
 
         return MeetingUpdateResponse.from(meeting);
     }
@@ -260,7 +192,22 @@ public class MeetingService {
 
         meeting.delete();
 
-        eventPublisherService.publishMeetingDeletedEvent(meeting);
+        meetingEventPublisher.publishMeetingDeletedEvent(meeting);
+    }
+
+    /**
+     * 유저 삭제 후, 해당 유저가 주최한 모임 삭제
+     */
+    @Transactional
+    public void deleteAllHostedMeetingsAfterUserDelete(Long userId) {
+
+        List<Meeting> meetingList = meetingRepository.findActiveHostedMeetings(userId);
+
+        for (Meeting meeting : meetingList) {
+
+            meeting.delete();
+            meetingEventPublisher.publishMeetingDeletedEvent(meeting);
+        }
     }
 
     /**

@@ -17,6 +17,7 @@ import com.example.burnchuck.domain.auth.repository.UserRefreshRepository;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,18 +40,8 @@ public class AuthService {
     /**
      * 회원가입
      */
-    public AuthTokenResponse signup(AuthSignupRequest request) {
-
-        User user = createUser(request);
-
-        return generateToken(user);
-    }
-
-    /**
-     * 유저 생성(LOCAL)
-     */
     @Transactional
-    public User createUser(AuthSignupRequest request) {
+    public AuthTokenResponse signup(AuthSignupRequest request) {
 
         String email = request.getEmail();
         String nickname = request.getNickname();
@@ -70,18 +61,18 @@ public class AuthService {
         Address address = addressRepository.findAddressByAddressInfo(request.getProvince(), request.getCity(), request.getDistrict());
 
         User user = new User(
-            email, encodedPassword, nickname,
-            request.getBirthDate(),
-            gender.isValue(),
-            address,
-            UserRole.USER,
-            Provider.LOCAL,
-            null
+                email, encodedPassword, nickname,
+                request.getBirthDate(),
+                gender,
+                address,
+                UserRole.USER,
+                Provider.LOCAL,
+                null
         );
 
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
 
-        return user;
+        return generateToken(user);
     }
 
     /**
@@ -104,24 +95,19 @@ public class AuthService {
     /**
      * 유저의 Access 토큰, Refresh 토큰 생성
      */
-    @Transactional
-    public AuthTokenResponse generateToken(User user) {
+    private AuthTokenResponse generateToken(User user) {
 
         Long userId = user.getId();
 
         String accessToken = jwtUtil.generateAccessToken(userId, user.getEmail(), user.getNickname(), user.getRole());
         String refreshToken = jwtUtil.generateRefreshToken(userId);
 
-        boolean exist = userRefreshRepository.existsByUserId(userId);
-
-        UserRefresh userRefresh;
-
-        if (exist) {
-            userRefresh = userRefreshRepository.findUserRefreshByUserId(userId);
-            userRefresh.updateRefreshToken(refreshToken);
-        } else {
-            userRefresh = new UserRefresh(user, refreshToken);
-        }
+        UserRefresh userRefresh = userRefreshRepository.findByUserId(userId)
+                .map(ur -> {
+                    ur.updateRefreshToken(refreshToken);
+                    return ur;
+                })
+                .orElseGet(() -> new UserRefresh(user, refreshToken));
 
         userRefreshRepository.save(userRefresh);
 
@@ -207,33 +193,30 @@ public class AuthService {
             throw new CustomException(ErrorCode.EMAIL_EXIST);
         }
 
-        String uniqueNickname = userInfo.getNickname();
-        while (userRepository.existsByNickname(uniqueNickname)) {
-
-            int randomNum = ThreadLocalRandom.current().nextInt(1000, 10000);
-            uniqueNickname = userInfo.getNickname() + randomNum;
-        }
-
+        String baseNickname = userInfo.getNickname();
         String tempPassword = passwordEncoder.encode(UUID.randomUUID().toString());
-
         Address defaultAddress = addressRepository.findById(1L)
                 .orElseThrow(() -> new CustomException(ErrorCode.ADDRESS_NOT_FOUND));
 
-        User newUser = new User(
-                userInfo.getEmail(),
-                tempPassword,
-                uniqueNickname,
-                null,
-                false,
-                defaultAddress,
-                UserRole.USER,
-                provider,
-                String.valueOf(userInfo.getId())
-        );
+        for (int i = 0; i < 5; i++) {
+            String uniqueNickname = (i == 0) ? baseNickname : baseNickname + ThreadLocalRandom.current().nextInt(1000, 10000);
 
-        return userRepository.save(newUser);
+            if (!userRepository.existsByNickname(uniqueNickname)) {
+                User newUser = new User(
+                        userInfo.getEmail(),
+                        tempPassword,
+                        uniqueNickname,
+                        null,
+                        null,
+                        defaultAddress,
+                        UserRole.USER,
+                        provider,
+                        String.valueOf(userInfo.getId())
+                );
+
+                return userRepository.saveAndFlush(newUser);
+            }
+        }
+        throw new CustomException(ErrorCode.NICKNAME_DUPLICATION_LIMIT_EXCEEDED);
     }
 }
-
-
-

@@ -1,7 +1,7 @@
 package com.example.burnchuck.domain.chat.dto.request;
 
-import static com.example.burnchuck.common.enums.ValidationMessage.CHAT_ROOM_NAME_NOT_NULL;
-import static com.example.burnchuck.common.enums.ValidationMessage.CHAT_ROOM_NAME_SIZE;
+import static com.example.burnchuck.common.constants.ValidationMessage.CHAT_ROOM_NAME_NOT_NULL;
+import static com.example.burnchuck.common.constants.ValidationMessage.CHAT_ROOM_NAME_SIZE;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

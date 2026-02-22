@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class UserGetProfileReponse {
+public class UserGetProfileResponse {
 
     private final String profileImgUrl;
     private final String nickname;

@@ -1,6 +1,6 @@
 package com.example.burnchuck.domain.auth.dto.request;
 
-import com.example.burnchuck.common.enums.ValidationMessage;
+import com.example.burnchuck.common.constants.ValidationMessage;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

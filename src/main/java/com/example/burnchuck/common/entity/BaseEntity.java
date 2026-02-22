@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
-    @Column(nullable = false, columnDefinition = "TINYINT(1)")
-    private boolean isDeleted = false;
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "TINYINT(1)")
+    private boolean deleted = false;
 
     @Column
     private LocalDateTime deletedDatetime;
@@ -27,7 +27,7 @@ public abstract class BaseEntity {
     private LocalDateTime modifiedDatetime;
 
     public void delete() {
-        this.isDeleted = true;
+        this.deleted = true;
         this.deletedDatetime = LocalDateTime.now();
     }
 }

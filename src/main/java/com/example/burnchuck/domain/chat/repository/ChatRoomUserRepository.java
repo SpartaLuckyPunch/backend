@@ -20,11 +20,10 @@ public interface ChatRoomUserRepository extends JpaRepository<ChatRoomUser, Long
             FROM ChatRoomUser cru
             JOIN FETCH cru.chatRoom cr
             WHERE cru.user.id = :userId
-            AND cru.isDeleted = false
             """)
     List<ChatRoomUser> findAllActiveByUserId(@Param("userId") Long userId);
 
-    @Query("SELECT cru.user.id FROM ChatRoomUser cru WHERE cru.chatRoom.id = :chatRoomId AND cru.isDeleted = false")
+    @Query("SELECT cru.user.id FROM ChatRoomUser cru WHERE cru.chatRoom.id = :chatRoomId")
     List<Long> findAllActiveUserIdByChatRoomId(@Param("chatRoomId") Long chatRoomId);
 
     int countByChatRoomId(Long id);
@@ -34,7 +33,6 @@ public interface ChatRoomUserRepository extends JpaRepository<ChatRoomUser, Long
             FROM ChatRoomUser cru
             JOIN FETCH cru.chatRoom cr
             WHERE cru.chatRoom.id = :roomId AND cru.user.id = :userId
-            AND cru.isDeleted = false
             """)
     Optional<ChatRoomUser> findByChatRoomIdAndUserId(@Param("roomId") Long roomId, @Param("userId") Long userId);
 

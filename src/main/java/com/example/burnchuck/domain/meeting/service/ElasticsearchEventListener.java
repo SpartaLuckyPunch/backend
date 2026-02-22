@@ -19,7 +19,7 @@ public class ElasticsearchEventListener {
 
     private final ElasticsearchService elasticsearchService;
 
-    @Async("CustomTaskExecutor")
+    @Async("customTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @EventListener
     public void meetingSyncElasticsearch(MeetingEvent event) {
@@ -33,7 +33,7 @@ public class ElasticsearchEventListener {
         }
     }
 
-    @Async("CustomTaskExecutor")
+    @Async("customTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @EventListener
     public void meetingChangeStatus(MeetingStatusChangeEvent event) {
@@ -47,7 +47,7 @@ public class ElasticsearchEventListener {
         }
     }
 
-    @Async("CustomTaskExecutor")
+    @Async("customTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @EventListener
     public void meetingChangeAttendees(MeetingAttendeesChangeEvent event) {

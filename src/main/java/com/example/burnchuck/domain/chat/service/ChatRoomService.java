@@ -166,8 +166,9 @@ public class ChatRoomService {
         }
 
         if (chatRoom.isGroup()){
-            Meeting meeting = meetingRepository.findMeetingById(chatRoom.getMeetingId());
-            chatroomImg = meeting.getImgUrl();
+            chatroomImg = meetingRepository.findByIdAndDeletedFalse(chatRoom.getMeetingId())
+                    .map(Meeting::getImgUrl)
+                    .orElse(null);
         }
 
         ChatMessage lastMsg = chatMessageRepository.findFirstByRoomIdOrderByCreatedDatetimeDesc(chatRoom.getId())
@@ -209,7 +210,7 @@ public class ChatRoomService {
 
             Meeting meeting = meetingRepository.findActivateMeetingById(room.getMeetingId());
 
-            if (!meeting.isCompleted()) {
+            if (!meeting.isDeleted() && !meeting.isCompleted()) {
                 throw new CustomException(CANNOT_LEAVE_NOT_COMPLETED_MEETING);
             }
         }
@@ -219,17 +220,15 @@ public class ChatRoomService {
     }
 
     /**
-     * 모임 참가 취소 시, 모임의 상태와 관계없이 채팅방 나가기 가능
+     * 모임 참가 취소 / 유저 탈퇴 시, 채팅방 나가기
      */
     @Transactional
-    public void leaveChatRoomAfterAttendanceCancel(Long userId, Long roomId) {
+    public void leaveChatRoomRegardlessOfStatus(Long userId, Long roomId) {
 
-        User user = userRepository.findActivateUserById(userId);
-
-        ChatRoomUser chatRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, user.getId());
+        ChatRoomUser chatRoomUser = chatRoomUserRepository.findChatRoomUserByChatRoomIdAndUserId(roomId, userId);
 
         chatRoomUser.delete();
-        chatCacheService.deleteUserReadInfo(roomId, user.getId());
+        chatCacheService.deleteUserReadInfo(roomId, userId);
     }
 
     /**
@@ -241,7 +240,7 @@ public class ChatRoomService {
                 .map(ChatRoomUser::getUser)
                 .filter(user -> !user.getId().equals(myId))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_PARTNER_NOT_FOUND));
     }
 
     /**

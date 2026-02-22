@@ -18,14 +18,13 @@ public class AsyncConfig implements AsyncConfigurer {
     private static final int MAX_POOL_SIZE = 8;
     private static final int QUEUE_CAPACITY = 50;
 
-    @Bean("CustomTaskExecutor")
-    public Executor CustomTaskExecutor() {
+    @Bean
+    public Executor customTaskExecutor() {
         final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(CORE_POOL_SIZE);
         executor.setMaxPoolSize(MAX_POOL_SIZE);
         executor.setQueueCapacity(QUEUE_CAPACITY);
         executor.setThreadNamePrefix("CustomTaskExecutor-");
-        executor.initialize();
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         return executor;
     }

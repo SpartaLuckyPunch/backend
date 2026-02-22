@@ -68,7 +68,7 @@ public enum SuccessMessage {
 
     // 알림
     NOTIFICATION_GET_LIST_SUCCESS("알림 목록 조회 성공"),
-    NOTIFICATION_GET_ONE_SUCCESS("알림 목록 조회 성공"),
+    NOTIFICATION_GET_ONE_SUCCESS("알림 단건 조회 성공"),
 
     // 채팅
     CHAT_SEND_SUCCESS("채팅 전송 성공"),

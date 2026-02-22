@@ -1,6 +1,5 @@
 package com.example.burnchuck.domain.meeting.repository;
 
-import com.example.burnchuck.common.entity.Meeting;
 import com.example.burnchuck.common.entity.User;
 import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.domain.meeting.dto.response.MeetingSummaryWithStatusResponse;
@@ -10,7 +9,7 @@ public interface UserMeetingCustomRepository {
 
     List<MeetingSummaryWithStatusResponse> findAllMeetingsByUser(User user);
 
-    List<Meeting> findActiveMeetingsByUser(User user);
+    List<UserMeeting> findActiveMeetingsByUser(User user);
 
     List<UserMeeting> findMeetingMembers(Long meetingId);
 }

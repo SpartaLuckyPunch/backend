@@ -3,17 +3,8 @@ package com.example.burnchuck.common.entity;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingUpdateRequest;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,7 +13,11 @@ import org.hibernate.annotations.SQLRestriction;
 import org.locationtech.jts.geom.Point;
 
 @Entity
-@Table(name = "meetings")
+@Table(name = "meetings",
+        indexes = {
+                @Index(name = "idx_meeting_is_deleted", columnList = "is_deleted")
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLRestriction("is_deleted = false")
@@ -70,19 +65,34 @@ public class Meeting extends BaseEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    public Meeting(MeetingCreateRequest request, Category category, Point point) {
-        this.title = request.getTitle();
-        this.description = request.getDescription();
-        this.imgUrl = request.getImgUrl();
-        this.location = request.getLocation();
-        this.latitude = request.getLatitude();
-        this.longitude = request.getLongitude();
+    public Meeting(String title, String description, String imgUrl, String location, Double latitude, Double longitude, Point point, int maxAttendees, LocalDateTime meetingDateTime, Category category) {
+        this.title = title;
+        this.description = description;
+        this.imgUrl = imgUrl;
+        this.location = location;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.point = point;
-        this.maxAttendees = request.getMaxAttendees();
-        this.meetingDateTime = request.getMeetingDateTime();
+        this.maxAttendees = maxAttendees;
+        this.meetingDateTime = meetingDateTime;
         this.views = 0L;
         this.status = MeetingStatus.OPEN;
         this.category = category;
+    }
+
+    public static Meeting create(MeetingCreateRequest request, Category category, Point point) {
+        return new Meeting(
+            request.getTitle(),
+            request.getDescription(),
+            request.getImgUrl(),
+            request.getLocation(),
+            request.getLatitude(),
+            request.getLongitude(),
+            point,
+            request.getMaxAttendees(),
+            request.getMeetingDateTime(),
+            category
+        );
     }
 
     public void updateMeeting(MeetingUpdateRequest request, Category category, Point point) {
@@ -96,10 +106,6 @@ public class Meeting extends BaseEntity {
         this.maxAttendees = request.getMaxAttendees();
         this.meetingDateTime = request.getMeetingDateTime();
         this.category = category;
-    }
-
-    public void increaseViews(Long views) {
-        this.views += views;
     }
 
     public void updateStatus(MeetingStatus status) {
