@@ -1,7 +1,13 @@
-package com.example.burnchuck;
+package com.example.burnchuck.domain.meeting.service;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.burnchuck.common.dto.AuthUser;
-import com.example.burnchuck.common.entity.*;
+import com.example.burnchuck.common.entity.Address;
+import com.example.burnchuck.common.entity.Category;
+import com.example.burnchuck.common.entity.Meeting;
+import com.example.burnchuck.common.entity.User;
+import com.example.burnchuck.common.entity.UserMeeting;
 import com.example.burnchuck.common.enums.MeetingRole;
 import com.example.burnchuck.common.enums.MeetingStatus;
 import com.example.burnchuck.common.enums.Provider;
@@ -11,10 +17,16 @@ import com.example.burnchuck.domain.chat.service.ChatRoomService;
 import com.example.burnchuck.domain.meeting.dto.request.MeetingCreateRequest;
 import com.example.burnchuck.domain.meeting.repository.MeetingRepository;
 import com.example.burnchuck.domain.meeting.repository.UserMeetingRepository;
-import com.example.burnchuck.domain.meeting.service.RedissonLockAttendanceFacade;
 import com.example.burnchuck.domain.notification.repository.NotificationRepository;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -27,16 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @Disabled
 @SpringBootTest
