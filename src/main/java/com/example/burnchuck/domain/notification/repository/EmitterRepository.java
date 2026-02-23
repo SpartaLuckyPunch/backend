@@ -1,6 +1,5 @@
 package com.example.burnchuck.domain.notification.repository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,22 +45,24 @@ public class EmitterRepository {
      */
     public void deleteById(String emitterId) {
 
-        emitters.remove(emitterId);
+        SseEmitter emitter = emitters.remove(emitterId);
+
+        if (emitter != null) {
+            try {
+                emitter.complete();
+            } catch (Exception ignored) {
+            }
+        }
     }
 
-    /**
-     * emitter 종료 후 삭제
-     */
-    public void disconnectAllEmittersStartWith(String emitterId) {
+    public void disconnectAllEmittersStartWith(String emitterIdPrefix) {
 
-        List<String> removeKeys = new ArrayList<>();
+        List<String> keys = emitters.keySet().stream()
+            .filter(k -> k.startsWith(emitterIdPrefix))
+            .toList();
 
-        emitters.forEach((key, emitter) -> {
-            if (key.startsWith(emitterId)) {
-                removeKeys.add(key);
-            }
-        });
-
-        removeKeys.forEach(emitters::remove);
+        for (String key : keys) {
+            deleteById(key);
+        }
     }
 }

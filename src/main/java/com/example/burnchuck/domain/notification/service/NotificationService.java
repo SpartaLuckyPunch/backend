@@ -47,6 +47,8 @@ public class NotificationService {
     public SseEmitter subscribe(AuthUser authUser) {
         Long userId = authUser.getId();
 
+        emitterService.disconnectAllEmittersByUserId(userId);
+
         SseEmitter emitter = emitterService.createEmitter(userId);
 
         Runnable cleanup = () -> {
