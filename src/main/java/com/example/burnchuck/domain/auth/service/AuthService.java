@@ -16,15 +16,13 @@ import com.example.burnchuck.domain.auth.dto.response.KakaoUserInfoResponse;
 import com.example.burnchuck.domain.auth.repository.UserRefreshRepository;
 import com.example.burnchuck.domain.user.repository.AddressRepository;
 import com.example.burnchuck.domain.user.repository.UserRepository;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -70,9 +68,9 @@ public class AuthService {
                 null
         );
 
-        userRepository.saveAndFlush(user);
+        User savedUser = userRepository.saveAndFlush(user);
 
-        return generateToken(user);
+        return generateToken(savedUser);
     }
 
     /**
