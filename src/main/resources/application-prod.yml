@@ -34,8 +34,6 @@ spring:
 logging:
   level:
     root: INFO
-    org.springframework.web.servlet.mvc.method.annotation.SseEmitter: DEBUG
-    org.springframework.web.context.request.async: DEBUG
     com.example.burnchuck: WARN
     org.hibernate.SQL: OFF
     org.hibernate.orm.jdbc.bind: OFF

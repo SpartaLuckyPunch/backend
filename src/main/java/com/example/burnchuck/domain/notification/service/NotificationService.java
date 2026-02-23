@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -31,7 +30,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j(topic = "emitter")
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
@@ -47,8 +45,6 @@ public class NotificationService {
      */
     public SseEmitter subscribe(AuthUser authUser) {
         Long userId = authUser.getId();
-
-        log.info("SSE 연결 시도: {}", userId);
 
         emitterService.disconnectAllEmittersByUserId(userId);
 
