@@ -23,4 +23,18 @@ public class UserFixture {
             null
         );
     }
+
+    public static User testUser2() {
+        return new User(
+            "test" + UUID.randomUUID() + "@test.com",
+            "1234",
+            "testUser2",
+            null,
+            null,
+            address,
+            UserRole.USER,
+            Provider.LOCAL,
+            null
+        );
+    }
 }
