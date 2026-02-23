@@ -84,6 +84,10 @@ public class MeetingLikeService {
     @Transactional(readOnly = true)
     public boolean checkLikeExistence(Long meetingId, AuthUser authUser) {
 
+        if (authUser == null) {
+            return false;
+        }
+
         User user = userRepository.findActivateUserById(authUser.getId());
 
         Meeting meeting = meetingRepository.findActivateMeetingById(meetingId);

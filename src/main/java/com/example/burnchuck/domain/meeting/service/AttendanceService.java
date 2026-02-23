@@ -143,6 +143,10 @@ public class AttendanceService {
     @Transactional(readOnly = true)
     public AttendanceGetMeetingListResponse getAttendingMeetingList(AuthUser authUser) {
 
+        if (authUser == null) {
+            return new AttendanceGetMeetingListResponse(List.of());
+        }
+
         User user = userRepository.findActivateUserById(authUser.getId());
 
         List<MeetingSummaryWithStatusResponse> meetingList = userMeetingRepository.findAllMeetingsByUser(user);
