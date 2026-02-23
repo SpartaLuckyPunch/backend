@@ -40,7 +40,6 @@ public class NotificationService {
     private final UserRepository userRepository;
 
     private final SseNotifyService sseNotifyService;
-    private final RedisMessageService redisMessageService;
     private final EmitterService emitterService;
 
     /**
@@ -57,7 +56,6 @@ public class NotificationService {
 
         Runnable cleanup = () -> {
             emitterService.deleteEmitter(userId);
-            redisMessageService.removeSubscribe(userId);
         };
 
         emitter.onCompletion(cleanup);
@@ -68,8 +66,6 @@ public class NotificationService {
         long unread = notificationRepository.countUnReadNotificationsInSevenDaysByUserId(userId, sevenDaysAgo);
 
         sseNotifyService.send(emitter, userId, NotificationSseResponse.sseConnection(unread));
-
-        redisMessageService.subscribe(userId);
 
         return emitter;
     }
@@ -84,7 +80,7 @@ public class NotificationService {
             Long userId = notification.getUser().getId();
             NotificationResponse notificationResponse = NotificationResponse.from(notification);
 
-            redisMessageService.publish(userId, notificationResponse);
+            sseNotifyService.sendNotification(userId, notificationResponse);
         }
     }
 
