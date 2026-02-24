@@ -87,6 +87,7 @@ jobs:
               -e SPRING_PROFILES_ACTIVE=prod \
               -e TZ=Asia/Seoul \
               --env-file .env \
+              -v /var/log/burnchuck:/logs \
               --restart unless-stopped \
               $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
               
